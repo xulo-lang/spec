@@ -24,7 +24,7 @@ value) or a statement (it does not). Statements are specified in
 | `for … in … { … }`, `while … { … }` | Statement |
 | Expression statement (a bare expression in statement position) | Statement |
 | `if` … `else` …, `match` …, block `{ … }` | Expression |
-| Literals: integer, float, string, template, boolean, null, list, object | Expression |
+| Literals: integer, float, string, template, boolean, null, list, object, tuple | Expression |
 | Operators, member access, subscript, calls | Expression |
 | Closures, `await` | Expression |
 
@@ -42,8 +42,8 @@ order stated here.
 
 - The operands of a binary operator are evaluated left-to-right.
 - The arguments of a call are evaluated left-to-right.
-- The elements of a list literal or an object literal are evaluated
-  left-to-right, spreads included.
+- The elements of a list literal, an object literal, or a tuple literal are
+  evaluated left-to-right, spreads included.
 - The scrutinee of `if` or `match` is evaluated before any arm is tested.
 
 Three constructs short-circuit. `and` does not evaluate its right operand when
@@ -79,7 +79,7 @@ each level; [`../grammar.md`](../grammar.md) encodes the same structure.
 | multiplicative | `*` `/` `%` | left |
 | power | `**` | right |
 | unary | `!` `-` `~` `await` | prefix |
-| postfix | `f(x)` `x[i]` `x.y` `x?.y` | left |
+| postfix | `f(x)` `x[i]` `x.y` `x.0` `x?.y` `x?.0` | left |
 
 Prefix spread `...expr` exists only inside list and object literals; it is not
 part of the precedence chain. An element that begins with `...` is a spread,
@@ -101,9 +101,9 @@ Assigning to an identifier that is not backed by `mut` is a compile-time error.
 
 ## Index
 
-- [`literals.md`](literals.md) — Integer, float, string, template, boolean, null, list, and object literals.
+- [`literals.md`](literals.md) — Integer, float, string, template, boolean, null, list, object, and tuple literals.
 - [`operators.md`](operators.md) — Precedence, associativity, and the rules of every operator.
-- [`path-and-access.md`](path-and-access.md) — Identifiers, member access, `::` variant paths, subscripts, optional chaining.
+- [`path-and-access.md`](path-and-access.md) — Identifiers, member access, positional tuple access, `::` variant paths, subscripts, optional chaining.
 - [`calls.md`](calls.md) — Call syntax, argument matching, method and generic calls, components.
 - [`control-flow.md`](control-flow.md) — `if` and `match` as expressions, loops and `break`/`continue` as statements.
 - [`closures.md`](closures.md) — Anonymous functions, capture, and function types.

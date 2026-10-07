@@ -1,9 +1,9 @@
 # Literals
 
 A literal is a source-level expression that denotes a fixed value: a number, a
-string, a template, a boolean, `null`, a list, or an object. Literals are
-value expressions with no side effects. Ranges are not literals — they are
-built from the range operators and are specified in
+string, a template, a boolean, `null`, a list, an object, or a tuple.
+Literals are value expressions with no side effects. Ranges are not literals —
+they are built from the range operators and are specified in
 [`operators.md`](operators.md).
 
 ## Integer literals
@@ -181,3 +181,31 @@ ambiguous, parenthesize it:
 { a: 1 }          // error: `{` starts a block here, not a literal
 ({ a: 1 })        // OK: an object literal, parenthesized
 ```
+
+## Tuple literals
+
+A tuple literal is a parenthesized, comma-separated sequence of at least two
+expressions:
+
+```xulo
+let p = (10, "ten")
+let annotated: (int, string) = (10, "ten")
+let more = (1, 2, 3,)         // trailing comma allowed
+```
+
+- The comma decides the reading: `( e )` groups a single expression, and
+  `( e₁, e₂, … )` builds a tuple. A one-element tuple and an empty tuple
+  literal do not exist, and `( )` is not well-formed.
+- The type of `(e₁, …, eₙ)` is `(T₁, …, Tₙ)`, the tuple of the element
+  types. With an expected tuple type in scope, each element checks against
+  the expected element type at that position — an integer literal in a
+  `(float, …)` context becomes a `float`, exactly as an annotation would
+  cause ([`../type-system/checking-rules.md`](../type-system/checking-rules.md)).
+- The prefix spread `...expr` does not appear in tuple literals: it exists
+  only inside list and object literals ([`operators.md`](operators.md)).
+- Element evaluation is left to right, like every other composite literal,
+  and a tuple literal in statement position follows the statement-value rule
+  ([`../statements/expression-statements.md`](../statements/expression-statements.md)).
+- For named rather than positional grouping use a `struct` or an `object`;
+  a tuple is chosen when the positions themselves carry the meaning
+  ([`../types/composite-types.md`](../types/composite-types.md)).

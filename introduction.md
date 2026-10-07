@@ -167,10 +167,11 @@ derive `let` from an immutable-by-default tradition, both use `pub`, and both
 treat `match` as a first-class expression with exhaustiveness checking. Xulo
 differs in where it points: components with a declared `View` return type,
 state declarations that live in the language, and targets that are presentation
-layers rather than instruction sets. Xulo also has no tuples — multi-value
-results use `struct`, `object`, or `enum` — and trait dispatch is written
-explicitly, as `Trait.method(receiver)`, rather than being resolved implicitly
-through a receiver's type.
+layers rather than instruction sets. Tuples stay deliberately small — at
+least two elements, positional access `p.0`, destructured with `let` — so
+named multi-value results still reach for `struct`, `object`, or `enum`, and
+trait dispatch is written explicitly, as `Trait.method(receiver)`, rather
+than being resolved implicitly through a receiver's type.
 
 What Xulo takes from Swift and Rust is the vocabulary of intent: `let` and
 `mut`, `where` clauses for generic constraints, `move` and `copy` for

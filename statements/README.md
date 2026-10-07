@@ -14,7 +14,7 @@ The split is exact: every construct is either a statement or an expression.
 
 | Construct | Category |
 |-----------|----------|
-| `let x = e`, `let mut x = e`, `const K = e` | Statement |
+| `let x = e`, `let mut x = e`, `let (a, b) = e`, `let { f } = e`, `const K = e` | Statement |
 | `place = value` | Statement |
 | `return e`, `return` | Statement |
 | `break`, `continue` | Statement |

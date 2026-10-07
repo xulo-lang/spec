@@ -1,9 +1,10 @@
 # Paths and Access
 
 Access expressions name things and reach into them: a bare identifier names a
-binding, `.` reaches a field, method, or namespace member, `::` names an enum
-variant, `[]` indexes a collection, and `?.` performs an access that tolerates
-`null`. This chapter defines each form, its type, and its errors.
+binding, `.` reaches a field, method, namespace member, or tuple position, `::`
+names an enum variant, `[]` indexes a collection, and `?.` performs an access
+that tolerates `null`. This chapter defines each form, its type, and its
+errors.
 
 ## Identifiers as paths
 
@@ -48,6 +49,31 @@ A member that does not exist on the receiver's type is a compile-time error
 (see [`../type-system/errors.md`](../type-system/errors.md)). Members are
 private by default, so a member that is not `pub` is accessible only inside
 the module that declares it (see [`../modules/README.md`](../modules/README.md)).
+
+## Positional access `.0`
+
+On a tuple, the "name" after `.` is the element's position, counted from
+zero:
+
+```xulo
+let p = (10, "ten")
+p.0             // 10, the first element
+p.1             // "ten", the second element
+pair().0        // positional access through a call result
+```
+
+- The receiver MUST have a tuple type, and the position MUST exist in it —
+  `0 ≤ i < arity`. A receiver of any other type, or a position at or past
+  the arity, is a compile-time error (`E0220`).
+- The position is an integer literal without a sign: `p.0` is the whole
+  operator, and ordinary field names never begin with a digit, so
+  positional and member access never compete for the same spelling.
+- The type of `p.i` is the `i`-th element type of the tuple. Reading is an
+  ordinary place read; writing `p.0 = v` follows the same place rules as a
+  field write and requires a mutable binding (see
+  [`../memory-and-runtime.md`](../memory-and-runtime.md)).
+- The `null`-tolerant form exists too: `p?.0` evaluates to `null` when `p`
+  is `null`, and otherwise to the element — optional chaining below.
 
 ## Enum variant paths `::`
 
@@ -115,9 +141,10 @@ inner chain is never evaluated, the result is `null`, and `??` supplies
 `Theme.Light`. If `session` is not `null`, `profile` is read, and the same
 test applies to it. If `a` has type `T?` and `T` has a member of type `U`,
 then `a?.b` has type `U?`, so an optional chain is always consumed with `??`,
-a ternary, a `null` test, or a context that admits `null`. Optional chaining
-combines with `??` exactly this way, and with method calls as in
-`session?.refresh()`; the operator is specified in
+a ternary, a `null` test, or a context that admits `null`. The same holds for
+a position: if `q` has type `(int, string)?`, then `q?.0` has type `int?`.
+Optional chaining combines with `??` exactly this way, and with method calls
+as in `session?.refresh()`; the operator is specified in
 [`operators.md`](operators.md).
 
 ## Qualified calls

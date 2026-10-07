@@ -27,7 +27,7 @@ Levels are listed from loosest to tightest binding.
 | multiplicative | `*` `/` `%` | left |
 | power | `**` | right |
 | unary | `!` `-` `~` `await` | prefix |
-| postfix | `f(x)` `x[i]` `x.y` `x?.y` | left |
+| postfix | `f(x)` `x[i]` `x.y` `x.0` `x?.y` `x?.0` | left |
 
 Prefix spread `...expr` exists only inside list and object literals; it is not
 part of this chain. An element that begins with `...` is a spread, otherwise
@@ -131,13 +131,15 @@ let none = maybe == null
 ```
 
 Equality is structural for all value types: primitives (`boolean`, `string`,
-`int`, `float`, fixed-bit numerics), `list`, `map`, `set`, anonymous objects,
-named `struct`s, and `enum`s — for an `enum`, the variant and every payload
-value are compared. Both operands MUST have a common type; comparing unrelated
-types is a compile-time error, so Xulo has no cross-type equality. `null == null`
-is `true`, and comparing `null` with a value requires that value's type to be
-optional. Values that carry identity — rather than structural content — are
-compared by identity, as defined in
+`int`, `float`, fixed-bit numerics), `list`, `map`, `set`, tuples,
+anonymous objects, named `struct`s, and `enum`s — for an `enum`, the variant
+and every payload value are compared; for a tuple, the arities must be equal
+and every pair of elements is compared, so different arities are a
+compile-time error rather than `false`. Both operands MUST have a common
+type; comparing unrelated types is a compile-time error, so Xulo has no
+cross-type equality. `null == null` is `true`, and comparing `null` with a
+value requires that value's type to be optional. Values that carry identity —
+rather than structural content — are compared by identity, as defined in
 [`../memory-and-runtime.md`](../memory-and-runtime.md).
 
 ## Relational

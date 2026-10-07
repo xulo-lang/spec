@@ -111,8 +111,12 @@ match score {          // statement position: the arm values are discarded
 - A payload or field position that is not bound MUST be written `_`:
   `Shape::Circle(_)` matches any radius without binding it.
 - The operands of a range pattern MUST be numeric literals of the same numeric
-  type as the scrutinee. `0...9` includes both endpoints; `0..<10` excludes the
+  type as the scrutinee. `0...9` includes both endpoints, `0..<10` excludes the
   upper endpoint.
+- **Tuples have no pattern form.** A tuple scrutinee is matched with a
+  binding or `_`; to test its elements, read them with `p.0` or destructure
+  with `let (a, b) = p` first, and `match` on those
+  ([`../types/composite-types.md`](../types/composite-types.md)).
 - Every pattern MUST be compatible with the type of the scrutinee; otherwise the
   `match` is a compile-time error.
 

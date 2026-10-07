@@ -16,6 +16,7 @@ The kinds of type in Xulo form a closed set; a program cannot introduce a new ki
 | View | `View` | [`primitive-types.md`](primitive-types.md) |
 | Collection | `list<T>`, `map<K, V>`, `set<T>` | [`composite-types.md`](composite-types.md) |
 | Object (structural) | `object`, `{ name: string, age: int }` | [`composite-types.md`](composite-types.md) |
+| Tuple (positional) | `(int, string)`, `p.0` | [`composite-types.md`](composite-types.md) |
 | Struct (nominal) | `struct User { … }` | [`composite-types.md`](composite-types.md) |
 | Optional | `T?` (shorthand for `T \| null`) | [`composite-types.md`](composite-types.md) |
 | Union | `T \| U` | [`composite-types.md`](composite-types.md) |
@@ -65,7 +66,7 @@ TypeList        = Type { "," Type } ;
 ## How to Read This Chapter
 
 - [`primitive-types.md`](primitive-types.md) — `boolean`, `string`, the two-layer numeric system, `null`, `unit`, `View`, and `Range<T>`.
-- [`composite-types.md`](composite-types.md) — `list`, `map`, `set`, structural object types, nominal `struct` records, optional/union/intersection types, and type aliases.
+- [`composite-types.md`](composite-types.md) — `list`, `map`, `set`, structural object types, positional tuples, nominal `struct` records, optional/union/intersection types, and type aliases.
 - [`function-types.md`](function-types.md) — the syntax and meaning of `fn(...)` types, function and closure values, default and named parameters, `async`/`Task<T>` types, subtyping, and method types.
 - [`generics.md`](generics.md) — type parameters, bounds (`<T: Trait>`, `where` clauses), and call-site inference.
 - [`enums.md`](enums.md) — enum declarations, variants with payloads, and `Enum::Variant` paths.

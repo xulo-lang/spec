@@ -127,6 +127,8 @@ the source line, a caret line, and optional notes.
 | `E0216` | a type cannot be determined: an empty collection, a bare `null`, an unannotated closure, an unsolved generic argument | `let xs = []` | `type annotations needed` |
 | `E0217` | a `try` has neither a `catch` nor a `finally` clause; `return`, `break`, `continue`, or `throw` appears in a `finally` block | `try { f() }` with no clause | ``control flow in a `finally` block`` |
 | `E0218` | an expression statement in statement position has a type other than `unit` and is not an excepted control-flow construct | `a + b` with `a: int` | ``expected `unit`, found `int``` |
+| `E0219` | a tuple destructuring's initializer is not a tuple type, or the name count differs from the tuple's arity | `let (a, b) = 42` | ``expected a tuple of 2 elements, found `int` `` |
+| `E0220` | a positional access has a non-tuple receiver, or the position is at or past the arity | `p.2` for `p: (int, int)` | `` `(int, int)` has no element `.2` `` |
 
 ### Pattern errors
 

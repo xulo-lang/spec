@@ -2,9 +2,9 @@
 
 A binding associates a name with a value; assignment writes a new value into
 an existing mutable place. This chapter defines the binding forms — `let`,
-`let mut`, `const`, the `:=` sugar, and object destructuring — the rules of
-assignment, and how bindings are shadowed and ordered. Scoping and name
-resolution are specified in [`../names.md`](../names.md).
+`let mut`, `const`, the `:=` sugar, and object and tuple destructuring — the
+rules of assignment, and how bindings are shadowed and ordered. Scoping and
+name resolution are specified in [`../names.md`](../names.md).
 
 ## `let` bindings
 
@@ -164,7 +164,9 @@ n = n + 1
 
 ## Destructuring bindings
 
-An object may be deconstructed into several bindings at once:
+An object or a tuple may be deconstructed into several bindings at once.
+
+### Object destructuring
 
 ```xulo
 struct Person { name: string, age: int }
@@ -190,6 +192,26 @@ print(age)         // 30
 - Component state declarations use the same object form with an `@` prefix —
   `@Store let { user, theme } = useAppStore()` — and add the component rules
   of [`../components/state.md`](../components/state.md).
+
+### Tuple destructuring
+
+```xulo
+let p = (10, "ten")
+let (n, label) = p
+let (first, _) = p            // `_` discards an element
+```
+
+- The form is `let (n1, n2, …) = expr`, with **at least two** names and a
+  trailing comma allowed. It never renames: each name binds the element at
+  its position under that name.
+- The initializer MUST have a tuple type, and the name count MUST equal the
+  tuple's arity; anything else is a compile-time error (`E0219`). Each name
+  binds a new **immutable** binding of the element type at its position; `_`
+  binds nothing and discards the element.
+- There is no `let mut (a, b)` form. To write the elements later, keep the
+  tuple itself mutable — `let mut t = (1, 2)` then `t.0 = 5`.
+- The forms are exclusive: an initializer is deconstructed either with
+  `{ … }` (an object type) or with `( … )` (a tuple type), never both.
 
 ## Rebinding and shadowing
 

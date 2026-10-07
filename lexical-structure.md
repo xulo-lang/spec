@@ -167,7 +167,10 @@ Examples: `42`, `3.14`, `0xff`, `0b1010`, `0o77`.
   immediately following ASCII letter or `_` makes it invalid: `1a`, `1e5`, and
   `0xfg` are errors.
 - A `.` belongs to a float literal only when a digit follows it: in `1...5`
-  the dots are the range operator, and in `1.foo` the number is `1`.
+  the dots are the range operator, and in `1.foo` the number is `1`. It is
+  also withheld when the number begins immediately after a member-access
+  token: in `p.0.1` the tokens are `p` `.` `0` `.` `1` — two chained
+  positional accesses, never the float `0.1`.
 
 ### Strings
 
@@ -225,7 +228,7 @@ precedence is defined in [expressions/operators.md](expressions/operators.md).
 | Grouping | `(` `)` `{` `}` `[` `]` | Call, block, list/object literal, subscript |
 | Separators | `,` `;` | Item separator; optional statement terminator |
 | Type and name separator | `:` `::` | Type/attribute label; enum variant path |
-| Member access | `.` `?.` | Field, method, namespace member; optional member |
+| Member access | `.` `?.` | Field, method, namespace member, tuple position; optional member |
 | Assignment | `=` `:=` | Assignment; sugar for a mutable binding |
 | Comparison | `==` `!=` `<` `>` `<=` `>=` | Equality and relational tests |
 | Range and spread | `..<` `...` | Half-open and closed ranges; spread inside a literal |
@@ -256,6 +259,8 @@ position where no token matches is a lexical error.
 | `[...xs]` | `[` `...` `xs` `]` | One element: a spread of `xs` |
 | `iffy` | `iffy` | One identifier; `if` is not split off |
 | `a..b` | `a` `.` `.` `b` | Two `.` tokens; `..` is not a token |
+| `p.0.1` | `p` `.` `0` `.` `1` | Two chained positional accesses, not the float `0.1` |
+| `p?.0` | `p` `?.` `0` | Optional positional access; `?` joins the following `.` |
 
 Because `..` does not exist, `..<` and `...` are always taken whole, and `?`
 only when not followed by `.` or `?`. Whether `...` spreads or closes a range

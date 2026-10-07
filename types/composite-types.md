@@ -1,6 +1,6 @@
 # Composite Types
 
-Composite types are built from other types. They fall into three groups: the built-in collections `list<T>`, `map<K, V>`, and `set<T>`; the record types — structural object types and nominal `struct` records; and the constructors that combine types — `T?`, `T | U`, and `T & U`. This chapter specifies the values each constructor admits, how values of those types are written, and the rules by which values move between them.
+Composite types are built from other types. They fall into three groups: the built-in collections `list<T>`, `map<K, V>`, and `set<T>`; the record types — structural object types, nominal `struct` records, and positional tuples; and the constructors that combine types — `T?`, `T | U`, and `T & U`. This chapter specifies the values each constructor admits, how values of those types are written, and the rules by which values move between them.
 
 ## list<T>
 
@@ -222,4 +222,52 @@ type ApiResponse<T> = { data: T?, error: string? }
 
 ## Tuples
 
-Xulo has no tuple type; a fixed sequence of values with a type per position is expressed with `struct`, `object`, or `enum` instead.
+A **tuple** is an ordered, fixed-length sequence of values with one type per
+position: the positional counterpart of a `struct`, whose fields carry names
+instead. Tuples model results that are inherently positional — a pair, a
+coordinate, the two halves of a split.
+
+```xulo
+let p: (int, string) = (10, "ten")
+let q = (1, true)                        // (int, boolean)
+let first = p.0                          // 10
+fn split(s: string): (string, string) { (s, s) }
+```
+
+- **Type.** A tuple type is written `(T₁, T₂, …)` and has **at least two**
+  elements. Parentheses without a comma only group: `(T)` is not a
+  one-element tuple, and there is no empty tuple type — `unit` is never
+  written `()`.
+- **Literal.** A tuple literal is `(e₁, e₂, …)`, at least two elements, a
+  trailing comma allowed. Its type is the tuple of the element types; with an
+  expected tuple type in scope each element checks against the expected
+  element type
+  ([`../type-system/checking-rules.md`](../type-system/checking-rules.md)).
+- **Positional access.** `p.i` reads element `i`, counting from `0`, and
+  `p?.i` is the `null`-tolerant form; the index MUST name an existing
+  position, otherwise `E0220`. The rules are in
+  [`../expressions/path-and-access.md`](../expressions/path-and-access.md).
+- **Destructuring.** `let (a, b) = p` binds the elements positionally; the
+  name count MUST equal the tuple's arity, otherwise `E0219`. Each name
+  binds immutably (`let mut (a, b)` does not exist), and `_` may stand in
+  for an ignored element
+  ([`../statements/let-and-assignment.md`](../statements/let-and-assignment.md)).
+- **Writing elements.** Through a mutable binding: `let mut r = (1, 2)` then
+  `r.0 = 5`, under the ordinary mutable-place rules
+  ([`../memory-and-runtime.md`](../memory-and-runtime.md)). Because elements
+  may be written, the tuple type is **invariant** in its element types
+  ([`type-relations.md`](type-relations.md)).
+- **Value semantics.** A tuple is a value: binding or assigning copies it, and
+  `==` compares element-wise for tuples of the same arity. Different arities
+  have no common type, so `(1, 2) == (1, 2, 3)` is a compile-time error
+  (`E0211`) rather than `false`.
+- **What tuples do not have.** No iteration (`for x in p` is `E0213`) — the
+  arity is not a member, so there is no `.len` either — no prefix spread in
+  a literal, and no tuple patterns for `match` in this version: read the
+  elements and `match` on those.
+
+Tuples are structural: `(int, string)` is the same type wherever it is
+written, and a `type` alias may name it (`type Pair = (int, string)`). A
+fixed sequence with named fields is a `struct`; an object is a record with
+keys and width subtyping. Reach for a tuple when the positions themselves
+carry the meaning.

@@ -168,6 +168,7 @@ chapter, the conversion does not exist:
 | `struct S` | `object` | `E0201` | build the object, or use `S` throughout |
 | `object` | `struct S` | `E0201` | a `match`, or construct `S` field by field |
 | `list<int>` | `list<float>` | `E0201` | map the elements explicitly |
+| `(int, int)` | `(number, number)` | `E0201` | write a tuple literal, or convert element-wise |
 | `map<K, V>` | `list<V>` | `E0201` | iterate and collect |
 | `View?` | `View` | `E0201`; `E0702` in a component block | narrow first: `v ?? fallback` |
 
@@ -179,6 +180,7 @@ let v: int = f           // error[E0201]: `float` is not assignable to `int`
 let big: i64 = small     // error[E0201]: `i32` is not assignable to `i64`
 let o: object = account  // error[E0201]: `Account` is not assignable to `object`
 let ys: list<float> = xs // error[E0201]: `list<int>` is not assignable to `list<float>`
+let pr: (number, number) = pair   // error[E0201]: `(int, int)` vs `(number, number)`
 ```
 
 Subtyping needs no listing and converts nothing: `T <: T?`, `null <: T?`,
@@ -203,8 +205,8 @@ let wrong = n == "1"            // error[E0211]: no common type
   value's type to be optional, which is subtyping, not a conversion.
 - Strings compare lexicographically by Unicode code point, locale
   independently. Structural equality for `list`, `map`, `set`, objects,
-  structs, and enums compares the contained values, each pair under the same
-  common-type rule.
+  structs, enums, and tuples compares the contained values, each pair under
+  the same common-type rule.
 - Relational operators follow the same operand rule as arithmetic promotion
   and convert nothing else: two operands are numeric with the promotion table
   applied, or both `string`.

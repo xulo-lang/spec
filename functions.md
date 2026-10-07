@@ -125,7 +125,8 @@ fn main() {
   print(c.get())          // 1
   let maybe: Counter? = null
   print(maybe?.get())     // null: the call is not evaluated
-}```
+}
+```
 
 - Methods are functions declared inside an `impl` block. The first parameter
   is the **receiver**, written `self` (an immutable borrow) or `mut self`

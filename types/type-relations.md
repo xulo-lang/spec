@@ -25,6 +25,9 @@ identical structure. Equality is written `A = B` and is an equivalence relation.
 - **Nominal types.** A `struct`, `enum`, or `trait` is equal only to the type
   introduced by its own declaration (and to aliases of it). Two declarations with
   identical members are still distinct types.
+- **Tuples.** `(T₁, …, Tₙ) = (U₁, …, Uₘ)` exactly when `n = m` and
+  `Tᵢ = Uᵢ` for every position `i`: a tuple's arity is part of its identity,
+  so two tuples of different lengths are never equal types.
 
 Type equality must not be confused with `==`, which compares *values*; see
 [`../expressions/operators.md`](../expressions/operators.md).
@@ -72,6 +75,11 @@ Rules by type family:
   record with **more** fields is therefore a subtype of a record with fewer, and
   a field may be replaced by one of its subtypes; a record that lacks a field of
   the target type is not a subtype.
+- **Tuples.** Arity is part of a tuple's identity and is never a source of
+  subtyping: `(T₁, …, Tₙ) <: (U₁, …, Uₘ)` holds only when `n = m` and
+  `Tᵢ = Uᵢ` for every `i` — that is, when the two types are equal. There is
+  no width relation (a shorter tuple is not "missing fields" of a longer
+  one), no depth relation, and no common supertype across arities.
 - **Function types.** Parameters are contravariant and the return type is
   covariant: `fn(A₁, …, Aₙ): R₁ <: fn(B₁, …, Bₙ): R₂` exactly when the arities
   are equal, `Bᵢ <: Aᵢ` for every `i`, and `R₁ <: R₂`. Nothing else relates
@@ -80,7 +88,8 @@ Rules by type family:
   substituted for `T`; it does not make `T` a subtype of `Area`. See
   [`traits.md`](traits.md).
 - **Built-in generics.** Whether subtyping lifts through `list<T>`, `map<K, V>`,
-  `set<T>`, `struct`s, and `enum`s is decided by their variance, below.
+  `set<T>`, `struct`s, `enum`s, and tuples is decided by their variance,
+  below.
 
 ## Assignability vs subtyping vs coercion
 
@@ -90,7 +99,7 @@ Three distinct relations are used by this specification.
 |----------|------|------------|
 | Subtyping `A <: B` | a relation on types alone; no conversion | record width/depth, function types, unions, variance, bound reasoning |
 | Coercion `A ⇝ B` | a set of directed implicit conversions | adapting a value where subtyping does not hold, e.g. a numeric literal to a fixed-bit type |
-| Assignability `A ≼ B` | the judgement applied at checking sites | `let` annotations, arguments, `return`, assignment targets, list and object literals, `match` arm results, expected types |
+| Assignability `A ≼ B` | the judgement applied at checking sites | `let` annotations, arguments, `return`, assignment targets, list, object, and tuple literals, `match` arm results, expected types |
 
 - **Assignability** is the practical question "may a value of type `A` be used
   where `B` is expected?". `A ≼ B` holds exactly when `A <: B`, or when a
@@ -119,6 +128,7 @@ lifts except when `A = B`.
 | `list<T>` | invariant in `T` | elements may be replaced through a `list` value |
 | `map<K, V>` | invariant in `K` and `V` | entries may be inserted, replaced, and removed |
 | `set<T>` | invariant in `T` | membership may be changed |
+| `(T₁, …, Tₙ)` | invariant in each element | elements may be written through a mutable tuple |
 | `T?` | covariant | an optional only produces a `T` or `null` |
 | `T \| U` | covariant in each operand | a union only produces one of its members |
 | `T & U` | covariant in each operand | an intersection produces both operands |

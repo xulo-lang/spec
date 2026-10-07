@@ -138,6 +138,7 @@ normative for the whole specification.
 | **runtime failure** | A condition that stops a running program — an out-of-bounds index, division by zero — and cannot be caught by `try`. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **scrutinee** | The expression evaluated by `match` and tested against patterns. |
 | **task** | A unit of asynchronous computation with type `Task<T>`. See [`concurrency.md`](concurrency.md). |
+| **tuple** | An ordered, fixed-length sequence of at least two values with one type per position; written `(T, U)`, read with `p.0`, deconstructed with `let (a, b) = e`. See [`types/composite-types.md`](types/composite-types.md). |
 | **unit** | The type of expressions that produce no meaningful value; written `unit`. |
 | **View** | The type produced by a component; a value of the render tree. |
 | **view function** | Synonym for *component*. |

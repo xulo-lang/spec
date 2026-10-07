@@ -54,9 +54,9 @@ Each literal has a default type, which an expected type may adapt exactly as
 | `[e₁, …]` | `list<C>`, `C` the join of the element types | each element checks against the expected element type |
 | `[]` | none | requires an expected type or an annotation; else `E0216` |
 | `{ k: v, … }` | structural object type | every expected field must be present and fit (`E0205`, `E0206`) |
+| `(e₁, …)` | `(T₁, …, Tₙ)` with `Tᵢ` the element types | with an expected `(U₁, …, Uₙ)` each `eᵢ` checks against `Uᵢ` and the arities must match (`E0201`) |
 
 A negative number is not part of a literal — it is unary `-` applied to one.
-Xulo has no tuple literals and no tuple types.
 
 ## Expression rules
 
@@ -73,6 +73,10 @@ Xulo has no tuple literals and no tuple types.
   available; a method used without a call has its function type
   with the receiver bound. On a type parameter, access succeeds only
   through a bound.
+- `Γ ⊢ p.i : Tᵢ` when `p : (T₁, …, Tₙ)` and `i` is a decimal literal naming
+  an existing position — `0 ≤ i < n`; a positional access on a non-tuple
+  type or at or past the arity → `E0220`
+  ([`../expressions/path-and-access.md`](../expressions/path-and-access.md)).
 
 ### Enum variant paths and subscript
 
@@ -220,7 +224,11 @@ exist.
 ## Statement rules
 
 - **Bindings.** `let x = e` checks `e` and binds `x` to its type;
-  `let x: T = e` checks `e ⇐ T` (`E0201` on failure). An annotation is
+  `let x: T = e` checks `e ⇐ T` (`E0201` on failure). A destructuring binding
+  checks the initializer against the shape it deconstructs: `let { f, … } = e`
+  requires an object type declaring every listed field (`E0206`), and
+  `let (a, …) = e` requires a tuple type whose arity equals the name count
+  (`E0219`). An annotation is
   REQUIRED whenever `e` leaves the type undetermined — an empty list literal,
   `null`, a closure with no expected type. Every `let` has an initializer; a
   `const` initializer MUST be a constant expression, whose division or

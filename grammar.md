@@ -227,7 +227,8 @@ LetDecl = [ "pub" ] "let" ( MutableBinding | SimpleBinding
 MutableBinding       = "mut" Identifier [ ":" Type ] "=" [ "shared" ] Expression ;
 SimpleBinding        = Identifier [ ":" Type ]
                        ( "=" [ "shared" ] Expression | ":=" Expression ) ;
-DestructuringBinding = "{" IdentifierList "}" "=" Expression ;
+DestructuringBinding = ( "{" IdentifierList "}"
+                        | "(" IdentifierList ")" ) "=" Expression ;
 IdentifierList       = Identifier { "," Identifier } [ "," ] ;
 
 ConstDecl = [ "pub" ] "const" Identifier [ ":" Type ] "=" Expression ;
@@ -236,7 +237,9 @@ ConstDecl = [ "pub" ] "const" Identifier [ ":" Type ] "=" Expression ;
 `:=` appears only directly after `let`, never after `let mut` or `const`, and
 `let x := e` means exactly `let mut x = e`
 ([let-and-assignment.md](statements/let-and-assignment.md)); initialization is
-required.
+required. A `DestructuringBinding` deconstructs an object with `{ … }` or a
+tuple with `( … )`; the two forms take an initializer of the matching shape
+and nothing else.
 
 ### Component declarations
 
@@ -272,7 +275,7 @@ Type             = UnionType ;
 UnionType        = IntersectionType { "|" IntersectionType } ;
 IntersectionType = PostfixType { "&" PostfixType } ;
 PostfixType      = PrimaryType { "?" } ;
-PrimaryType      = NamedType | "(" Type ")" | ObjectType
+PrimaryType      = NamedType | "(" Type ")" | TupleType | ObjectType
                  | FunctionType | LiteralType ;
 NamedType        = Identifier [ TypeArgs ] ;
 LiteralType      = StringLiteral | IntegerLiteral | FloatLiteral
@@ -280,6 +283,7 @@ LiteralType      = StringLiteral | IntegerLiteral | FloatLiteral
 
 TypeArgs       = "<" TypeList ">" ;
 TypeList       = Type { "," Type } ;
+TupleType      = "(" Type "," Type { "," Type } [ "," ] ")" ;
 ObjectType     = "{" [ TypeField { "," TypeField } [ "," ] ] "}" ;
 TypeField      = Identifier ":" Type ;
 FunctionType   = [ "async" ] "fn" "(" [ FnTypeParams ] ")" [ ":" Type ] ;
@@ -333,8 +337,8 @@ UnaryExpression      = PostfixExpression
 PostfixExpression    = PrimaryExpression { PostfixOperand } ;
 PostfixOperand       = "(" [ ArgumentList ] ")"
                      | "[" Expression "]"
-                     | "." Identifier
-                     | "?." Identifier ;
+                     | "." ( Identifier | IntegerLiteral )
+                     | "?." ( Identifier | IntegerLiteral ) ;
 ```
 
 Relational and range operators are non-associative: `a < b < c` and
@@ -344,14 +348,14 @@ restricted by [memory-and-runtime.md](memory-and-runtime.md).
 
 ```text
 PrimaryExpression = Literal | TemplateLiteral | Identifier | VariantPath
-                  | "(" Expression ")"
+                  | "(" Expression ")" | TupleLiteral
                   | ListLiteral | ObjectLiteral | MapLiteral
                   | IfExpression | MatchExpression | TryStmt
                   | ClosureExpression | ComponentCall
                   | SpawnExpression | LockExpression ;
 VariantPath       = Identifier "::" Identifier [ "(" [ ArgumentList ] ")" ] ;
-Place             = Identifier | Place "." Identifier | Place "[" Expression "]"
-                  | "(" Place ")" ;
+Place             = Identifier | Place "." Identifier | Place "." IntegerLiteral
+                  | Place "[" Expression "]" | "(" Place ")" ;
 
 ArgumentList = Argument { "," Argument } [ "," ] ;
 Argument     = [ Identifier ":" ] ( "$" Identifier | Expression ) ;
@@ -363,6 +367,7 @@ ObjectLiteral = "{" [ ObjectField { "," ObjectField } [ "," ] ] "}" ;
 ObjectField   = Spread | Identifier ":" Expression ;
 MapLiteral    = "map" TypeArgs "{" [ MapEntry { "," MapEntry } [ "," ] ] "}" ;
 MapEntry      = Expression ":" Expression ;
+TupleLiteral  = "(" Expression "," Expression { "," Expression } [ "," ] ")" ;
 
 ClosureExpression = FunctionExpression | ArrowClosure ;
 FunctionExpression = [ "async" ] "fn" "(" [ ClosureParamList ] ")"
@@ -540,9 +545,9 @@ production itself appears exactly once, in its own section.
 | `Program`, `Declaration`, `Entry`, `EntryPoint`, `ImportDecl`, `TypeImport`, `NamedImport`, `NamespaceImport`, `SideEffectImport`, `NamedImports`, `ImportEntry`, `PubUse` | [Program and modules](#program-and-modules) |
 | `FnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl` | [Declarations](#declarations) |
 | `ComponentDecl`, `StateDecl`, `StoreDecl`, `EffectDecl`, `EnvironmentDecl` | [Declarations](#declarations) |
-| `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `LiteralType`, `TypeArgs`, `TypeList`, `ObjectType`, `TypeField`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
+| `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `LiteralType`, `TypeArgs`, `TypeList`, `TupleType`, `ObjectType`, `TypeField`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
 | `Expression`, `AssignmentExpression`, `TernaryExpression`, `LogicalOrExpression`, `LogicalAndExpression`, `NullishExpression`, `EqualityExpression`, `RelationalExpression`, `RangeExpression`, `BitOrExpression`, `BitXorExpression`, `BitAndExpression`, `ShiftExpression`, `AdditiveExpression`, `MultiplicativeExpression`, `PowerExpression`, `UnaryExpression`, `PostfixExpression`, `PostfixOperand` | [Expressions](#expressions) |
-| `PrimaryExpression`, `VariantPath`, `Place`, `ArgumentList`, `Argument`, `ListLiteral`, `ListElement`, `Spread`, `ObjectLiteral`, `ObjectField`, `MapLiteral`, `MapEntry`, `ClosureExpression`, `FunctionExpression`, `ArrowClosure`, `ArrowParams`, `ClosureParamList`, `ClosureParam` | [Expressions](#expressions) |
+| `PrimaryExpression`, `VariantPath`, `Place`, `ArgumentList`, `Argument`, `ListLiteral`, `ListElement`, `Spread`, `ObjectLiteral`, `ObjectField`, `MapLiteral`, `MapEntry`, `TupleLiteral`, `ClosureExpression`, `FunctionExpression`, `ArrowClosure`, `ArrowParams`, `ClosureParamList`, `ClosureParam` | [Expressions](#expressions) |
 | `Pattern`, `LiteralPattern`, `RangePattern`, `VariantPattern`, `StructPattern`, `PatternList` | [Patterns](#patterns) |
 | `Statement`, `StatementEnd`, `ReturnStmt`, `BreakStmt`, `ContinueStmt`, `ThrowStmt`, `Assignment`, `ExpressionStatement`, `Block` | [Statements](#statements) |
 | `IfExpression`, `MatchExpression`, `MatchArmList`, `MatchArm`, `ForStmt`, `WhileStmt`, `TryStmt`, `CatchClause`, `CatchBinder`, `FinallyClause` | [Control flow](#control-flow) |
@@ -553,9 +558,10 @@ production itself appears exactly once, in its own section.
 
 - The grammar is newline-insensitive, `;` is an optional statement terminator,
   and lexing is longest match ([lexical-structure.md](lexical-structure.md)).
-- There are no tuples — `( T )` is a grouped type and `f( a, b )` passes two
-  arguments — and no `export` keyword: module-level and member visibility are
-  both written with `pub`, the default being private.
+- A tuple type or literal needs at least two comma-separated elements —
+  `( T )` and `( e )` only group, `f( a, b )` passes two arguments, and `()`
+  does not parse — and there is no `export` keyword: module-level and member
+  visibility are both written with `pub`, the default being private.
 - `{` begins a block, an object literal, or a component's children block, told
   apart by their contents, and an expression statement MUST NOT begin with `{`
   ([statements/README.md](statements/README.md)).
