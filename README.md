@@ -31,8 +31,8 @@ The following are deliberately **not** specified here:
 
 | Excluded | Where it is documented |
 |----------|------------------------|
-| The standard library (`std/*`) and library-level APIs (JSON, regular expressions, I/O) | [xulo-website reference](https://xulo.dev) |
-| Tutorials, guides, and getting-started material | [xulo-website](https://xulo.dev), `learn/book` in the implementation repository |
+| The standard library (`std/*`) and library-level APIs (JSON, regular expressions, I/O) | [xulo-website reference](https://xulo.org) |
+| Tutorials, guides, and getting-started material | [xulo-website](https://xulo.org), `learn/book` in the implementation repository |
 | The compiler/interpreter implementation, CLI, LSP, and rendering back ends | implementation repository (`xulo`) |
 | Package registry protocol and tooling | xulo-website ecosystem documentation |
 
@@ -113,6 +113,8 @@ and the xulo-website documents named in § 6.
 | [`concurrency.md`](concurrency.md) | Tasks, `spawn`, cancellation, structured concurrency |
 | [`error-handling.md`](error-handling.md) | Thrown errors: `throw`, `try`/`catch`, error types, `Result` patterns |
 | [`grammar.md`](grammar.md) | Complete EBNF grammar |
+| [`ast.md`](ast.md) | Abstract syntax tree node definitions and data structures |
+| [`machine-readable.md`](machine-readable.md) | Downloadable grammar files for parser generators (EBNF, Pest, tree-sitter) |
 | [`changes/`](changes/README.md) | Incremental change proposals (OpenSpec style) |
 
 ## 5. Terminology
