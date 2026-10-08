@@ -23,7 +23,7 @@ diagnostic named at that rule. `⊢` never appears in source code.
 `Γ` is what checking a body may consult; it contains:
 
 - **Value bindings** — name to type and mutability: `let`/`let mut` bindings,
-  `const`s, parameters, loop variables, pattern bindings, `catch` bindings,
+  `const`s, parameters, loop variables, pattern bindings,
   component state declarations, and `self`.
 - **Type bindings** — `struct`, `enum`, and `trait` declarations, type aliases,
   and type parameters with their bounds (`<T: Area>` or a `where` clause).
@@ -125,6 +125,7 @@ Operand and result types, in summary; precedence and associativity are in
 | `=` | a mutable place and a value assignable to it | `unit` |
 | `?:` | `boolean` condition; branches with a common type | that common type |
 | `??` | left `T?`; right `T` or `U` | `T`, or `T \| U` |
+| `?` | `T?` or `Result<T, E>`, in a function with a declared return type that admits the failure value (`E0217` otherwise) | the success type `T` |
 | `await` | `Task<T>`, inside an `async` body | `T` |
 
 Mixing distinct fixed-bit types, or a fixed-bit type with `int`, `float`, or
@@ -241,10 +242,10 @@ exist.
 - **The statement-value rule.**
 
   > An expression statement that is not `unit` is an error, EXCEPT when it is a
-  > control-flow construct (`if`, `match`, `for`, `while`, `try`) whose value is
+  > control-flow construct (`if`, `match`, `for`, `while`) whose value is
   > discarded.
 
-  Statement-position `if`/`match`/`try` may therefore have branches or arms of
+  Statement-position `if`/`match` may therefore have branches or arms of
   unrelated types; expression position requires a common type. A violation is
   `E0218` ([`errors.md`](errors.md)).
 - **`return`.** Inside a function with declared return type `R`, `return e`
@@ -252,8 +253,14 @@ exist.
   an `async` body `e ⇐ T`, the declared type denoting `Task<T>` (`E0503`).
   `return` outside any function, and `break`/`continue` outside a loop, are
   `E0214`; the latter two take no operand.
-- **`throw`.** Transfers control to the nearest handler; its operand must be a
-  value the error model admits ([`../error-handling.md`](../error-handling.md)).
+- **`?` and `panic`.** `e?` requires `e : T?` or `e : Result<T, E>`, has the
+  success type, and — on failure — performs the enclosing function's early
+  return, which needs a declared return type admitting `null` or that
+  `Result<T, E>`; any other operand, context, or mismatch is `E0217`.
+  `panic(m)` checks `m ⇐ string` (`E0201` otherwise) and may be given any type
+  the context requires — in statement position it is checked against `unit`.
+  Both are specified in
+  [`../error-handling.md`](../error-handling.md).
 
 ## Declaration rules
 

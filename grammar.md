@@ -64,16 +64,16 @@ formed first, then classified as keyword, reserved word, or identifier.
 
 ### Keywords
 
-The language has exactly the following closed set of 41 keywords; every other
+The language has exactly the following closed set of 38 keywords; every other
 word is an ordinary identifier unless it is reserved.
 
 ```text
-Keyword = "and" | "as" | "async" | "await" | "break" | "catch" | "const"
-        | "continue" | "copy" | "else" | "enum" | "false" | "finally" | "fn"
+Keyword = "and" | "as" | "async" | "await" | "break" | "const"
+        | "continue" | "copy" | "else" | "enum" | "false" | "fn"
         | "for" | "from" | "if" | "impl" | "in" | "import" | "let" | "lock"
-        | "match" | "move" | "mut" | "null" | "or" | "pub" | "return"
-        | "self" | "shared" | "spawn" | "struct" | "throw" | "trait" | "true"
-        | "try" | "type" | "use" | "where" | "while" ;
+        | "match" | "move" | "mut" | "null" | "or" | "panic" | "pub"
+        | "return" | "self" | "shared" | "spawn" | "struct" | "trait" | "true"
+        | "type" | "use" | "where" | "while" ;
 ```
 
 A `ReservedWord` is a word whose spelling appears in the reserved list of
@@ -338,7 +338,8 @@ PostfixExpression    = PrimaryExpression { PostfixOperand } ;
 PostfixOperand       = "(" [ ArgumentList ] ")"
                      | "[" Expression "]"
                      | "." ( Identifier | IntegerLiteral )
-                     | "?." ( Identifier | IntegerLiteral ) ;
+                     | "?." ( Identifier | IntegerLiteral )
+                     | "?" ;
 ```
 
 Relational and range operators are non-associative: `a < b < c` and
@@ -346,14 +347,22 @@ Relational and range operators are non-associative: `a < b < c` and
 `move` and `copy` are prefix operators whose operand and position are
 restricted by [memory-and-runtime.md](memory-and-runtime.md).
 
+`?` follows an expression in two roles. When `Expression ":"` follows it —
+whenever a complete ternary parses — it is the ternary operator of
+`TernaryExpression`; otherwise it is the postfix propagation operator, whose
+typing and failure rules are in [error-handling.md](error-handling.md). The
+postfix reading survives only when the ternary reading fails, so
+`c ? a : b` is never ambiguous with `f()?`.
+
 ```text
 PrimaryExpression = Literal | TemplateLiteral | Identifier | VariantPath
                   | "(" Expression ")" | TupleLiteral
                   | ListLiteral | ObjectLiteral | MapLiteral
-                  | IfExpression | MatchExpression | TryStmt
+                  | IfExpression | MatchExpression | PanicExpression
                   | ClosureExpression | ComponentCall
                   | SpawnExpression | LockExpression ;
 VariantPath       = Identifier "::" Identifier [ "(" [ ArgumentList ] ")" ] ;
+PanicExpression   = "panic" "(" Expression ")" ;
 Place             = Identifier | Place "." Identifier | Place "." IntegerLiteral
                   | Place "[" Expression "]" | "(" Place ")" ;
 
@@ -426,14 +435,13 @@ the next token cannot continue it.
 
 ```text
 Statement = ( FnDecl | LetDecl | ConstDecl | ComponentDecl
-            | ReturnStmt | BreakStmt | ContinueStmt | ThrowStmt
+            | ReturnStmt | BreakStmt | ContinueStmt
             | Assignment | ExpressionStatement
             | ForStmt | WhileStmt ) StatementEnd ;
 StatementEnd      = [ ";" ] ;
 ReturnStmt        = "return" [ Expression ] ;
 BreakStmt         = "break" ;
 ContinueStmt      = "continue" ;
-ThrowStmt         = "throw" Expression ;
 Assignment        = Place "=" Expression ;
 ExpressionStatement = TernaryExpression ;
 Block             = "{" { Statement } "}" ;
@@ -448,7 +456,7 @@ expression, kept only if not followed by `;`
 ## Control flow
 
 `if` and `match` are expressions; `for`, `while`, and `break`/`continue` are
-statements; `try` is an expression, so in statement position it is an
+statements; `panic` is an expression, so in statement position it is an
 `ExpressionStatement` whose value is discarded
 ([statements/expression-statements.md](statements/expression-statements.md)).
 
@@ -460,19 +468,12 @@ MatchArm      = Pattern "=>" ( Expression | Block ) ;
 
 ForStmt   = "for" Identifier "in" Expression Block ;
 WhileStmt = "while" Expression Block ;
-
-TryStmt        = "try" Block ( CatchClause { CatchClause } [ FinallyClause ]
-                             | FinallyClause ) ;
-CatchClause    = "catch" CatchBinder Block ;
-CatchBinder    = Identifier [ ":" Type ] | "_" ;
-FinallyClause  = "finally" Block ;
 ```
 
 `else` may be followed directly by another `if`, which chains without limit.
 Arms are separated by newlines or optional `,`; each body is an expression or
-a block. A `try` has at least one `catch` or a `finally`, `finally` is last,
-and the `catch` forms are `catch e`, `catch e: T`, `catch _`
-([error-handling.md](error-handling.md)).
+a block. Failure propagation with `?` and the stopping `panic` expression are
+specified in [error-handling.md](error-handling.md).
 
 ## Components and UI
 
@@ -547,10 +548,10 @@ production itself appears exactly once, in its own section.
 | `ComponentDecl`, `StateDecl`, `StoreDecl`, `EffectDecl`, `EnvironmentDecl` | [Declarations](#declarations) |
 | `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `LiteralType`, `TypeArgs`, `TypeList`, `TupleType`, `ObjectType`, `TypeField`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
 | `Expression`, `AssignmentExpression`, `TernaryExpression`, `LogicalOrExpression`, `LogicalAndExpression`, `NullishExpression`, `EqualityExpression`, `RelationalExpression`, `RangeExpression`, `BitOrExpression`, `BitXorExpression`, `BitAndExpression`, `ShiftExpression`, `AdditiveExpression`, `MultiplicativeExpression`, `PowerExpression`, `UnaryExpression`, `PostfixExpression`, `PostfixOperand` | [Expressions](#expressions) |
-| `PrimaryExpression`, `VariantPath`, `Place`, `ArgumentList`, `Argument`, `ListLiteral`, `ListElement`, `Spread`, `ObjectLiteral`, `ObjectField`, `MapLiteral`, `MapEntry`, `TupleLiteral`, `ClosureExpression`, `FunctionExpression`, `ArrowClosure`, `ArrowParams`, `ClosureParamList`, `ClosureParam` | [Expressions](#expressions) |
+| `PrimaryExpression`, `VariantPath`, `PanicExpression`, `Place`, `ArgumentList`, `Argument`, `ListLiteral`, `ListElement`, `Spread`, `ObjectLiteral`, `ObjectField`, `MapLiteral`, `MapEntry`, `TupleLiteral`, `ClosureExpression`, `FunctionExpression`, `ArrowClosure`, `ArrowParams`, `ClosureParamList`, `ClosureParam` | [Expressions](#expressions) |
 | `Pattern`, `LiteralPattern`, `RangePattern`, `VariantPattern`, `StructPattern`, `PatternList` | [Patterns](#patterns) |
-| `Statement`, `StatementEnd`, `ReturnStmt`, `BreakStmt`, `ContinueStmt`, `ThrowStmt`, `Assignment`, `ExpressionStatement`, `Block` | [Statements](#statements) |
-| `IfExpression`, `MatchExpression`, `MatchArmList`, `MatchArm`, `ForStmt`, `WhileStmt`, `TryStmt`, `CatchClause`, `CatchBinder`, `FinallyClause` | [Control flow](#control-flow) |
+| `Statement`, `StatementEnd`, `ReturnStmt`, `BreakStmt`, `ContinueStmt`, `Assignment`, `ExpressionStatement`, `Block` | [Statements](#statements) |
+| `IfExpression`, `MatchExpression`, `MatchArmList`, `MatchArm`, `ForStmt`, `WhileStmt` | [Control flow](#control-flow) |
 | `ComponentCall`, `ComponentBlock`, `ChildItem` | [Components and UI](#components-and-ui) |
 | `SpawnExpression`, `SpawnTarget`, `LockExpression`, `FieldInitList`, `FieldInit` | [Concurrency](#concurrency) |
 
@@ -565,3 +566,7 @@ production itself appears exactly once, in its own section.
 - `{` begins a block, an object literal, or a component's children block, told
   apart by their contents, and an expression statement MUST NOT begin with `{`
   ([statements/README.md](statements/README.md)).
+- When `?` follows an expression it is the ternary operator if
+  `Expression ":"` follows it, and the postfix propagation operator otherwise:
+  `c ? a : b` parses as written, `f()?` propagates
+  ([error-handling.md](error-handling.md)).

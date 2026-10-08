@@ -136,7 +136,6 @@ and the built-in `Task` namespace is accessed with `.`:
 | `Task.all` | `all<T>(tasks: list<Task<T>>): Task<list<T>>` | completes when every task has completed; results in argument order |
 | `Task.race` | `race<T>(tasks: list<Task<T>>): Task<T>` | completes with the first task to complete |
 | `Task.resolve` | `resolve<T>(value: T): Task<T>` | an already-completed task holding `value` |
-| `Task.reject` | `reject<T>(err: Error): Task<T>` | an already-rejected task carrying `err` |
 
 Generic type arguments are inferred at the call site. `Task.all` and
 `Task.race` are commonly combined with `await`:
@@ -149,28 +148,36 @@ async fn fetchAll(): list<User> {
 }
 ```
 
-## Errors in async code
+## Results and cancellation
 
-- A `throw` executed inside an `async` body rejects the task; the remainder of
-  the body does not run.
-- The rejection is raised again at every `await` of that task, so `try`/`catch`
-  written around an `await` handles it exactly like a synchronous error.
-- An error raised before the first suspension rejects the task that the call
-  returned in the same way.
+An `async` body is ordinary control flow with one extension — suspension —
+and its failure model is the synchronous one:
+
+- **Expected failures travel in the result.** `async fn f(): Result<T, E>`
+  evaluates to `Task<Result<T, E>>`: `await` yields the `Result`, and `?`
+  propagates from it — parenthesized as `(await t)?`, because `await` is a
+  prefix operator ([`../error-handling.md`](../error-handling.md)).
+- **A body that ends in `Err` completes normally**; its task settles with the
+  `Result` value. There is no rejected task and no error to raise at an
+  `await`.
+- **A `panic` inside an `async` body stops the whole program**, not only the
+  task.
+- **Cancellation carries no error.** Awaiting a task that has settled as
+  cancelled stops the body at that `await`, which produces no value; the
+  awaiting task settles as cancelled in turn
+  ([`../concurrency.md`](../concurrency.md)).
 
 ```xulo
-async fn logUser(id: int) {
-  try {
-    let user = await fetchUser(id)
-    print(user.name)
-  } catch e: NotFound {
-    print("missing")
+async fn log_user(id: int) {
+  match await find_user(id) {
+    Result::Ok(user) => print(user.name)
+    Result::Err(reason) => print(reason)
   }
 }
 ```
 
-Typed catch clauses, rethrowing, `finally`, and the error values carried by
-rejected tasks are specified in [`error-handling.md`](../error-handling.md).
+`Task.all` and `Task.race`, propagation through them, and the runtime-failure
+table are specified in [`../error-handling.md`](../error-handling.md).
 
 ## Composition patterns
 

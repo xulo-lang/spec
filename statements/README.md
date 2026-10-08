@@ -18,21 +18,19 @@ The split is exact: every construct is either a statement or an expression.
 | `place = value` | Statement |
 | `return e`, `return` | Statement |
 | `break`, `continue` | Statement |
-| `throw e` | Statement |
 | `for … in … { … }`, `while … { … }` | Statement |
 | Expression statement (a bare expression in statement position) | Statement |
-| `if` … `else` …, `match` …, `try` …, block `{ … }` | Expression |
+| `if` … `else` …, `match` …, block `{ … }` | Expression |
 | Literals, operators, member access, subscript, calls | Expression |
 | Closures, `await` | Expression |
 
-`throw e` is a statement that abandons the current control path and
-transfers control to the nearest enclosing handler
-([`../error-handling.md`](../error-handling.md)). `break` and `continue`
-are statements valid only inside `for` and `while`
+`break` and `continue` are statements valid only inside `for` and `while`
 ([`../expressions/control-flow.md`](../expressions/control-flow.md)). An
-`if`, `match`, `try`, or block written where a statement is expected is an
+`if`, `match`, or block written where a statement is expected is an
 expression statement: its value is computed and discarded under the rule
-below.
+below. Failure propagation (`?`) and the unrecoverable `panic(...)` are
+expressions of the error model
+([`../error-handling.md`](../error-handling.md)).
 
 ## Statement Termination
 
@@ -54,7 +52,7 @@ let c = 3; let d = 4; print(c + d)   // semicolons separate one-line statements
 ## The Statement-Value Rule
 
 > An expression statement that is not `unit` is an error, EXCEPT when it is a
-> control-flow construct (`if`, `match`, `for`, `while`, `try`) whose value is
+> control-flow construct (`if`, `match`, `for`, `while`) whose value is
 > discarded.
 
 The exception covers control-flow constructs in statement position: their
@@ -64,7 +62,7 @@ is in [`expression-statements.md`](expression-statements.md).
 
 ```xulo
 if c { print("a") } else { print("b") }   // legal: value discarded
-try { risky() } catch e { print("bad") }  // legal: value discarded
+match half(3) { Result::Ok(v) => str(v) Result::Err(e) => e }  // legal: value discarded
 a + b              // error: not unit, not a control-flow construct
 print("hi")        // legal: unit-returning call
 let x = a + b      // legal in expression position: value initializes x

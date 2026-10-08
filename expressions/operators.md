@@ -27,7 +27,7 @@ Levels are listed from loosest to tightest binding.
 | multiplicative | `*` `/` `%` | left |
 | power | `**` | right |
 | unary | `!` `-` `~` `await` | prefix |
-| postfix | `f(x)` `x[i]` `x.y` `x.0` `x?.y` `x?.0` | left |
+| postfix | `f(x)` `x[i]` `x.y` `x.0` `x?.y` `x?.0` `x?` | left |
 
 Prefix spread `...expr` exists only inside list and object literals; it is not
 part of this chain. An element that begins with `...` is a spread, otherwise
@@ -81,6 +81,12 @@ ternary is not a control-flow construct, so in statement position it follows
 the ordinary expression-statement rule and MUST have type `unit` (see
 [`../statements/expression-statements.md`](../statements/expression-statements.md));
 to run one of two branches as a statement, use `if`.
+
+The ternary shares its `?` spelling with the postfix propagation operator. A
+`?` that follows an expression is the ternary whenever `Expression ":"`
+follows it — whenever a complete ternary parses — and postfix propagation
+otherwise, so `c ? a : b` and `f()?` are each read as written
+([`../error-handling.md`](../error-handling.md)).
 
 ## Logical
 

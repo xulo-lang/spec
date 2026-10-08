@@ -183,6 +183,8 @@ type ExpressionNode =
   | MatchExpr
   | ClosureExpr
   | AwaitExpr
+  | PanicExpr
+  | PropagateExpr
   | ListExpr
   | ObjectExpr
   | ComponentExpr
@@ -227,6 +229,16 @@ interface AwaitExpr extends BaseNode {
   argument: ExpressionNode;
 }
 
+interface PanicExpr extends BaseNode {
+  type: 'PanicExpr';
+  argument: ExpressionNode;
+}
+
+interface PropagateExpr extends BaseNode {
+  type: 'PropagateExpr';
+  argument: ExpressionNode;
+}
+
 interface IfExpr extends BaseNode {
   type: 'IfExpr';
   condition: ExpressionNode;
@@ -256,11 +268,9 @@ interface TemplateElementNode extends BaseNode {
 type StatementNode =
   | VariableDecl
   | ReturnStatement
-  | ThrowStatement
   | ExpressionStatement
   | ForStatement
-  | WhileStatement
-  | TryStatement;
+  | WhileStatement;
 
 interface VariableDecl extends BaseNode {
   type: 'VariableDecl';
@@ -280,19 +290,6 @@ interface ForStatement extends BaseNode {
 interface WhileStatement extends BaseNode {
   type: 'WhileStatement';
   condition: ExpressionNode;
-  body: BlockNode;
-}
-
-interface TryStatement extends BaseNode {
-  type: 'TryStatement';
-  body: BlockNode;
-  catches: CatchClause[];
-  finally: BlockNode | null;
-}
-
-interface CatchClause extends BaseNode {
-  type: 'CatchClause';
-  variable: IdentifierNode;
   body: BlockNode;
 }
 ```

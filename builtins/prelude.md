@@ -32,8 +32,9 @@ written; `null` additionally has a literal form usable in expression position.
 | `null` | the sole value of the type `null`; a member of every `T?` | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `Task<T>` | the value an `async` call produces; unwrapped by `await` | [`../types/function-types.md`](../types/function-types.md) |
 | `Range<T>` | the value produced by `..<` and `...`; iterable by `for` | [`../types/primitive-types.md`](../types/primitive-types.md) |
+| `Result<T, E>` | the built-in result of a fallible operation: `Ok(T)` or `Err(E)` | [`../error-handling.md`](../error-handling.md) |
 | `View` | the marker type a component returns | [`../types/primitive-types.md`](../types/primitive-types.md) |
-| `Error` | the base error type carried by `throw`, `catch`, and rejected tasks | [`../error-handling.md`](../error-handling.md) |
+| `Error` | the conventional error payload of `Result<T, Error>` | [`../error-handling.md`](../error-handling.md) |
 
 `struct`, `enum`, `trait`, and `type` declarations introduce further types, but
 a program declares them itself; they are not part of the prelude (see
@@ -61,7 +62,7 @@ a program declares them itself; they are not part of the prelude (see
 |-----------|----------|--------------|
 | `Math` | mathematical constants and functions | [`Math` namespace](intrinsic-functions.md#math-namespace) |
 | `Time` | timestamps and async sleep | [`Time` namespace](intrinsic-functions.md#time-namespace) |
-| `Task` | task combinators `all`, `race`, `resolve`, `reject` | [`Task` namespace](intrinsic-functions.md#task-namespace) |
+| `Task` | task combinators `all`, `race`, `resolve` | [`Task` namespace](intrinsic-functions.md#task-namespace) |
 
 Members are selected with `.`, exactly like fields and methods:
 `Math.PI`, `Time.now()`, `Task.all(tasks)`
@@ -77,7 +78,7 @@ in [`../type-system/errors.md`](../type-system/errors.md).
 | Category | Names |
 |----------|-------|
 | Base and numeric types | `boolean`, `string`, `int`, `float`, `number`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64` |
-| Value and marker types | `null`, `unit`, `object`, `list`, `map`, `set`, `Task`, `Range`, `View`, `Error` |
+| Value and marker types | `null`, `unit`, `object`, `list`, `map`, `set`, `Task`, `Range`, `Result`, `View`, `Error` |
 | Protocols | `ToString` |
 | Namespaces | `Math`, `Time`, `Task` |
 | Intrinsic functions | `print`, `println`, `str` |

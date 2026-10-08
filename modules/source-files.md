@@ -135,7 +135,7 @@ file. Everything in file scope that is `pub` forms the module's interface.
 
 **Block scope** is the scope of a `{ … }` body. It holds the body's local
 bindings (`let`, `let mut`, `const`), parameters, loop variables, `match` arm
-bindings, `catch` bindings, and any **nested `fn`**:
+bindings, and any **nested `fn`**:
 
 ```xulo
 fn outer(n: int): int {

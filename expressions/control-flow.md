@@ -3,7 +3,7 @@
 Xulo is expression-oriented: `if` and `match` produce values, `for` and `while`
 are statements of type `unit`, and `break`/`continue` jump to loop boundaries.
 This chapter defines their syntax, typing, evaluation order, and scoping;
-`try`/`catch` appears here only to redirect control and is specified in
+failure propagation and `panic` are specified in
 [`error-handling.md`](../error-handling.md). The expression layer as a whole is
 mapped in [`README.md`](README.md).
 
@@ -16,7 +16,7 @@ written as an expression statement (see
 covers statement position everywhere in this specification:
 
 > An expression statement that is not `unit` is an error, EXCEPT when it is a
-> control-flow construct (`if`, `match`, `for`, `while`, `try`) whose value is
+> control-flow construct (`if`, `match`, `for`, `while`) whose value is
 > discarded.
 
 Accordingly, an `if` or `match` written as a statement MAY have branches or
@@ -282,32 +282,20 @@ for row in 0..<3 {
 }
 ```
 
-## `try`/`catch` as control flow
+## Propagation and panic as control flow
 
-`throw expr` abandons the current control path and transfers control to the
-nearest enclosing handler; `try { ... } catch e { ... }`,
-`try { ... } catch e: T { ... }`, and `finally { ... }` receive it. A loop does
-not catch anything by itself: an uncaught throw leaves the loop.
-
-```xulo
-try {
-  let total = parseTotal(text)
-  print(total)
-} catch e: FormatError {
-  print("invalid input")
-} finally {
-  print("done")
-}
-```
-
-The typing of handlers, rethrowing, and the value of a `try` construct are
-specified in [`error-handling.md`](../error-handling.md).
+Failure does not jump on its own: a caller moves it upward with the postfix
+`?` operator, inspects a `Result` with `match`, and stops the program with
+`panic(...)` when there is nothing to inspect. A loop contains none of them —
+`?` inside a loop body performs the enclosing function's early return and
+therefore leaves the loop, and a `panic` ends the program
+([`../error-handling.md`](../error-handling.md)).
 
 ## Scoping rules
 
-- Every block body — an `if` branch, a `match` arm, a loop body, and a
-  `try`/`catch`/`finally` block — opens a new block scope: a binding introduced
-  inside is visible only inside that block; see [`names.md`](../names.md).
+- Every block body — an `if` branch, a `match` arm, a loop body — opens a
+  new block scope: a binding introduced inside is visible only inside that
+  block; see [`names.md`](../names.md).
 - Shadowing an outer binding of the same name inside a block is allowed; the
   outer binding is visible again after the block.
 - The loop variable of a `for` loop lives in the scope of a single iteration,

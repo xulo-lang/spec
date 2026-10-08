@@ -242,19 +242,17 @@ which also specifies where `await` may appear and how a task is started.
 | `Task.all` | `all<T>(tasks: list<Task<T>>): Task<list<T>>` | completes when every task has completed; results in argument order |
 | `Task.race` | `race<T>(tasks: list<Task<T>>): Task<T>` | completes with the first task to complete |
 | `Task.resolve` | `resolve<T>(value: T): Task<T>` | an already-completed task holding `value` |
-| `Task.reject` | `reject<T>(err: Error): Task<T>` | an already-rejected task carrying `err` |
 
 `Task.all` and `Task.race` combine tasks that already exist: neither starts any
 work of its own, because a call to an `async` function has already started its
 body ([`../expressions/async-expressions.md`](../expressions/async-expressions.md)).
 `Task.all` settles when every task of the list has settled and yields the
 results in argument order; `Task.race` settles as soon as the first task of the
-list settles and yields that task's result. `Task.resolve` and `Task.reject`
-wrap a value or an `Error` that is already at hand, producing a task that has
-already settled: awaiting the first yields its value immediately, and awaiting
-the second raises the error at the `await`, like any other rejection. Generic
-type arguments are inferred at the call site, and how errors propagate out of
-the combined tasks is specified in [`../error-handling.md`](../error-handling.md).
+list settles and yields that task's result. `Task.resolve` wraps a value that
+is already at hand, producing a task that has already settled: awaiting it
+yields the value immediately. Generic type arguments are inferred at the call
+site, and how results and cancellation combine through the combined tasks is
+specified in [`../error-handling.md`](../error-handling.md).
 
 ```xulo
 async fn fetchAll(): list<User> {
@@ -270,17 +268,6 @@ async fn fastest(a: Task<int>, b: Task<int>): int {
 async fn cached(): int {
   let ready: Task<int> = Task.resolve(42)
   await ready                       // 42, without suspending
-}
-
-async fn recover(err: Error): int {
-  let failing: Task<int> = Task.reject(err)
-  let mut total = 0
-  try {
-    total = await failing           // raises err at the await
-  } catch e {
-    total = 0
-  }
-  total
 }
 ```
 
@@ -322,7 +309,6 @@ Constants give their type in place of a signature.
 | `str` | `str(value: int \| float \| boolean \| string \| ToString): string` | [Conversion](#conversion) |
 | `Task.all` | `all<T>(tasks: list<Task<T>>): Task<list<T>>` | [`Task` namespace](#task-namespace) |
 | `Task.race` | `race<T>(tasks: list<Task<T>>): Task<T>` | [`Task` namespace](#task-namespace) |
-| `Task.reject` | `reject<T>(err: Error): Task<T>` | [`Task` namespace](#task-namespace) |
 | `Task.resolve` | `resolve<T>(value: T): Task<T>` | [`Task` namespace](#task-namespace) |
 | `Time.monotonic` | `fn(): u64` | [`Time` namespace](#time-namespace) |
 | `Time.monotonic_nanos` | `fn(): u64` | [`Time` namespace](#time-namespace) |

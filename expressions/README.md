@@ -20,7 +20,6 @@ value) or a statement (it does not). Statements are specified in
 | `place = value` | Statement |
 | `return e`, `return` | Statement |
 | `break`, `continue` | Statement |
-| `throw e` | Statement |
 | `for … in … { … }`, `while … { … }` | Statement |
 | Expression statement (a bare expression in statement position) | Statement |
 | `if` … `else` …, `match` …, block `{ … }` | Expression |
@@ -31,7 +30,7 @@ value) or a statement (it does not). Statements are specified in
 `if`, `match`, and blocks written where a statement is expected are expression
 statements: their value is computed and then discarded, and the constraints on
 expression statements are specified in [`../statements/README.md`](../statements/README.md).
-`break`, `continue`, and `throw` are never expressions; there is no `loop`
+`break` and `continue` are never expressions; there is no `loop`
 expression. Concurrency constructs (`spawn …`, `lock …`) are specified in
 [`../concurrency.md`](../concurrency.md).
 
@@ -79,7 +78,7 @@ each level; [`../grammar.md`](../grammar.md) encodes the same structure.
 | multiplicative | `*` `/` `%` | left |
 | power | `**` | right |
 | unary | `!` `-` `~` `await` | prefix |
-| postfix | `f(x)` `x[i]` `x.y` `x.0` `x?.y` `x?.0` | left |
+| postfix | `f(x)` `x[i]` `x.y` `x.0` `x?.y` `x?.0` `x?` | left |
 
 Prefix spread `...expr` exists only inside list and object literals; it is not
 part of the precedence chain. An element that begins with `...` is a spread,

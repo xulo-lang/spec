@@ -17,7 +17,7 @@ MAY all be parameterized.
 ```xulo
 fn first<T>(xs: list<T>): T { xs[0] }
 struct Pair<K, V> { key: K, value: V }
-enum Result<T, E> { Ok(T), Err(E) }
+enum Either<L, R> { Left(L), Right(R) }
 type ApiResponse<T> = { data: T?, error: string? }
 
 struct Wrapper<T> { value: T }

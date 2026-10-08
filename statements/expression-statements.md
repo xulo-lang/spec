@@ -11,7 +11,7 @@ expression of a block are specified in [`return-and-block.md`](return-and-block.
 ## The statement-value rule
 
 > An expression statement that is not `unit` is an error, EXCEPT when it is a
-> control-flow construct (`if`, `match`, `for`, `while`, `try`) whose value is
+> control-flow construct (`if`, `match`, `for`, `while`) whose value is
 > discarded.
 
 The rule exists because a computed value that nobody reads is almost always a
@@ -41,20 +41,19 @@ print(a + b)         // legal: value is an argument
 
 ## The exceptions
 
-`if`, `match`, `for`, `while`, and `try` MAY stand in statement position
+`if`, `match`, `for`, and `while` MAY stand in statement position
 whatever their value is, because in that position the value of the branch,
-arm, or block that runs is discarded. Their branches or arms MAY therefore
+arm, or body that runs is discarded. Their branches or arms MAY therefore
 have unrelated types when the construct is a statement; in expression
 position the common-type rules apply in full
-([`../expressions/control-flow.md`](../expressions/control-flow.md),
-[`../error-handling.md`](../error-handling.md)).
+([`../expressions/control-flow.md`](../expressions/control-flow.md)).
 
 ```xulo
 if ready { prepare() } else { "not ready" }   // legal as a statement
-try { risky() } catch e { print("failed") }   // legal: value discarded
+match half(3) { Result::Ok(v) => str(v) Result::Err(e) => e }   // legal: value discarded
 ```
 
-The exception covers only those five constructs. In particular a ternary
+The exception covers only those four constructs. In particular a ternary
 `c ? x : y` is not one of them ([`../expressions/operators.md`](../expressions/operators.md)),
 and a `spawn` expression — though it names control flow — is deliberately not
 one either: bind it, `await` it, or pass it on
@@ -116,4 +115,5 @@ the typing rules behind them are in
   implicit return.
 - [`../expressions/control-flow.md`](../expressions/control-flow.md) —
   `if`/`match` in both positions.
-- [`../error-handling.md`](../error-handling.md) — `try` as an expression.
+- [`../error-handling.md`](../error-handling.md) — `?` propagation and
+  `panic` as expressions.

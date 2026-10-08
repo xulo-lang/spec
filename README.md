@@ -111,7 +111,7 @@ and the xulo-website documents named in § 6.
 | [`builtins/`](builtins/README.md) | Prelude and compiler intrinsics |
 | [`memory-and-runtime.md`](memory-and-runtime.md) | Value/reference semantics, ownership, borrowing, runtime model |
 | [`concurrency.md`](concurrency.md) | Tasks, `spawn`, cancellation, structured concurrency |
-| [`error-handling.md`](error-handling.md) | Thrown errors: `throw`, `try`/`catch`, error types, `Result` patterns |
+| [`error-handling.md`](error-handling.md) | Fallible operations: `Result`, `?` propagation, `panic`, runtime failures |
 | [`grammar.md`](grammar.md) | Complete EBNF grammar |
 | [`ast.md`](ast.md) | Abstract syntax tree node definitions and data structures |
 | [`machine-readable.md`](machine-readable.md) | Downloadable grammar files for parser generators (EBNF, Pest, tree-sitter) |
@@ -128,14 +128,15 @@ normative for the whole specification.
 | **component** | A function whose declared return type is `View`; constructs a fragment of the UI tree. See [`components/`](components/README.md). |
 | **declaration** | A top-level or member-level construct that introduces a name: `fn`, `struct`, `enum`, `trait`, `impl`, `type`, `let`, `const`. |
 | **diagnostic** | A message emitted for a program the checker rejects or warns about, identified by an `E` or `W` code; a compile-time event, not a runtime one. See [`type-system/errors.md`](type-system/errors.md). |
-| **error (thrown)** | A value raised by `throw` and handled by `catch`; an ordinary runtime event, neither a diagnostic nor a runtime failure. See [`error-handling.md`](error-handling.md). |
 | **evaluation order** | The order in which subexpressions are evaluated; left-to-right unless stated otherwise. |
 | **immutable binding** | A binding introduced by `let` or `const`; reassignment is a compile-time error. |
 | **intrinsic** | A function or namespace provided directly by the compiler, available without import. See [`builtins/`](builtins/README.md). |
 | **module** | A single source file together with its exported names. |
 | **optional type** | `T?`, shorthand for `T | null`. |
+| **panic** | An unrecoverable stop: a call to `panic(...)` or a runtime failure; it stops the program where it occurs and has no handler. See [`error-handling.md`](error-handling.md). |
 | **pattern** | The left-hand side of a `match` arm; deconstructs a scrutinee value. |
-| **runtime failure** | A condition that stops a running program — an out-of-bounds index, division by zero — and cannot be caught by `try`. See [`memory-and-runtime.md`](memory-and-runtime.md). |
+| **Result** | The built-in `Result<T, E>`: either `Result::Ok(T)` or `Result::Err(E)`; the value a fallible operation returns. See [`error-handling.md`](error-handling.md). |
+| **runtime failure** | A condition that stops a running program — an out-of-bounds index, division by zero — as a panic; there is no handler. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **scrutinee** | The expression evaluated by `match` and tested against patterns. |
 | **task** | A unit of asynchronous computation with type `Task<T>`. See [`concurrency.md`](concurrency.md). |
 | **tuple** | An ordered, fixed-length sequence of at least two values with one type per position; written `(T, U)`, read with `p.0`, deconstructed with `let (a, b) = e`. See [`types/composite-types.md`](types/composite-types.md). |

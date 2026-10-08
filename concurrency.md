@@ -6,8 +6,9 @@ concurrency, cancellation, shared state guarded by `lock`, and message-passing
 services. The evaluation and ownership rules that concurrency builds on are in
 [`memory-and-runtime.md`](memory-and-runtime.md); `async`, `await`, and the
 `Task` utilities are in
-[`expressions/async-expressions.md`](expressions/async-expressions.md); thrown
-errors and rejected tasks in [`error-handling.md`](error-handling.md).
+[`expressions/async-expressions.md`](expressions/async-expressions.md);
+results, propagation, and `panic` in
+[`error-handling.md`](error-handling.md).
 
 ## Tasks
 
@@ -123,20 +124,15 @@ does not simply stop: it settles its tasks first.
 1. The block's value, if any, is determined.
 2. Each task spawned in the block that has not settled is cancelled.
 3. The block waits until every one of those tasks has settled.
-4. Each settled child that rejected with an uncaught error raises that error
-   at the block's exit, in the order the tasks were spawned; the first one
-   raised replaces the block's value and propagates. A child that settled as
-   cancelled is absorbed and raises nothing.
-5. The block's value is produced — unless step 4 raised.
+4. Each settled child contributes nothing further: a child that settled as
+   cancelled is absorbed, and a result no longer reachable from the block's
+   value is discarded.
+5. The block's value is produced.
 
 A task **reachable from the block's value** is exempt from step 2: it is not
 cancelled, and its ownership passes to the enclosing scope together with the
 value, where the same rules apply. This is how a function returns a task it
 spawned.
-
-If a block is left because an error is already propagating, that error
-continues to propagate; rejections discovered while draining the block's tasks
-are discarded in favor of the error already in flight.
 
 Two consequences follow:
 
@@ -144,9 +140,9 @@ Two consequences follow:
   scope inside its body, which cancels that scope's tasks in turn.
 - **The program ends when `main` returns.** `main` may be declared `async`
   ([`modules/source-files.md`](modules/source-files.md)); when it is, the
-  program ends when its task settles, by which time its body's scope has
-  already drained. Work that must finish before exit is awaited inside the
-  scope that owns it.
+  program ends when its task settles — completed or cancelled — by which time
+  its body's scope has already drained. Work that must finish before exit is
+  awaited inside the scope that owns it.
 
 ## Cancellation
 
@@ -154,16 +150,20 @@ Cancellation is cooperative and requested only by the language — when a scope
 exits ([above](#scopes-and-structured-concurrency)) — and propagates to a
 cancelled task's own scope.
 
-- A cancelled task stops at its next `await`: the pending `await` raises the
-  cancellation error. A task that is running continues until it suspends.
-- The cancellation error is an ordinary thrown value of type `Error`
-  ([`error-handling.md`](error-handling.md)); `try`/`catch` inside the task
-  sees it, so cleanup code runs normally, and `finally` blocks execute.
-- Cancellation is final: a task that has been cancelled settles as cancelled,
-  whether or not its body caught the cancellation error; a value the body
-  produces afterwards is discarded.
-- `await` of a cancelled task raises the cancellation error at that `await`,
-  where the awaiting task may catch it.
+- A cancelled task stops at its next `await`: the pending `await` produces no
+  value and the task settles as cancelled. A task that is running continues
+  until it suspends.
+- Cancellation carries no error value: no expression observes it, nothing
+  raises it, and there is nothing to catch. The body runs as written between
+  the cancellation request and its next `await`.
+- Cancellation is final: a cancelled task settles as cancelled whatever its
+  body does afterwards, and a value the body produces after settling is
+  discarded.
+- `await` of a cancelled task stops the awaiting body at that `await`, which
+  produces no value, and the awaiting task settles as cancelled in turn — the
+  propagation continues outward through every `await` until a scope absorbs
+  it or a cancelled `main` ends the program
+  ([`error-handling.md`](error-handling.md)).
 - A scope that cancels its own children absorbs their cancellation: they
   settle as cancelled and the scope continues normally.
 - Cancellation cannot interrupt code between suspension points: a body that
@@ -195,7 +195,7 @@ lock state { Block }             // a critical section
   argument passed to a `shared` parameter.
 - `lock` is an expression: its value is the value of the block, so a section
   both mutates and produces. The lock is released when the block finishes —
-  normally, by `return`, or while unwinding a thrown error.
+  normally, or by `return`.
 - Locks are not reentrant: acquiring a lock the current task already holds is
   a runtime failure defined in [Runtime failures](#runtime-failures).
 
@@ -238,8 +238,8 @@ for every conforming program, is the ordering the language does state:
 - **Across a lock**, critical sections on one shared binding are ordered:
   the writes performed inside a `lock state { … }` are visible to every
   critical section on `state` that begins after it finishes, whichever task
-  performs it. Release — normal exit, `return`, or unwinding a thrown error —
-  publishes; the next acquire observes.
+  performs it. Release — normal exit or `return` — publishes; the next
+  acquire observes.
 - **By value**, everywhere else: the result of `await`, a settled task's
   result, and a message are values carried between tasks
   ([`memory-and-runtime.md`](memory-and-runtime.md)), not shared storage.
@@ -315,8 +315,8 @@ order, the order of `Task.all` results — is listed under
 
 This chapter defines the runtime failures peculiar to concurrency; the
 common table of runtime failures is in
-[`memory-and-runtime.md`](memory-and-runtime.md), and thrown errors are not
-among them ([`error-handling.md`](error-handling.md)).
+[`memory-and-runtime.md`](memory-and-runtime.md), and each of them stops the
+program as a panic ([`error-handling.md`](error-handling.md)).
 
 | Condition | When it occurs |
 |-----------|----------------|
@@ -325,9 +325,9 @@ among them ([`error-handling.md`](error-handling.md)).
 
 ## The `Task` utilities
 
-`Task.all`, `Task.race`, `Task.resolve`, and `Task.reject` combine and produce
-tasks; their signatures are given identically in
+`Task.all`, `Task.race`, and `Task.resolve` combine and produce tasks; their
+signatures are given identically in
 [`expressions/async-expressions.md`](expressions/async-expressions.md) and
 [`builtins/intrinsic-functions.md`](builtins/intrinsic-functions.md). How
-errors and cancellation propagate through `Task.all` and `Task.race` is
+results and cancellation combine through `Task.all` and `Task.race` is
 specified in [`error-handling.md`](error-handling.md).

@@ -29,8 +29,8 @@ Rules:
   enum name is a type name and follows the naming conventions of
   [`../names.md`](../names.md), as do the variant names.
 - An enum is generic when a type parameter list follows its name — for example
-  `enum Result<T, E> { Ok(T), Err(E) }` — and the parameters are then in scope in
-  every payload type.
+  `enum Either<L, R> { Left(L), Right(R) }` — and the parameters are then in
+  scope in every payload type.
 - Visibility uses `pub` (see [`../modules/README.md`](../modules/README.md)):
   `pub enum …` exports the enum and its variants from the module, and without
   `pub` the enum is private to it. Variants have no visibility modifier of their
@@ -221,22 +221,19 @@ fn message(e: LoadError): string {
 ## Enums as error types
 
 An error enum states a domain's failure modes as data, so that handling them is
-exhaustive and checked. The two idioms are a dedicated error enum, matched
-directly as `LoadError` above, and a result enum pairing a value with a possible
-failure:
+exhaustive and checked. It is the `E` payload of the built-in
+`Result<T, E>` — or stands alone, matched directly as `LoadError` above:
 
 ```xulo
-enum Result<T, E> { Ok(T), Err(E) }
-
-fn half(n: int): Result<int, string> {
-  if n % 2 == 0 { Result::Ok(n / 2) } else { Result::Err("odd input") }
+fn read(path: string): Result<string, LoadError> {
+  if path == "" { Result::Err(LoadError::NotFound(path)) } else { load(path) }
 }
 ```
 
-Thrown values, `try`/`catch`, and the built-in base error type `Error` are
-specified in [`../error-handling.md`](../error-handling.md); domain errors are
-conventionally declared as `enum`s so that both `match` and `catch` clauses can
-name them precisely.
+The built-in `Result`, the `?` propagation operator, and `panic` are specified
+in [`../error-handling.md`](../error-handling.md); domain errors are
+conventionally declared as `enum`s so that a `match` over the `Result` — or
+over the error itself — can name them precisely.
 
 ## Enums vs union types
 

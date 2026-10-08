@@ -4,8 +4,8 @@ A Xulo program is checked before it runs. Everything this specification calls
 an *error* is a compile-time **diagnostic**: the checker reports it, the
 program is rejected, and no part of it executes. Conditions that stop a
 program after it has started — an out-of-range subscript, a division by zero on
-non-constant operands, a `throw` that reaches no handler — are runtime
-conditions and are specified with the operations that raise them
+non-constant operands — are runtime failures, called panics, and are specified
+with the operations that raise them
 ([`../memory-and-runtime.md`](../memory-and-runtime.md)).
 
 This chapter defines the diagnostic model, the code scheme, the message
@@ -125,7 +125,7 @@ the source line, a caret line, and optional notes.
 | `E0214` | `break`, `continue`, or `return` is written outside its context | `return` at file scope | `` `return` outside of a function `` |
 | `E0215` | a subscript is applied to a type that is not a `list` or `map` | `"abc"[0]` | `` `string` cannot be indexed `` |
 | `E0216` | a type cannot be determined: an empty collection, a bare `null`, an unannotated closure, an unsolved generic argument | `let xs = []` | `type annotations needed` |
-| `E0217` | a `try` has neither a `catch` nor a `finally` clause; `return`, `break`, `continue`, or `throw` appears in a `finally` block | `try { f() }` with no clause | ``control flow in a `finally` block`` |
+| `E0217` | a `?` propagation is ill-formed: its operand is neither `T?` nor `Result<T, E>`; it appears outside a function or in one with no declared return type; or the early return's value does not fit the declared return type | `fn f(): int { half(3)? }` | ``cannot propagate `?` to return type `int``` |
 | `E0218` | an expression statement in statement position has a type other than `unit` and is not an excepted control-flow construct | `a + b` with `a: int` | ``expected `unit`, found `int``` |
 | `E0219` | a tuple destructuring's initializer is not a tuple type, or the name count differs from the tuple's arity | `let (a, b) = 42` | ``expected a tuple of 2 elements, found `int` `` |
 | `E0220` | a positional access has a non-tuple receiver, or the position is at or past the arity | `p.2` for `p: (int, int)` | `` `(int, int)` has no element `.2` `` |

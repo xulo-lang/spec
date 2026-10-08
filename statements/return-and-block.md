@@ -168,7 +168,6 @@ A block is accepted wherever the corresponding construct accepts a body:
 | `for` / `while` | `{ … }` | loop body; the loop itself has type `unit` |
 | Function body | `{ … }` | final expression is the return value |
 | Closure body | `{ … }` or a bare expression | specified in [`../expressions/closures.md`](../expressions/closures.md) |
-| `try` / `catch` / `finally` | `{ … }` | handler bodies ([`../error-handling.md`](../error-handling.md)) |
 | Component children | `{ … }` | trailing block of a component invocation ([`../components/view-syntax.md`](../components/view-syntax.md)) |
 
 ## Evaluation of statements
@@ -178,5 +177,5 @@ first to last. Each statement completes before the next begins; there is no
 reordering of side effects across statements. Evaluation order inside a
 single expression — operands, arguments, assignment places — is specified in
 [`../expressions/README.md`](../expressions/README.md). A `return`, `break`,
-`continue`, or `throw` abandons the remaining statements of the current
-path immediately.
+or `continue` abandons the remaining statements of the current path
+immediately.

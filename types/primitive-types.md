@@ -179,6 +179,6 @@ for i in a {
 
 The names of the built-in types are reserved for the language. A module-scope `struct`, `enum`, `trait`, or `type` declaration MUST NOT use any of the following names:
 
-`boolean`, `string`, `int`, `float`, `number`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64`, `null`, `unit`, `object`, `list`, `map`, `set`, `Task`, `Range`, `View`, `Error`
+`boolean`, `string`, `int`, `float`, `number`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64`, `null`, `unit`, `object`, `list`, `map`, `set`, `Task`, `Range`, `Result`, `View`, `Error`
 
 Declaring a type with one of these names at module scope is a compile-time error. Elsewhere — as a type parameter name or an ordinary value binding — a built-in type name is an ordinary identifier, though using one conflicts with the naming conventions in [`../names.md`](../names.md).

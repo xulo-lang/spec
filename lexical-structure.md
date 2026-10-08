@@ -53,7 +53,7 @@ Digit      ::= '0' .. '9'
 
 ## Keywords
 
-The language has exactly the following closed set of 41 keywords; every other
+The language has exactly the following closed set of 38 keywords; every other
 word is an ordinary identifier unless it is reserved below. No keyword MAY be
 used as one.
 
@@ -71,17 +71,14 @@ used as one.
 | | `type` | Declares a type alias |
 | | `where` | Introduces a generic constraint clause after a signature |
 | Control flow | `break` | Leaves the innermost enclosing `for` or `while` |
-| | `catch` | Introduces the handler of a `try` statement |
 | | `continue` | Starts the next iteration of the innermost loop |
 | | `else` | Introduces the alternative of an `if` |
-| | `finally` | Introduces a block that runs after `try` whatever happens |
 | | `for` | Declares a counting or iterating loop |
 | | `if` | Conditional expression or statement |
 | | `in` | Separates the loop variable from the iterable in `for` |
 | | `match` | Pattern matching over a scrutinee |
+| | `panic` | Stops the program with an unrecoverable error |
 | | `return` | Returns a value from the enclosing function |
-| | `throw` | Raises an error |
-| | `try` | Introduces a block whose errors are handled by `catch` |
 | | `while` | Declares a condition-controlled loop |
 | Modules | `as` | Renames an imported or re-exported name |
 | | `from` | Names the module in an `import` declaration |
@@ -135,8 +132,8 @@ unowned unsafe var virtual void weak with
 yield
 ```
 
-The list excludes every keyword: `finally`, `move`, `self`, and `spawn` are
-keywords, not reserved words. `_` is neither; it is the wildcard name.
+The list excludes every keyword: `move`, `self`, and `spawn` are keywords,
+not reserved words. `_` is neither; it is the wildcard name.
 
 ## Literals
 
@@ -234,7 +231,7 @@ precedence is defined in [expressions/operators.md](expressions/operators.md).
 | Range and spread | `..<` `...` | Half-open and closed ranges; spread inside a literal |
 | Arithmetic | `+` `-` `*` `/` `%` `**` | Additive, multiplicative, modulo, power |
 | Bitwise and shift | `&` `\|` `^` `~` `<<` `>>` | And, or, xor, complement, shifts |
-| Logical and conditional | `!` `?` `??` `and` `or` | Negation, ternary `? :`, nullish coalescing, connectives |
+| Logical and conditional | `!` `?` `??` `and` `or` | Negation, ternary `? :` and postfix propagation, nullish coalescing, connectives |
 | Arrow | `=>` | Match arm body; closure body |
 | UI and state | `@` `$` | State declarations; two-way binding prefix |
 | Reserved symbol | `#` | Not part of the language; it MUST NOT appear in source |
@@ -261,9 +258,13 @@ position where no token matches is a lexical error.
 | `a..b` | `a` `.` `.` `b` | Two `.` tokens; `..` is not a token |
 | `p.0.1` | `p` `.` `0` `.` `1` | Two chained positional accesses, not the float `0.1` |
 | `p?.0` | `p` `?.` `0` | Optional positional access; `?` joins the following `.` |
+| `a??b` | `a` `??` `b` | Nullish coalescing, not two `?` marks |
+| `a? ?? b` | `a` `?` `??` `b` | Postfix propagation followed by `??` |
 
 Because `..` does not exist, `..<` and `...` are always taken whole, and `?`
-only when not followed by `.` or `?`. Whether `...` spreads or closes a range
+only when not followed by `.` or `?`: `p?.y` and `a??b` each form one token,
+and separating the marks, as in `a? ?? b`, is how the postfix propagation
+operator is written next to `??`. Whether `...` spreads or closes a range
 is decided by position, not by lexing: inside a list or object literal an
 element beginning with `...` is a spread, while a `...` between two operands
 is the closed-range operator. Both emit the same token.

@@ -3,11 +3,12 @@
 This chapter defines how Xulo values occupy memory and how programs use them:
 the value and reference semantics of every type, the ownership forms `move` and
 `copy`, parameter borrowing, mutability, informal lifetimes, storage
-reclamation, and the runtime failures a program may raise. Compile-time
+reclamation, and the runtime failures that stop a program. Compile-time
 diagnostics are assigned in [`type-system/errors.md`](type-system/errors.md);
 the concurrency rules that build on this model — `spawn`, `shared`, `lock`, and
-cancellation — are specified in [`concurrency.md`](concurrency.md); thrown
-errors and handlers in [`error-handling.md`](error-handling.md).
+cancellation — are specified in [`concurrency.md`](concurrency.md); the error
+model — `Result`, `?`, and `panic` — in
+[`error-handling.md`](error-handling.md).
 
 ## Evaluation model
 
@@ -280,17 +281,17 @@ unspecified time thereafter.
   frees memory early; a program cannot observe reclamation, and no program
   behavior depends on when it happens.
 - Deterministic *release of a resource* — a file, a connection — is a library
-  concern expressed with ordinary control flow such as `finally`
-  ([`error-handling.md`](error-handling.md)); the language itself manages
-  only storage.
+  concern expressed with ordinary control flow: cleanup is written on each
+  path that needs it, because the language provides no destructor and no
+  `finally` clause. The language itself manages only storage.
 
 ## Runtime failures
 
 A **runtime failure** stops a computation after the program has started. The
 terms *runtime error* and *runtime trap* used elsewhere in this specification
-mean the same thing. A runtime failure is not a value and cannot be caught:
-`try` and `catch` handle thrown errors
-([`error-handling.md`](error-handling.md)), never the conditions below.
+mean the same thing. It is a panic
+([`error-handling.md`](error-handling.md)): the program stops where the
+condition occurs, and there is no handler for it.
 
 | Condition | When it occurs | Specified in |
 |-----------|----------------|--------------|
@@ -300,12 +301,10 @@ mean the same thing. A runtime failure is not a value and cannot be caught:
 | Arithmetic overflow | an `int` or fixed-bit operation whose result exceeds its type, on non-constant operands | [`types/primitive-types.md`](types/primitive-types.md) |
 | Unprovided environment key | reading an `@Environment` key no provision supplies | [`components/environment.md`](components/environment.md) |
 | Stack or task exhaustion | recursion depth or the runtime's task limit is exceeded | [`functions.md`](functions.md) |
-| Uncaught `throw` | a thrown value escapes every enclosing handler, including at the program boundary | [`error-handling.md`](error-handling.md) |
 
 [`concurrency.md`](concurrency.md) defines two further runtime failures of its
 own — misuse of `lock` and exhaustion of the task limit while spawning — and
-[`error-handling.md`](error-handling.md) repeats this table so that the
-treatment of thrown errors can be read against it.
+[`error-handling.md`](error-handling.md) repeats this table alongside `panic`.
 
 ## Determinism
 
@@ -314,9 +313,9 @@ What this specification fixes, it fixes for every conforming program:
 - Evaluation order: left-to-right for operands, arguments, and literal
   elements; source order for statements; declaration order for module-level
   initializers.
-- Handler selection: the first `catch` clause whose type test succeeds
-  handles a thrown value; no later clause is considered
-  ([`error-handling.md`](error-handling.md)).
+- Propagation: a `?` evaluates its operand exactly once and either yields its
+  success value or performs the early return, abandoning the rest of the body
+  at that point ([`error-handling.md`](error-handling.md)).
 - Collection order: `map` and object fields iterate in insertion order, and
   `Task.all` yields results in argument order
   ([`expressions/async-expressions.md`](expressions/async-expressions.md)).

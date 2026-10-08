@@ -136,6 +136,7 @@ lifts except when `A = B`.
 | `Task<T>` | covariant | `await` only produces a `T` |
 | `Range<T>` | covariant | iteration only reads the bounds |
 | `struct S<T>` / `enum E<T>` | invariant in `T` | nominal, and fields may be written |
+| `Result<T, E>` | invariant in `T` and `E` | a built-in with fixed `Ok` and `Err` payloads |
 | `type X<T> = …` | follows its expansion | aliases are transparent |
 
 Consequences:

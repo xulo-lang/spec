@@ -26,7 +26,6 @@ The following entities are named, each by an identifier:
 | Enum variants | A constructor inside `enum` | Named `Enum::Variant`, never `Enum.Variant` |
 | Type parameters | `<T>` in a signature or a `where` clause | Visible in the signature and the body |
 | Pattern bindings | A `match` arm pattern | Scoped to that arm only |
-| Error bindings | `catch e` or `catch _` | Scoped to the catch block |
 | Namespaces | `import * as ns from "m"`; built-ins `Math`, `Time`, `Task` | Members are selected with `.` |
 | Argument labels | Named parameters and component attributes | The label before `:` — `spacing`, `onClick` — is part of a signature, not a separate binding |
 
@@ -102,7 +101,6 @@ the following scope kinds:
 | Block scope | Every `{ ... }` | Declarations made inside the block |
 | Closure scope | A closure (`fn() { ... }`, `=>`) | Its parameters, plus everything captured at creation |
 | Pattern scope | A `match` arm pattern | Bindings made by the pattern, in that arm's body only |
-| Error-binding scope | A `catch` clause | The error binding, in the catch block only |
 
 Declaration order decides visibility:
 
@@ -165,8 +163,7 @@ that component.
 
 `_` is the wildcard name. In a pattern it matches any value and introduces no
 binding: nothing is captured, the matched value is dropped, and `_` cannot be
-referenced afterwards, because no name was created. In a `catch` clause,
-`catch _` discards the error value when the handler does not need it.
+referenced afterwards, because no name was created.
 
 ```xulo
 enum Shape {
