@@ -132,7 +132,7 @@ normative for the whole specification.
 | **immutable binding** | A binding introduced by `let` or `const`; reassignment is a compile-time error. |
 | **intrinsic** | A function or namespace provided directly by the compiler, available without import. See [`builtins/`](builtins/README.md). |
 | **module** | A single source file together with its exported names. |
-| **optional type** | `T?`, shorthand for `T | null`. |
+| **optional type** | `T?`, shorthand for `T | null`; absence, which is not an error. |
 | **panic** | An unrecoverable stop: a call to `panic(...)` or a runtime failure; it stops the program where it occurs and has no handler. See [`error-handling.md`](error-handling.md). |
 | **pattern** | The left-hand side of a `match` arm; deconstructs a scrutinee value. |
 | **Result** | The built-in `Result<T, E>`: either `Result::Ok(T)` or `Result::Err(E)`; the value a fallible operation returns. See [`error-handling.md`](error-handling.md). |

@@ -1,18 +1,43 @@
 # Error Handling
 
-Xulo reports a failure in one of three ways. A **missing value** — an optional
-that holds `null` — is ordinary data that `T?` and `?.` move around. A
-**fallible operation** returns the built-in `Result<T, E>`, which a caller
-inspects with `match` or propagates upward with the postfix `?`. An
-**unrecoverable condition** stops the program: the program's own `panic(...)`
-call and the implementation's runtime failures are the same event, and neither
-has a handler. This chapter specifies the built-in type `Result`, the built-in
-type `Error` that serves as its conventional payload, the `?` operator,
-`panic`, how results and cancellation move through asynchronous code, and the
-table of runtime failures. Compile-time diagnostics are assigned in
+Xulo separates three situations. A **missing value** — an optional that holds
+`null` — is not an error: it is ordinary data, and beyond it the language has
+no `Option` type. A **failed operation** carries a reason: it returns the
+built-in `Result<T, E>`, which a caller inspects with `match` or propagates
+upward with the postfix `?`. An **unrecoverable condition** stops the program:
+the program's own `panic(...)` call and the implementation's runtime failures
+are the same event, and neither has a handler. This chapter specifies the
+built-in type `Result`, the built-in type `Error` that serves as its
+conventional payload, the `?` operator, `panic`, how results and cancellation
+move through asynchronous code, and the table of runtime failures. Compile-time diagnostics are assigned in
 [`type-system/errors.md`](type-system/errors.md); the ownership and storage
 model is in [`memory-and-runtime.md`](memory-and-runtime.md); scopes,
 cancellation, and services in [`concurrency.md`](concurrency.md).
+
+## Absence and failure are orthogonal
+
+- **`T?` says the value may be absent, and absence is not a failure.** A
+  lookup that finds nothing is an outcome the caller usually expects; it is
+  read with `??`, `?.`, a `null` test, or `?`, and it carries no reason and
+  nothing to report.
+- **`Result<T, E>` says the operation may fail, and `E` says why.** A refused
+  connection, a malformed input: the caller may need the reason, so the
+  reason travels as data.
+- **When absence and failure are both possible, use `Result<T?, E>`:** `Err`
+  is why the operation failed; `Ok(null)` is that it succeeded but found
+  nothing.
+
+```xulo
+// Ok(user) found, Ok(null) absent, Err(reason) the lookup itself failed
+fn find_user(id: int): Result<User?, LoadError> {
+  if id < 0 { return Result::Err(LoadError::Denied("negative id")) }
+  query(id)
+}
+```
+
+- **Do not mix the two.** If the only outcome is "nothing was there", `T?`
+  says so directly; reserving `Result` for operations that can fail for a
+  reason keeps each `match` on its own subject.
 
 ## `Result<T, E>`
 

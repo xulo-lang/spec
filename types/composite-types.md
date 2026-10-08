@@ -163,6 +163,10 @@ fn describe(v: string?): string {
 - If `x` has type `T?` and the member `f` has type `U`, then `x?.f` has type `U?`: every `?.` step adds one optional layer, and an optional chain is consumed with `??`, a `null` test, or a ternary. When `U` is itself optional the result is a nested optional, which the non-collapse rule below keeps as two layers.
 - **Nested optionals do not collapse.** `T??` is a distinct type from `T?`; it is not rewritten to `T?`, and each layer MUST be stripped by its own check: narrowing a `T??` once yields `T?`, and narrowing it again yields `T`.
 - `null` is assignable to `T?` for every `T`, and to no other type (see [`primitive-types.md`](primitive-types.md)).
+- **Absence is not an error.** A `T?` carries no reason and no error value;
+  operations that can fail for a reason return `Result<T, E>`, and the two
+  compose as `Result<T?, E>` when both are possible
+  ([`../error-handling.md`](../error-handling.md#absence-and-failure-are-orthogonal)).
 
 ## Union types
 
