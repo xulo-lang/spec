@@ -214,7 +214,8 @@ TypeAlias = [ "pub" ] "type" Identifier GenericParams? "=" Type ;
 ```
 
 A parameter MUST be annotated; `mut T` and `shared T` are parameter modes, not
-types ([function-types.md](types/function-types.md),
+types, whether the parameter belongs to a declaration or to a function type
+(`FnTypeParam`) ([function-types.md](types/function-types.md),
 [concurrency.md](concurrency.md)). A `,` between struct fields and between
 variants is optional and a trailing `,` is allowed; a variant's payload slots
 are all positional or all named, never mixed ([enums.md](types/enums.md)).
@@ -286,7 +287,7 @@ TypeList       = Type { "," Type } ;
 TupleType      = "(" Type "," Type { "," Type } [ "," ] ")" ;
 FunctionType   = [ "async" ] "fn" "(" [ FnTypeParams ] ")" [ ":" Type ] ;
 FnTypeParams   = FnTypeParam { "," FnTypeParam } ;
-FnTypeParam    = [ Identifier ":" ] Type ;
+FnTypeParam    = [ Identifier ":" ] [ "mut" | "shared" ] Type ;
 
 GenericParams  = "<" GenericParam { "," GenericParam } [ "," ] ">" ;
 GenericParam   = Identifier [ ":" TraitBound ] ;

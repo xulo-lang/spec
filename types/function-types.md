@@ -9,10 +9,11 @@ A function type is written `fn(P1, P2, …): R`, listing the parameter types and
 ```text
 FnType   = [ 'async' ] 'fn' '(' [ FnParams ] ')' [ ':' Type ] ;
 FnParams = FnParam { ',' FnParam } ;
-FnParam  = [ Identifier ':' ] Type ;
+FnParam  = [ Identifier ':' ] [ 'mut' | 'shared' ] Type ;
 ```
 
 - Parameter names are optional: `fn(String): Int` and `fn(name: String): Int` are both well-formed. Parameter names in a function type are documentation — two function types that differ only in parameter names are the same type.
+- **Parameter modes are part of the type.** A function type may write `mut` or `shared` before a parameter type, exactly as a declaration does: `fn(T): R`, `fn(mut T): R`, and `fn(shared T): R` are three different types, and they are never interchangeable (see [Function subtyping and higher-order types](#function-subtyping-and-higher-order-types)).
 - A zero-parameter function type is `fn(): R`. The spelling `fn(Unit): R` is *not* an alternative for it: `Unit` is an ordinary parameter type, and a function that takes no arguments is written `fn(): R`.
 - The result type may be omitted: `fn(String)` denotes the same type as `fn(String): Unit`.
 - Variadic parameters do not exist. Every function type has a fixed parameter list, and a call MUST supply exactly the parameters the type lists — except that a direct call to a *declaration* MAY omit trailing defaulted parameters (see [Parameters](#parameters)).
@@ -30,9 +31,18 @@ let h = (x: Int): Int => x * 3      // arrow form, same type
 fn apply(f: fn(Int): Int, x: Int): Int { f(x) }
 
 let xs = [fn(): Int { 1 }, fn(): Int { 2 }]   // function values in a list
+
+struct Counter { n: Int }
+fn bump(c: mut Counter) { c.n = c.n + 1 }
+
+let fc = bump                  // fc: fn(mut Counter): Unit
+
+fn peek(c: shared Counter): Int { lock c { c.n } }
+
+let fs = peek                   // fs: fn(shared Counter): Int
 ```
 
-- Every function declaration introduces a binding of its own signature type: `add` above has type `fn(Int, Int): Int`. Its declared parameter types and result type are exactly its type as a value.
+- Every function declaration introduces a binding of its own signature type: `add` above has type `fn(Int, Int): Int`. Its declared parameters — types and modes — and its result type are exactly its type as a value.
 - Function values are assigned, passed as arguments, returned, stored in fields and collections, and called like any other value. A call of a function-typed expression is written `f(x, y)` and has the result type of the function type.
 - **`null` is not a member of a function type.** Assigning `null` to a value of type `fn(A): B` is a compile-time error. A nullable function value must say so: `(fn(A): B)?` is the optional type over a function type, and reading it follows the optional rules in [`composite-types.md`](composite-types.md).
 
@@ -45,10 +55,12 @@ fn greet(name: String = "stranger"): String {
 
 fn area(rect: { w: Int, h: Int }): Int { rect.w * rect.h }
 fn grow(rect: mut { w: Int, h: Int }) { rect.w = rect.w + 1 }
+
+let gr = grow                  // gr: fn(mut { w: Int, h: Int }): Unit
 ```
 
 - Parameter types are written in the declaration and are never inferred from the arguments: every argument expression MUST be assignable to the type of its parameter, and arguments are evaluated left to right. The one exception is a closure, which MAY omit an annotation when the expected type or the body determines it (see [`type-relations.md`](type-relations.md)).
-- **Value and borrow modes.** A parameter written `p: T` receives an immutable borrow and `p: mut T` a mutable borrow; `move` and `copy` at the call site transfer ownership or deep-copy the argument. These rules are specified in [`../memory-and-runtime.md`](../memory-and-runtime.md) and [`../functions.md`](../functions.md).
+- **Value and borrow modes.** A parameter written `p: T` receives an immutable borrow and `p: mut T` a mutable borrow; `move` and `copy` at the call site transfer ownership or deep-copy the argument. The mode travels with the function type: a call through a value whose parameter is `mut` requires a mutable place, exactly as a direct call does (`E0404`). These rules are specified in [`../memory-and-runtime.md`](../memory-and-runtime.md) and [`../functions.md`](../functions.md).
 - **Default parameters belong to the declaration, not to the type.** The function type of a function with default parameters lists *all* of its parameters: `fn greet(name: String = "stranger"): String` has type `fn(String): String`. A direct call MAY omit any trailing parameter that the declaration gives a default to; a call through a value of type `fn(String): String` MUST pass exactly one argument, because defaults are not recoverable from a function type.
 - A trailing parameter of optional type may likewise be omitted at a direct call site, defaulting to `null`: a function declared `fn greet(name: String?): String` may be called as `greet()`.
 - **Named arguments** belong to the declaration as well: a direct call MAY name its arguments (`Button(variant: "outline", label: "Submit")`); once one argument is named, every argument MUST be named, and order is free. A call through a value of function type uses positional arguments only. See [`../functions.md`](../functions.md).
@@ -78,8 +90,18 @@ print(add5(10))
 
 - Both closure forms — the `fn(...)` function literal and the `(params): R => expr` arrow — have ordinary function types; wherever a parameter expects `fn(A): B`, either form MAY be passed.
 - A closure captures the bindings of its enclosing scope. Its type depends only on its declared parameters and result type, never on what it captures. Capture and capture mutability are specified in [`../expressions/closures.md`](../expressions/closures.md).
-- A closure is assignable to a function type exactly when a function of that signature is: same arity, assignable parameters, and an assignable result, with parameter names irrelevant. A closure whose parameters are unannotated takes its parameter types from the expected function type.
+- A closure is assignable to a function type exactly when a named function of that signature is: same arity, matching parameter modes, assignable parameter types, and an assignable result, with parameter names irrelevant. Since a closure parameter never carries a mode, the modes it must match are always the mode-less ones: a closure is assignable to `fn(T): R`, never to `fn(mut T): R` or `fn(shared T): R`. A closure whose parameters are unannotated takes its parameter types from the expected function type.
 - A closure MAY be declared `async`, in which case its evaluated type is `fn(A): Task<B>` (see below).
+
+Because a closure parameter carries no mode, a callback that needs a `mut` or
+`shared` parameter is written as a named function:
+
+```xulo
+fn log(mut n: Int) { print(n) }
+
+let ok  = log                                // OK: fn(mut Int): Unit
+let bad = fn(mut n: Int) { print(n) }         // error: a closure parameter cannot carry a mode
+```
 
 ## async function types
 
@@ -110,9 +132,9 @@ let b: fn(): Task<Int> = load             // sync function returning a task
 
 Function types are compared structurally, with variance:
 
-- **Parameters are contravariant**: `fn(A): R` MAY be used where `fn(A'): R'` is required whenever `A'` is assignable to `A` — a function that accepts *more* is usable where one that accepts *less* is expected.
-- **Results are covariant**: `fn(A): R` MAY be used where `fn(A): R'` is required whenever `R` is assignable to `R'`.
+- **Parameters contravariant, results covariant**: `fn(A): R` MAY be used where `fn(A'): R'` is required exactly when `A'` is assignable to `A`, `R` is assignable to `R'`, and the parameter modes are equal — a function that accepts *more* and produces *less* is usable where one that accepts *less* and produces *more* is expected.
 - **Arity is exact**: types with different parameter counts are never compatible; there is no optional-argument widening at the type level.
+- **Parameter modes are exact**: `fn(T): R`, `fn(mut T): R`, and `fn(shared T): R` are pairwise unrelated — none MAY be used where another is required — and no coercion converts between modes. Type subtyping never rescues a mode mismatch: `fn(Int?): Int` is not usable where `fn(mut Int): Int` is required.
 
 ```xulo
 fn count_any(v: Int?): Int { 0 }
@@ -152,8 +174,8 @@ impl Area for Rectangle {
 ```
 
 - The receiver is written `self` — an immutable borrow of the receiver — or `mut self`, a mutable borrow; a method that assigns to `self` or its fields MUST declare `mut self`, and the receiver at the call site must be a mutable place (see [`../memory-and-runtime.md`](../memory-and-runtime.md)). The receiver of a trait method and of its implementation MUST use the same form.
-- The receiver counts as the first parameter of the method's function type: the trait method `Area.area` above corresponds to `fn(Rectangle): Int`. A call `r.area()` evaluates the receiver once, passes it as the receiver argument, and has the method's declared result type.
-- **Method references are explicit paths.** The only way to reference a method as a value is the trait-qualified path `Trait.method`. Its type is the trait's method signature with `self` replaced by the receiver type, and the receiver type MUST be determined by the surrounding context — including a visible `impl` for that receiver type:
+- The receiver counts as the first parameter of the method's function type, and its mode is that parameter's mode: the trait method `Area.area` above corresponds to `fn(Rectangle): Int`, while `grow` — declared `mut self` — corresponds to `fn(mut Rectangle): Unit`. A call `r.area()` evaluates the receiver once, passes it as the receiver argument, and has the method's declared result type.
+- **Method references are explicit paths.** The only way to reference a method as a value is the trait-qualified path `Trait.method`. Its type is the trait's method signature with `self` replaced by the receiver type (a `mut self` receiver gives the first parameter its `mut` mode), and the receiver type MUST be determined by the surrounding context — including a visible `impl` for that receiver type:
 
 ```xulo
 fn main() {

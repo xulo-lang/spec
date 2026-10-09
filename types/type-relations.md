@@ -28,6 +28,11 @@ identical structure. Equality is written `A = B` and is an equivalence relation.
 - **Tuples.** `(T₁, …, Tₙ) = (U₁, …, Uₘ)` exactly when `n = m` and
   `Tᵢ = Uᵢ` for every position `i`: a tuple's arity is part of its identity,
   so two tuples of different lengths are never equal types.
+- **Functions.** Two function types are equal exactly when they have the same
+  arity, their parameter types are equal in the same order, their parameter
+  modes match position for position — parameter names never participate — and
+  their result types are equal: `fn(T): R` and `fn(mut T): R` are different
+  types.
 
 Type equality must not be confused with `==`, which compares *values*; see
 [`../expressions/operators.md`](../expressions/operators.md).
@@ -82,8 +87,10 @@ Rules by type family:
   one), no depth relation, and no common supertype across arities.
 - **Function types.** Parameters are contravariant and the return type is
   covariant: `fn(A₁, …, Aₙ): R₁ <: fn(B₁, …, Bₙ): R₂` exactly when the arities
-  are equal, `Bᵢ <: Aᵢ` for every `i`, and `R₁ <: R₂`. Nothing else relates
-  function types; in particular, differing arity is never a subtype relation.
+  are equal, `Bᵢ <: Aᵢ` for every `i`, `R₁ <: R₂`, and the parameter modes are
+  equal position for position. Nothing else relates function types; in
+  particular, differing arity is never a subtype relation, and
+  `fn(T): R`, `fn(mut T): R`, and `fn(shared T): R` are pairwise unrelated.
 - **Bounds are not supertypes.** A bound `T: Area` constrains which types may be
   substituted for `T`; it does not make `T` a subtype of `Area`. See
   [`traits.md`](traits.md).
@@ -132,7 +139,7 @@ lifts except when `A = B`.
 | `T?` | covariant | an optional only produces a `T` or `null` |
 | `T \| U` | covariant in each operand | a union only produces one of its members |
 | `T & U` | covariant in each operand | an intersection produces both operands |
-| `fn(A): R` | contravariant in `A`, covariant in `R` | it consumes `A` and produces `R` |
+| `fn(A): R` | contravariant in `A`, covariant in `R` | it consumes `A` and produces `R`; parameter modes are exact |
 | `Task<T>` | covariant | `await` only produces a `T` |
 | `Range<T>` | covariant | iteration only reads the bounds |
 | `struct S<T>` / `enum E<T>` | invariant in `T` | nominal, and fields may be written |

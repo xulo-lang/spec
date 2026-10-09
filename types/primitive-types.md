@@ -31,7 +31,7 @@ let greeting = `Hello, ${a}!`
 - String literals are written with `"` or `'`. Neither form interpolates; the backtick template form interpolates `${expr}`. Literal and template syntax is specified in [`../expressions/literals.md`](../expressions/literals.md).
 - The `+` operator concatenates two strings: both operands MUST have type `String`, and the result is `String`. Mixed operands are a compile-time error — `"count=" + 1` MUST NOT be written; render the value with a template — `` `count=${n}` `` — or a conversion function such as `str` (see [`../builtins/prelude.md`](../builtins/prelude.md)).
 - **Strings are not indexable.** `s[i]` is NOT a defined operation for a value of type `String` and is a compile-time error. The language defines no indexing, slicing, or character access on `String`; operations that inspect or derive strings are library-level and out of scope for this specification (see [`../README.md`](../README.md)).
-- `==` and `!=` are defined for two `String` operands and compare by content.
+- `==` and `!=` are defined for two `String` operands and compare by content. The quote form is irrelevant to both type and equality: `"hello" == 'hello'` is `true`.
 
 ## Numeric Types
 
@@ -96,7 +96,7 @@ Fixed-bit types map directly to C, Rust, and WASM ABI types:
 - An integer literal defaults to `Int` and a float literal to `Float`, even when no context requires it: `let x = 42` infers `Int`.
 - When an integer or float literal is used where a fixed-bit type is required — a binding annotation, a call argument, a return value — and its value is within the range of that type, the literal is coerced to the fixed-bit type: `let w: U32 = 800` has type `U32`, and `let o: F32 = 0.8` has type `F32`.
 - Coercion of non-literal values, and all other numeric conversions, are specified in [`../type-system/coercion.md`](../type-system/coercion.md). Outside of literal coercion and the arithmetic promotion rules below, numeric types do not convert implicitly: a value of type `Int` is not assignable to `Float`, and no value of type `Int` or `Float` is assignable to a fixed-bit type.
-- **Overflow.** An integer operation (`Int` or any fixed-bit integer type) that exceeds the range of its result type is a compile-time error when every operand of the operation is a constant expression, and a runtime trap otherwise. A literal that does not fit a fixed-bit type it is coerced into is likewise a compile-time error.
+- **Overflow.** An integer operation (`Int` or any fixed-bit integer type) that exceeds the range of its result type is a compile-time error when every operand of the operation is a constant expression, and a runtime trap otherwise. A runtime trap is a panic: the program stops where the condition occurs, and there is no handler (see [`../memory-and-runtime.md`](../memory-and-runtime.md)). A literal that does not fit a fixed-bit type it is coerced into is likewise a compile-time error.
 - Operations on `Float`, `F32`, and `F64` follow IEEE-754 semantics for their format.
 
 ### Arithmetic result types
@@ -135,7 +135,7 @@ let name = present ?? "stranger"
 
 ## Unit
 
-`Unit` is the type of expressions that produce no meaningful value. It has exactly one value, and the language provides no literal for that value: it is produced by expressions such as a call to a function that declares no return type.
+`Unit` is the type of expressions that produce no meaningful value. It has exactly one value, and the language provides no literal for that value — `Unit` is never written `()` (see [`composite-types.md`](composite-types.md)). Values of the type are produced by expressions such as a call to a function that declares no return type or a `return` with no value (see [`../statements/return-and-block.md`](../statements/return-and-block.md)).
 
 ```xulo
 fn log(message: String) {
@@ -209,4 +209,4 @@ The names of the built-in types are reserved for the language. A module-scope `s
 
 `Boolean`, `String`, `Int`, `Float`, `Number`, `I8`, `I16`, `I32`, `I64`, `U8`, `U16`, `U32`, `U64`, `F32`, `F64`, `Null`, `Unit`, `Unknown`, `List`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error`
 
-Declaring a type with one of these names at module scope is a compile-time error. Elsewhere — as a type parameter name or an ordinary value binding — a built-in type name is an ordinary identifier, though using one conflicts with the naming conventions in [`../names.md`](../names.md).
+Declaring a type with one of these names at module scope is a compile-time error. `List`, `Map`, and `Set` are specified in [`composite-types.md`](composite-types.md), `Task<T>` in [`function-types.md`](function-types.md), `Result` and `Error` in [`../error-handling.md`](../error-handling.md), and `View` in [`../components/view-syntax.md`](../components/view-syntax.md); every other name above is specified in this file. Elsewhere — as a type parameter name or an ordinary value binding — a built-in type name is an ordinary identifier, though using one conflicts with the naming conventions in [`../names.md`](../names.md).

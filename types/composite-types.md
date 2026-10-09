@@ -66,6 +66,11 @@ let ages = Map<Int, String>{ 30: "thirty" }     // typed form: keys are not iden
 - The key type `K` MUST be hashable. The hashable types are `String`, `Int`,
   `Float`, `Boolean`, and enum types whose variants carry no payload. Any
   other key type is a compile-time error.
+- **Key identity.** Two keys that are `==` name the same entry. `Float` is
+  the exception: IEEE-754 `NaN` never equals itself, yet every `NaN` key
+  names one and the same entry — a write under one `NaN` key overwrites the
+  entry stored under any other — and `-0.0` and `0.0` name the same entry. A
+  hash of a `Float` key MUST agree with this identity.
 - The value type `V` may be any type, `Unknown` included.
 - Reading and writing entries with a subscript (`counts["a"]`, `counts["a"] = 1`)
   and iteration over keys with `for … in` are core syntax (see
@@ -73,7 +78,11 @@ let ages = Map<Int, String>{ 30: "thirty" }     // typed form: keys are not iden
   [`../expressions/control-flow.md`](../expressions/control-flow.md)).
 - **The member form** `m.key` is available when `m` has type `Map<String, V>`:
   it reads the entry named by the identifier and has type `V`. A missing key
-  is the same runtime error as the subscript read of that key. On a map whose
+  is the same runtime error as the subscript read of that key. The
+  `null`-tolerant form `m?.key` follows the general `?.` rules
+  ([`../expressions/path-and-access.md`](../expressions/path-and-access.md)):
+  a `null` map yields `null`, the expression has type `V?`, and a missing
+  key on a non-`null` map is still that runtime error. On a map whose
   key type is not `String` the member form is not available. All other map
   operations — removal, size, entry tests, bulk conversion — are prelude
   functions (see [`../builtins/prelude.md`](../builtins/prelude.md)).
@@ -89,8 +98,8 @@ let table: Map<String, String> = { name: "x" }      // the annotation types it
 
 A `Set<T>` is an unordered collection of unique values: it contains each distinct value at most once.
 
-- The element type `T` MUST be hashable — the same set of types admitted as map keys: `String`, `Int`, `Float`, `Boolean`, and payload-free enums. Any other element type is a compile-time error.
-- The language defines no set literal. Sets are constructed with the prelude constructor and manipulated with the prelude set operations (see [`../builtins/prelude.md`](../builtins/prelude.md)).
+- The element type `T` MUST be hashable — the same set of types admitted as map keys: `String`, `Int`, `Float`, `Boolean`, and payload-free enums. Any other element type is a compile-time error. Element identity follows the key identity rule above: every `NaN` is one element of a `Set<Float>`.
+- The language defines no set literal: the brace syntax belongs to `Map` — `{}` is its empty literal — so sets are constructed with the prelude constructor and manipulated with the prelude set operations (see [`../builtins/prelude.md`](../builtins/prelude.md)).
 - A set has no order: the language specifies no iteration order for `Set<T>`, and programs MUST NOT depend on one.
 
 ## struct
@@ -136,7 +145,7 @@ print(missing?.email ?? "unknown")
 ```
 
 - **Reading an optional.** A value of type `T?` MUST be checked or propagated before it is used where `T` is required. Using an optional where a non-optional type is expected — as a `String` operand of `+`, as a field of type `T`, as an argument of type `T` — is a compile-time error.
-- A comparison against `null` narrows the type: in a branch guarded by `x != null`, the binding `x` has type `T`; in the opposite branch it has type `Null`. The nullish operator `a ?? b` (operands of type `T?` and `U`) has type `T | U`. A null comparison does **not** narrow a value of type `Unknown` — only a `match` type pattern does (see [`primitive-types.md`](primitive-types.md)).
+- A comparison against `null` narrows a `T?` binding: in a branch guarded by `x != null`, the binding `x` has type `T`, and in the opposite branch it has type `Null`. The rule does not apply to `Unknown` — only a `match` type pattern narrows a value of that type (see [`primitive-types.md`](primitive-types.md)). The nullish operator `a ?? b` (operands of type `T?` and `U`) has type `T | U`.
 
 ```xulo
 fn describe(v: String?): String {
@@ -182,7 +191,7 @@ let which: String | Int = 1
 
 ## Intersection types
 
-An intersection type `T & U` describes a value that satisfies both `T` and `U`. Intersections combine trait contracts: every operand of `&` MUST be a trait type.
+An intersection type `T & U` describes a value that satisfies both `T` and `U`. Intersections combine trait contracts: every operand of `&` MUST be a trait type. A value carries exactly one nominal type, so two distinct `struct` or `enum` types would intersect in nothing; traits are the contracts a single value can satisfy together, and that is what `&` combines.
 
 ```xulo
 trait Area { fn area(self): Int }
