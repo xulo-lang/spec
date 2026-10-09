@@ -1,7 +1,7 @@
 # Control Flow
 
 Xulo is expression-oriented: `if` and `match` produce values, `for` and `while`
-are statements of type `unit`, and `break`/`continue` jump to loop boundaries.
+are statements of type `Unit`, and `break`/`continue` jump to loop boundaries.
 This chapter defines their syntax, typing, evaluation order, and scoping;
 failure propagation and `panic` are specified in
 [`error-handling.md`](../error-handling.md). The expression layer as a whole is
@@ -15,7 +15,7 @@ written as an expression statement (see
 [`expression-statements.md`](../statements/expression-statements.md)). One rule
 covers statement position everywhere in this specification:
 
-> An expression statement that is not `unit` is an error, EXCEPT when it is a
+> An expression statement that is not `Unit` is an error, EXCEPT when it is a
 > control-flow construct (`if`, `match`, `for`, `while`) whose value is
 > discarded.
 
@@ -37,25 +37,72 @@ if condition {
 }
 ```
 
-- The condition MUST have type `boolean`. There is no truthiness: any other
+- The condition MUST have type `Boolean`. There is no truthiness: any other
   condition type is a compile-time error
   ([`checking-rules.md`](../type-system/checking-rules.md)).
 - `else if` is not a separate construct: it is an `if` used as the `else`
   branch and may be chained without limit.
+- When the condition of an `if` — directly, or the condition wrapped in
+  parentheses — is an **is-expression** `x is T` or `x is not T`, where `x` is
+  an identifier of type `S` and `T` is a testable type assignable to `S`, the
+  branches check with `x` narrowed:
+  - with `x is T`: the then branch checks with `x : T`, and the else branch
+    checks with `x` at the union of the members of `S` that `T` does not
+    cover. For `S = Unknown` that is `Unknown` — no member of it is removed;
+    for `S = String | Int` with `T = String` that is `Int`; for `S = String?`
+    with `T = String` that is `Null`. When no member remains — `S = T`, or
+    `S = Unknown` with `T = Unknown` — the else branch never runs;
+  - with `x is not T` the two branch types swap;
+  - an assignment to `x` inside a branch ends the narrowing: from that point
+    on, the branch checks with `x : S` again.
+  A type that is not testable, or one that does not fit `S`, is `E0222`
+  ([`errors.md`](../type-system/errors.md)). Narrowing belongs to the `if`
+  condition alone: in every other `Boolean` position — `?:`, `while`, the
+  operands of `and` and `or`, under `!` — `is` is an ordinary test and `x`
+  keeps type `S`, and a left operand that is not an identifier (a member
+  access, a call) yields a `Boolean` but narrows nothing. The typing rules are
+  in [`checking-rules.md`](../type-system/checking-rules.md).
 - The condition is evaluated once; exactly one branch is evaluated.
 - `if` is an expression. Its type is determined as follows:
   - with an `else` branch: both branches MUST have a common type
     ([`checking-rules.md`](../type-system/checking-rules.md)) and the `if` has
     that common type; branches with no common type are a compile-time error
     ([`errors.md`](../type-system/errors.md));
-  - without an `else` branch: the type is `unit`, and the value of the then
+  - without an `else` branch: the type is `Unit`, and the value of the then
     branch, if any, is discarded. In particular, such an `if` cannot supply a
-    value of any type other than `unit`.
+    value of any type other than `Unit`.
 - In statement position the rule quoted in the introduction applies.
 
 ```xulo
-// expression position: both branches are `string`, so the type is `string`
+// expression position: both branches are `String`, so the type is `String`
 let parity = if n % 2 == 0 { "even" } else { "odd" }
+```
+
+```xulo
+fn describe(data: Unknown) {
+  if data is String {
+    print(data)            // `data` is `String` here
+  } else {
+    print("not a string")  // `data` is `Unknown` here: `Unknown` minus
+                           // `String` is not a type, so nothing is removed
+  }
+}
+
+fn step(data: String | Int) {
+  if data is Int {
+    print(data + 1)        // `data` is `Int` here
+  } else {
+    print(data)            // `data` is `String` here
+  }
+}
+
+fn negated(data: Unknown) {
+  if data is not String {
+    print("nope")          // `data` is `Unknown` here
+  } else {
+    print(data)            // `data` is `String` here
+  }
+}
 ```
 
 ## `match` expressions
@@ -100,7 +147,7 @@ match score {          // statement position: the arm values are discarded
 | Variant | `Enum::Variant` | a payload-less variant |
 | Variant with payload | `Enum::Variant(p1, ..., pn)` | that variant; one sub-pattern per payload field, in declaration order |
 | Struct deconstruction | `Type(p1, ..., pn)` | a value of that struct type; one sub-pattern per field, in declaration order |
-| Type | `string s`, `unknown _`, `string \| int v` | a value whose type is the written type; binds the name for the body of the arm |
+| Type | `String s`, `Unknown _`, `String \| Int v` | a value whose type is the written type; binds the name for the body of the arm |
 | Range | `a..<b`, `a...b` | numeric values inside the half-open or closed range |
 
 - Enum variants are written with `::` in patterns and in expressions
@@ -108,30 +155,31 @@ match score {          // statement position: the arm values are discarded
 - Sub-patterns nest arbitrarily: `Shape::Dot(Point(x, y))` matches a variant
   whose payload is a `Point` and then deconstructs that `Point`.
 - Named payload fields are still matched positionally: `Shape::Rect(w, h)`
-  matches a `Rect(width: int, height: int)` variant in declaration order.
+  matches a `Rect(width: Int, height: Int)` variant in declaration order.
 - A payload or field position that is not bound MUST be written `_`:
   `Shape::Circle(_)` matches any radius without binding it.
 - The operands of a range pattern MUST be numeric literals of the same numeric
   type as the scrutinee. `0...9` includes both endpoints, `0..<10` excludes the
   upper endpoint.
 - **Type patterns** test the type of the scrutinee. The form is `Type binder`,
-  where `binder` is an identifier or `_`: `string s` matches a value of type
-  `string` and binds `s : string` for the arm's body, and `unknown _` accepts
-  any `unknown` value without binding it. A type pattern is the language's only
-  type test — there is no `is` operator and no guard — and `match` is the only
-  place it is written.
-- The written type MUST be a **testable type**: a base type name (`int`,
-  `string`, `boolean`, `float`, `number`, the fixed-bit numerics, `null`,
-  `unit`, `View`), a non-generic `struct` or `enum`, `unknown`, or an optional
-  or union built from testable types (`string?`, `string | int`). A type
-  argument list (`list<int>`, `map<string, int>`) and a type parameter may
-  never appear in a pattern, and any other type — a `list`, a `map`, a
+  where `binder` is an identifier or `_`: `String s` matches a value of type
+  `String` and binds `s : String` for the arm's body, and `Unknown _` accepts
+  any `Unknown` value without binding it. A type pattern is `match`'s type
+  test; the same test outside `match` is the `is` operator (see
+  [`if` expressions](#if-expressions)), and there is no guard — an arm is
+  selected by its pattern alone.
+- The written type MUST be a **testable type**: a base type name (`Int`,
+  `String`, `Boolean`, `Float`, `Number`, the fixed-bit numerics, `Null`,
+  `Unit`, `View`), a non-generic `struct` or `enum`, `Unknown`, or an optional
+  or union built from testable types (`String?`, `String | Int`). A type
+  argument list (`List<Int>`, `Map<String, Int>`) and a type parameter may
+  never appear in a pattern, and any other type — a `List`, a `Map`, a
   function type, a generic instantiation — is not testable; a pattern naming
   one is a compile-time error
   ([`../type-system/errors.md`](../type-system/errors.md)).
 - The written type MUST be assignable to the scrutinee's type after alias
-  expansion: `int i` fits a scrutinee of type `int` or `string | int`, but not
-  one of type `string` (`E0303`). A designator that resolves to something that
+  expansion: `Int i` fits a scrutinee of type `Int` or `String | Int`, but not
+  one of type `String` (`E0303`). A designator that resolves to something that
   is not a type is `E0101`.
 - **Tuples have no pattern form.** A tuple scrutinee is matched with a
   binding or `_`; to test its elements, read them with `p.0` or destructure
@@ -141,32 +189,32 @@ match score {          // statement position: the arm values are discarded
   `match` is a compile-time error.
 
 ```xulo
-struct Point { x: int, y: int }
+struct Point { x: Int, y: Int }
 
 enum Shape {
   Dot(Point)
-  Rect(int, int)
+  Rect(Int, Int)
 }
 
-fn describe(s: Shape): string {
+fn describe(s: Shape): String {
   match s {
     Shape::Dot(Point(x, y)) => `point ${x},${y}`
     Shape::Rect(w, h) => `${w}x${h}`
   }
 }
 
-fn tag(v: string | int): string {
+fn tag(v: String | Int): String {
   match v {
-    string s => s
-    int i => str(i)
+    String s => s
+    Int i => str(i)
   }
 }
 
-fn name(v: unknown): string {
+fn name(v: Unknown): String {
   match v {
-    string s => s
+    String s => s
     null => "none"
-    _ => "other"        // unknown is never exhausted by type patterns
+    _ => "other"        // Unknown is never exhausted by type patterns
   }
 }
 ```
@@ -177,17 +225,17 @@ fn name(v: unknown): string {
   a wildcard `_`, a binding `x`, or a type pattern of that exact type.
 - A `match` MUST be exhaustive for the scrutinee's type. **`enum`**: every
   variant, by a variant pattern (possibly nested inside another pattern), or a
-  covering arm. **`boolean`**: `true` and `false`, or a covering arm. **A
+  covering arm. **`Boolean`**: `true` and `false`, or a covering arm. **A
   union**: every member — by a type pattern of that member, by its literal
   pattern when the member is a literal type, by `true` and `false` when the
-  member is `boolean`, or by a covering arm — and a covering arm is REQUIRED
+  member is `Boolean`, or by a covering arm — and a covering arm is REQUIRED
   as soon as any member is not testable, because only a covering arm can
-  match it; `string | int` is exhausted by `string s` and `int i`, and
+  match it; `String | Int` is exhausted by `String s` and `Int i`, and
   `"active" | "inactive"` by its two literals. **Any other type**: a covering
   arm, because literal and range patterns cannot cover a whole type and a type
-  pattern can cover only a testable type exactly — in particular `list<int>`,
-  a `map`, and `unknown` need one, and `unknown` is exhausted only by an exact
-  `unknown` pattern or a covering arm, never by enumerating concrete types.
+  pattern can cover only a testable type exactly — in particular `List<Int>`,
+  a `Map`, and `Unknown` need one, and `Unknown` is exhausted only by an exact
+  `Unknown` pattern or a covering arm, never by enumerating concrete types.
 - A `match` that fails these requirements is a compile-time error
   ([`errors.md`](../type-system/errors.md)).
 - An arm that can never be selected is an error. In particular, every arm
@@ -196,7 +244,7 @@ fn name(v: unknown): string {
   covered by an earlier arm is unreachable.
 
 ```xulo
-fn describe(flag: boolean): string {
+fn describe(flag: Boolean): String {
   match flag {
     true => "yes"
     false => "no"
@@ -234,15 +282,15 @@ for item in items {
 
 | Iterable type | Loop binding | Iteration order |
 |---------------|--------------|-----------------|
-| `list<T>` | `T` | index order |
-| `map<K, V>` | `K` | insertion order of keys |
-| `set<T>` | `T` | unspecified; programs MUST NOT depend on one |
+| `List<T>` | `T` | index order |
+| `Map<K, V>` | `K` | insertion order of keys |
+| `Set<T>` | `T` | unspecified; programs MUST NOT depend on one |
 | `Range<T>` | `T` | ascending from `start` |
 
-- Iterating a `map` visits its **keys**; the corresponding values are read with
+- Iterating a `Map` visits its **keys**; the corresponding values are read with
   a subscript (see [`path-and-access.md`](path-and-access.md)). Iterating a
-  `list`, `map`, or `Range` is core syntax; the other operations on `map` and
-  `set` are prelude functions (see
+  `List`, `Map`, or `Range` is core syntax; the other operations on `Map` and
+  `Set` are prelude functions (see
   [`../types/composite-types.md`](../types/composite-types.md)).
 - The loop variable is a fresh **immutable** binding for every iteration. It
   MAY shadow an outer binding of the same name, MUST NOT be assigned, and is
@@ -250,10 +298,10 @@ for item in items {
   binding declared outside the loop. Because each iteration creates a distinct
   binding, a closure created during an iteration captures that iteration's
   binding (see [`closures.md`](closures.md)).
-- The value of a `for` loop is `unit`.
+- The value of a `for` loop is `Unit`.
 
 ```xulo
-fn sum(xs: list<int>): int {
+fn sum(xs: List<Int>): Int {
   let mut acc = 0
   for x in xs {
     acc = acc + x
@@ -298,10 +346,10 @@ while count < 10 {
 ```
 
 - The condition is evaluated before every iteration and MUST have type
-  `boolean`; there is no truthiness
+  `Boolean`; there is no truthiness
   ([`checking-rules.md`](../type-system/checking-rules.md)).
 - The body runs zero or more times; `while` is a statement and its value is
-  `unit`.
+  `Unit`.
 
 ## `break` and `continue`
 

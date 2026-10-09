@@ -14,7 +14,7 @@ level of a component body:
 
 ```xulo
 fn Counter(): View {
-  @State let count: int = 0
+  @State let count: Int = 0
 
   @Effect fn() { print("mounted") }
 
@@ -47,8 +47,8 @@ An effect MAY be given a dependency list: a list literal of expressions,
 written after a comma following the effect's closure.
 
 ```xulo
-fn UserProfile(id: string): View {
-  @State let profile: string = ""
+fn UserProfile(id: String): View {
+  @State let profile: String = ""
 
   @Effect fn() { fetchProfile(id) }, [id]
 
@@ -74,7 +74,7 @@ fn UserProfile(id: string): View {
   component, mount included.
 
 ```xulo
-fn Search(query: string): View {
+fn Search(query: String): View {
   @Effect fn() { print(`searching: ${query}`) }, [query]
   @Effect fn() { print("this runs on every re-run") }
 
@@ -88,7 +88,7 @@ An effect body may return a function. Doing so registers that function as the
 effect's **cleanup**:
 
 ```xulo
-fn UserProfile(id: string): View {
+fn UserProfile(id: String): View {
   @Effect fn() {
     setupSubscription(id)
     return fn() { cleanupSubscription() }
@@ -98,7 +98,7 @@ fn UserProfile(id: string): View {
 ```
 
 - When an effect body evaluates to a function, that function MUST have type
-  `fn(): unit`, and it is registered as the effect's **cleanup**. Every other
+  `fn(): Unit`, and it is registered as the effect's **cleanup**. Every other
   value of the body is discarded, so a body that ends in a call — or in a value
   of any other type — registers no cleanup.
 - Registering **replaces** the cleanup registered by the effect's previous run:
@@ -170,7 +170,7 @@ This rule is normative and has no exceptions.
 | `@Effect` | Written outside the top level of a component body | error |
 | `@Effect` body | Written with `await` | error |
 | Dependency list | Not a list literal | error |
-| Effect body | Value is a function whose type is not `fn(): unit` | error |
+| Effect body | Value is a function whose type is not `fn(): Unit` | error |
 
 Several effects MAY be declared in one body, in any order relative to the
 other top-level items; their relative order is what orders their invocation and

@@ -53,7 +53,7 @@ Digit      ::= '0' .. '9'
 
 ## Keywords
 
-The language has exactly the following closed set of 38 keywords; every other
+The language has exactly the following closed set of 40 keywords; every other
 word is an ordinary identifier unless it is reserved below. No keyword MAY be
 used as one.
 
@@ -91,10 +91,12 @@ used as one.
 | | `shared` | Declares state that may be shared between tasks |
 | | `spawn` | Starts a task, thread, process, or pooled job |
 | Literals and operators | `and` | Logical conjunction (word operator) |
-| | `false` | The `boolean` literal for falsity |
+| | `false` | The `Boolean` literal for falsity |
+| | `is` | Type test (word operator) |
+| | `not` | Negated type test (word operator) |
 | | `null` | The null literal; an optional with no content |
 | | `or` | Logical disjunction (word operator) |
-| | `true` | The `boolean` literal for truth |
+| | `true` | The `Boolean` literal for truth |
 | Ownership | `copy` | Evaluates an expression and deep-copies the result |
 | | `move` | Transfers ownership of a value out of its binding |
 
@@ -217,8 +219,9 @@ types.
 ## Operators and Delimiters
 
 The complete inventory of operator and delimiter tokens is below; the word
-operators `and` and `or` are tokens too, though spelled as identifiers, and
-precedence is defined in [expressions/operators.md](expressions/operators.md).
+operators `and`, `or`, `is`, and `not` are tokens too, though spelled as
+identifiers, and precedence is defined in
+[expressions/operators.md](expressions/operators.md).
 
 | Category | Tokens | Reading |
 |----------|--------|---------|
@@ -228,6 +231,7 @@ precedence is defined in [expressions/operators.md](expressions/operators.md).
 | Member access | `.` `?.` | Field, method, namespace member, tuple position; optional member |
 | Assignment | `=` `:=` | Assignment; sugar for a mutable binding |
 | Comparison | `==` `!=` `<` `>` `<=` `>=` | Equality and relational tests |
+| Type test | `is` `not` | Type test and its negation |
 | Range and spread | `..<` `...` | Half-open and closed ranges; spread inside a literal |
 | Arithmetic | `+` `-` `*` `/` `%` `**` | Additive, multiplicative, modulo, power |
 | Bitwise and shift | `&` `\|` `^` `~` `<<` `>>` | And, or, xor, complement, shifts |
@@ -255,6 +259,7 @@ position where no token matches is a lexical error.
 | `[1...5]` | `[` `1` `...` `5` `]` | One element: a closed range, not a spread |
 | `[...xs]` | `[` `...` `xs` `]` | One element: a spread of `xs` |
 | `iffy` | `iffy` | One identifier; `if` is not split off |
+| `isnot` | `isnot` | One identifier; `is` is not split off |
 | `a..b` | `a` `.` `.` `b` | Two `.` tokens; `..` is not a token |
 | `p.0.1` | `p` `.` `0` `.` `1` | Two chained positional accesses, not the float `0.1` |
 | `p?.0` | `p` `?.` `0` | Optional positional access; `?` joins the following `.` |

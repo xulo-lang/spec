@@ -15,10 +15,10 @@ declaration. Functions, `struct`s, `enum`s, `type` aliases, and `impl` blocks
 MAY all be parameterized.
 
 ```xulo
-fn first<T>(xs: list<T>): T { xs[0] }
+fn first<T>(xs: List<T>): T { xs[0] }
 struct Pair<K, V> { key: K, value: V }
 enum Either<L, R> { Left(L), Right(R) }
-type ApiResponse<T> = { data: T?, error: string? }
+type ApiResponse<T> = { data: T?, error: String? }
 
 struct Wrapper<T> { value: T }
 impl<T> Wrapper<T> {
@@ -48,14 +48,14 @@ brackets MUST NOT be written adjacently. Whenever two `>` characters would
 touch, a space MUST be written between them:
 
 ```xulo
-let nested: list<map<string, list<int> > > = []
+let nested: List<Map<String, List<Int> > > = []
 ```
 
 | Form | Well-formed |
 |------|-------------|
-| `list<list<T> >` | yes |
-| `list<list<T>>` | no — `>>` would be read as the shift token |
-| `list<list<list<T> > >` | yes |
+| `List<List<T> >` | yes |
+| `List<List<T>>` | no — `>>` would be read as the shift token |
+| `List<List<List<T> > >` | yes |
 
 The rule applies at every generic argument position, including in bounds.
 
@@ -66,8 +66,8 @@ written either inline after the parameter name or in a `where` clause that
 follows the whole signature.
 
 ```xulo
-fn area_of<T: Area>(shape: T): float { Area.area(shape) }
-fn perimeter_of<T>(shape: T): float where T: Area { Area.perimeter(shape) }
+fn area_of<T: Area>(shape: T): Float { Area.area(shape) }
+fn perimeter_of<T>(shape: T): Float where T: Area { Area.perimeter(shape) }
 ```
 
 Rules:
@@ -102,14 +102,14 @@ Generic type arguments are never written at a call site; they are always
 *inferred* from the types of the actual arguments.
 
 ```xulo
-let n = first([1, 2, 3])    // T = int
-let s = first(["a", "b"])   // T = string
+let n = first([1, 2, 3])    // T = Int
+let s = first(["a", "b"])   // T = String
 ```
 
 Rules:
 
 - The language has **no syntax for explicit type arguments in a call**:
-  `first<int>(…)` and `map<string, int>(…)` are ill-formed — the call production
+  `first<Int>(…)` and `Map<String, Int>(…)` are ill-formed — the call production
   of the grammar has no type argument list ([`../grammar.md`](../grammar.md)).
 - Type arguments are determined by *unification* between the declared parameter
   types and the argument types. Unification decomposes type constructors
@@ -117,26 +117,26 @@ Rules:
 
   | Constraint | Result |
   |------------|--------|
-  | `list<T>` ≟ `list<int>` | `T = int` |
-  | `map<K, V>` ≟ `map<string, int>` | `K = string`, `V = int` |
-  | `T` ≟ `fn(int): boolean` | `T = fn(int): boolean` |
-  | `T?` ≟ `string?` | `T = string` |
-  | `list<T>` ≟ `map<string, int>` | fails (different heads) |
+  | `List<T>` ≟ `List<Int>` | `T = Int` |
+  | `Map<K, V>` ≟ `Map<String, Int>` | `K = String`, `V = Int` |
+  | `T` ≟ `fn(Int): Boolean` | `T = fn(Int): Boolean` |
+  | `T?` ≟ `String?` | `T = String` |
+  | `List<T>` ≟ `Map<String, Int>` | fails (different heads) |
 
 - A parameter occurring twice in a signature receives one solution; if two
   constraints demand different types for it, inference fails with a diagnostic.
 - An *expected type* MAY determine what the arguments leave undetermined — an
   empty list literal, a numeric literal, a closure with unannotated parameters.
   It MUST NOT override a type already fixed by the arguments: in
-  `let bad: string = first([1, 2])`, `T` is `int`, so the declaration is an
-  error rather than an invitation to choose `T = string`.
+  `let bad: String = first([1, 2])`, `T` is `Int`, so the declaration is an
+  error rather than an invitation to choose `T = String`.
 - Inference MUST fail with a diagnostic when a parameter remains
   under-constrained:
 
   ```xulo
-  fn empty<T>(): list<T> { [] }
+  fn empty<T>(): List<T> { [] }
   let xs = empty()             // error: T is not determined
-  let ys: list<int> = empty()  // OK: T = int from the expected type
+  let ys: List<Int> = empty()  // OK: T = Int from the expected type
   ```
 
   Since explicit type arguments do not exist, such a call is repaired only by
@@ -153,15 +153,16 @@ Each distinct assignment of type arguments identifies a separate
 - A generic declaration behaves **as if** a distinct, non-generic copy were
   written for each instantiation, with every occurrence of the type parameters
   replaced by the corresponding type arguments.
-- Instantiations are independent: using `first` at `int` and at `string` means
+- Instantiations are independent: using `first` at `Int` and at `String` means
   exactly what two hand-written functions `first_int` and `first_string` would
   mean.
 - Wherever a type parameter occurs, distinct instantiations are distinct types:
-  `Pair<int, string>` differs from `Pair<string, int>`, and `list<int>` differs
-  from `list<string>`.
+  `Pair<Int, String>` differs from `Pair<String, Int>`, and `List<Int>` differs
+  from `List<String>`.
 - No operation observes a type argument at runtime: no value carries one, no
-  expression can request one, and no type pattern may name a type argument or
-  a type parameter — a `match` type pattern tests a whole type only
+  expression can request one, and neither a type pattern nor the right operand
+  of `is` may name a type argument or a type parameter — both test a whole
+  type only
   ([`../expressions/control-flow.md`](../expressions/control-flow.md)). There is therefore
   no observable difference between a program written with generics and the same
   program written with one concrete definition per instantiation. Diagnostics are
@@ -175,7 +176,7 @@ declared by `Trait`, and the trait's methods may also be invoked explicitly
 through the bound.
 
 ```xulo
-fn describe<T: Area>(shape: T): float {
+fn describe<T: Area>(shape: T): Float {
   shape.area() + Area.area(shape)   // member form and explicit form, one target
 }
 ```
@@ -202,25 +203,25 @@ themselves are allowed, and carry the same termination caveats as ordinary
 recursion (see [`../functions.md`](../functions.md)).
 
 ```xulo
-struct Node<T> { value: T, children: list<Node<T> > }
+struct Node<T> { value: T, children: List<Node<T> > }
 
-fn total<T>(node: Node<T>): int {
+fn total<T>(node: Node<T>): Int {
   let mut sum = 1
   for child in node.children { sum = sum + total(child) }
   sum
 }
 
-fn outer<T>(x: T, n: int): int {
+fn outer<T>(x: T, n: Int): Int {
   if n == 0 { 0 } else { inner(x, n - 1) }
 }
 
-fn inner<T>(x: T, n: int): int {
+fn inner<T>(x: T, n: Int): Int {
   if n == 0 { 1 } else { outer(x, n - 1) }
 }
 ```
 
 - A generic type may mention itself in its own type arguments (`Node<T>`
-  contains `list<Node<T> >`); that describes finite values and needs no special
+  contains `List<Node<T> >`); that describes finite values and needs no special
   rule. Mutually recursive generic functions may instantiate each other at equal
   or different type arguments; every instantiation is subject to the inference
   and bound rules above.
@@ -235,8 +236,8 @@ struct Holder<T> { value: T }
 
 impl<T> Holder<T> { fn get(self): T { self.value } }
 
-let h = Holder(value: 42)   // Holder<int>
-let v = h.get()             // int
+let h = Holder(value: 42)   // Holder<Int>
+let v = h.get()             // Int
 ```
 
 **Identity function.** The smallest generic function: it returns its argument
@@ -250,13 +251,13 @@ fn identity<T>(x: T): T { x }
 element type; each is inferred from one argument.
 
 ```xulo
-fn map<T, U>(xs: list<T>, f: fn(T): U): list<U> {
-  let mut out: list<U> = []
+fn map<T, U>(xs: List<T>, f: fn(T): U): List<U> {
+  let mut out: List<U> = []
   for x in xs {
     out = out + [f(x)]
   }
   out
 }
 
-let labels = map([1, 2, 3], fn(n: int): string { str(n) })  // list<string>
+let labels = map([1, 2, 3], fn(n: Int): String { str(n) })  // List<String>
 ```

@@ -173,6 +173,7 @@ type ExpressionNode =
   | BooleanLiteral
   | NullLiteral
   | BinaryExpr
+  | IsExpr
   | UnaryExpr
   | CallExpr
   | MemberExpr
@@ -194,6 +195,13 @@ interface BinaryExpr extends BaseNode {
   op: string;
   left: ExpressionNode;
   right: ExpressionNode;
+}
+
+interface IsExpr extends BaseNode {
+  type: 'IsExpr';
+  operand: ExpressionNode;
+  target: TypeNode;
+  negated: boolean;
 }
 
 interface CallExpr extends BaseNode {

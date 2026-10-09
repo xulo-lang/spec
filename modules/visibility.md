@@ -16,10 +16,10 @@ the end of the file, and, for the declarations that forward-reference
 else.
 
 ```xulo
-struct Account { balance: int }        // private type
-fn debit(a: Account, n: int): Account { a }   // private function
+struct Account { balance: Int }        // private type
+fn debit(a: Account, n: Int): Account { a }   // private function
 
-pub struct Ledger { entries: int }     // exported type
+pub struct Ledger { entries: Int }     // exported type
 ```
 
 Privacy attaches to the *name*: no route reaches a private name from another
@@ -37,11 +37,11 @@ one name the declaration introduces, so that another module which imports it
 may refer to it:
 
 ```xulo
-pub fn add(a: int, b: int): int { a + b }
-pub struct User { name: string, age: int }
+pub fn add(a: Int, b: Int): Int { a + b }
+pub struct User { name: String, age: Int }
 pub enum Status { Active, Inactive }
-pub trait Shape { fn area(self): float }
-pub type Score = int
+pub trait Shape { fn area(self): Float }
+pub type Score = Int
 pub const PI = 3.14
 pub let appName = "xulo"
 ```
@@ -51,10 +51,10 @@ is never part of an interface, so there is no `pub impl`. The visibility of the
 methods inside an `impl` is decided by each method's own `pub`:
 
 ```xulo
-struct Counter { n: int }
+struct Counter { n: Int }
 
 impl Counter {
-  pub fn value(self): int { self.n }          // callable from other modules
+  pub fn value(self): Int { self.n }          // callable from other modules
   fn bump(mut self) { self.n = self.n + 1 }   // private to this module
 }
 ```
@@ -66,8 +66,8 @@ to modules that can already see the type that declares it.
 
 ```xulo
 pub struct User {
-  pub name: string   // readable and writable outside this module
-  age: int           // reachable only inside this module
+  pub name: String   // readable and writable outside this module
+  age: Int           // reachable only inside this module
 }
 ```
 
@@ -106,8 +106,8 @@ chain may see:
 
 ```xulo
 // math.xulo
-pub fn add(a: int, b: int): int { a + b }
-fn helper(n: int): int { n }
+pub fn add(a: Int, b: Int): Int { a + b }
+fn helper(n: Int): Int { n }
 
 // main.xulo
 import { add, helper } from "math"   // error: `helper` is not public
@@ -168,7 +168,7 @@ outside the module that declares it.
 
 ```xulo
 // cache.xulo
-struct Cache { entries: int }              // private type
+struct Cache { entries: Int }              // private type
 
 pub fn load(): Cache { Cache(entries: 0) } // error[E0604]: `Cache` is not public
 ```

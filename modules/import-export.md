@@ -92,11 +92,11 @@ Two families of forms put names into a module's interface.
 **Declarations marked `pub`.** Every declaration form carries its own `pub`:
 
 ```xulo
-pub fn add(a: int, b: int): int { a + b }
-pub struct User { pub name: string, age: int }
+pub fn add(a: Int, b: Int): Int { a + b }
+pub struct User { pub name: String, age: Int }
 pub enum Status { Active, Inactive }
-pub trait Shape { fn area(self): float }
-pub type Score = int
+pub trait Shape { fn area(self): Float }
+pub type Score = Int
 pub const PI = 3.14
 pub let appName = "xulo"         // a file-scope binding may be exported too
 ```

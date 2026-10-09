@@ -59,9 +59,9 @@ beyond them:
 - **Annotations** — parameter types, `let x: T`, return types, and field
   declarations. Module-level signatures are fully annotated; this is the
   inference boundary of [`../functions.md`](../functions.md).
-- **Literal defaults** — an integer literal is `int`, a float literal is
-  `float`, a string literal is `string`, `true` and `false` are `boolean`, and
-  a template literal is `string`, unless an expected type adapts a literal
+- **Literal defaults** — an integer literal is `Int`, a float literal is
+  `Float`, a string literal is `String`, `true` and `false` are `Boolean`, and
+  a template literal is `String`, unless an expected type adapts a literal
   ([`coercion.md`](coercion.md)).
 - **Local inference** — inside a function body, an unannotated `let`, a
   closure's omitted annotations, and the type arguments of a generic call are

@@ -43,8 +43,8 @@ holds and what an assignment does.
 
 | Category | Types | A binding denotes | `let x = e` and assignment |
 |----------|-------|-------------------|----------------------------|
-| **Value** | `boolean`, `string`, `int`, `float`, `number`, fixed-bit numerics, `null`, `unit`, `struct`, `enum`, `Range<T>`, tuples | the value itself | a fresh, independent copy of `e`'s value; a `struct`, `enum`, or tuple copy is shallow — each field or element is copied by its own category |
-| **Reference** | `list<T>`, `map<K, V>`, `set<T>` | a reference to one shared value | the same value, shared: `x` and `e` then denote the one underlying value |
+| **Value** | `Boolean`, `String`, `Int`, `Float`, `Number`, fixed-bit numerics, `Null`, `Unit`, `struct`, `enum`, `Range<T>`, tuples | the value itself | a fresh, independent copy of `e`'s value; a `struct`, `enum`, or tuple copy is shallow — each field or element is copied by its own category |
+| **Reference** | `List<T>`, `Map<K, V>`, `Set<T>` | a reference to one shared value | the same value, shared: `x` and `e` then denote the one underlying value |
 
 Four further values carry **identity** rather than content — function values
 (closures), `Task<T>`, `View`, and `Error` — and behave as references to a
@@ -63,7 +63,7 @@ Consequences that follow directly from the table:
   ([Ownership with `move`](#ownership-with-move)).
 
 ```xulo
-struct Point { x: int, y: int }
+struct Point { x: Int, y: Int }
 
 let a = Point(x: 1, y: 2)
 let mut b = a        // b holds an independent copy of a's value
@@ -82,8 +82,8 @@ and never copies it, whatever the category ([Borrowing](#borrowing)).
 
 ## Equality and identity
 
-`==` compares by content for every value-carrying type — primitives, `string`,
-`struct`, `enum`, `Range`, `list`, `map`, `set`, and tuples (element-wise,
+`==` compares by content for every value-carrying type — primitives, `String`,
+`struct`, `enum`, `Range`, `List`, `Map`, `Set`, and tuples (element-wise,
 equal arity) — as specified in
 [`expressions/operators.md`](expressions/operators.md). Identity-carrying
 values — function values, `Task<T>`, `View`, and `Error` — are compared by
@@ -122,7 +122,7 @@ move Expression
   scope denotes that value.
 
 ```xulo
-fn consume(data: list<int>): int {
+fn consume(data: List<Int>): Int {
   data[0] * 2
 }
 
@@ -146,7 +146,7 @@ later writes through either copy are invisible to the other. `copy` accepts
 any expression as its operand and, like `move`, appears only as a `let`
 initializer, an argument, or a `return` operand.
 
-- Deep copying follows references through `list`, `map`, and `set` values,
+- Deep copying follows references through `List`, `Map`, and `Set` values,
   through `struct` and `enum` fields, and through tuple elements, and duplicates
   their contents. Copying a cyclic
   structure terminates: a value already being copied is represented by the
@@ -195,7 +195,7 @@ borrow, never both. Three rules make that checkable:
    body until the closure's task settles.
 
 ```xulo
-struct Counter { value: int }
+struct Counter { value: Int }
 
 fn bump(p: mut Counter) {
   p.value = p.value + 1
@@ -209,7 +209,7 @@ fn main() {
 ```
 
 ```xulo
-async fn fill(p: mut list<int>) {
+async fn fill(p: mut List<Int>) {
   p[0] = 7
 }
 
@@ -229,7 +229,7 @@ not a borrow and is always allowed.
 ## Mutability rules
 
 `mut` belongs to a binding or a parameter, never to a type: `let mut x = 1`
-binds an `int`, `p: mut Counter` declares a mutable borrow of a `Counter`
+binds an `Int`, `p: mut Counter` declares a mutable borrow of a `Counter`
 ([`statements/let-and-assignment.md`](statements/let-and-assignment.md)).
 
 - A place is **mutable** when the binding at the base of the path is a
@@ -298,7 +298,7 @@ condition occurs, and there is no handler for it.
 | List index out of bounds | reading or writing `xs[i]` where `i` is negative or at or past the list's length | [`types/composite-types.md`](types/composite-types.md) |
 | Absent map key | reading `m[k]` for a key with no binding | [`expressions/path-and-access.md`](expressions/path-and-access.md) |
 | Division or remainder by zero | `/` or `%` on non-constant operands whose value is zero | [`expressions/operators.md`](expressions/operators.md) |
-| Arithmetic overflow | an `int` or fixed-bit operation whose result exceeds its type, on non-constant operands | [`types/primitive-types.md`](types/primitive-types.md) |
+| Arithmetic overflow | an `Int` or fixed-bit operation whose result exceeds its type, on non-constant operands | [`types/primitive-types.md`](types/primitive-types.md) |
 | Unprovided environment key | reading an `@Environment` key no provision supplies | [`components/environment.md`](components/environment.md) |
 | Stack or task exhaustion | recursion depth or the runtime's task limit is exceeded | [`functions.md`](functions.md) |
 
@@ -316,7 +316,7 @@ What this specification fixes, it fixes for every conforming program:
 - Propagation: a `?` evaluates its operand exactly once and either yields its
   success value or performs the early return, abandoning the rest of the body
   at that point ([`error-handling.md`](error-handling.md)).
-- Collection order: `map` entries iterate in insertion order, and
+- Collection order: `Map` entries iterate in insertion order, and
   `Task.all` yields results in argument order
   ([`expressions/async-expressions.md`](expressions/async-expressions.md)).
 - Termination of the structural operations: `==` and `copy` halt on cyclic
@@ -369,7 +369,7 @@ nondeterministic, not ill-formed — but its outcomes are not portable:
 - which ready task runs next, which of several racing tasks settles first,
   how many run concurrently, and how long a suspension lasts
   ([`concurrency.md`](concurrency.md));
-- the iteration order of `set<T>`
+- the iteration order of `Set<T>`
   ([`types/composite-types.md`](types/composite-types.md));
 - when storage is reclaimed and where values are laid out — unobservable in
   any case, since no operation observes an address or a reclamation.

@@ -20,16 +20,16 @@ let perms = 0o77
 
 Digit separators and type suffixes do not exist: `1_000` and `42u32` are not
 well-formed, and a fixed-bit type is obtained by contextual coercion instead
-(`let w: u32 = 800`). An integer literal defaults to type `int`, and a literal
+(`let w: U32 = 800`). An integer literal defaults to type `Int`, and a literal
 whose value does not fit in its default or coerced type is an error:
 
 ```xulo
-let big = 99999999999999999999   // error: out of range for int
-let byte: u8 = 300               // error: out of range for u8
+let big = 99999999999999999999   // error: out of range for Int
+let byte: U8 = 300               // error: out of range for U8
 ```
 
-Outside such a context the type of an integer literal is `int`, so
-`let n = 0xff` infers `int`. A negative value is not part of the literal: it
+Outside such a context the type of an integer literal is `Int`, so
+`let n = 0xff` infers `Int`. A negative value is not part of the literal: it
 is the unary `-` operator applied to a literal, at the `unary` precedence
 level (see [`operators.md`](operators.md)). See
 [`../types/primitive-types.md`](../types/primitive-types.md).
@@ -43,7 +43,7 @@ let pi = 3.14
 let half = 0.5
 ```
 
-A float literal defaults to type `float`. Exponent notation does not exist:
+A float literal defaults to type `Float`. Exponent notation does not exist:
 `1e3` is not well-formed. A trailing decimal point without a fractional part
 is not well-formed either — `1.` is invalid, while `0.5` is valid. See
 [`../types/primitive-types.md`](../types/primitive-types.md).
@@ -63,7 +63,7 @@ let uni = "\u00e9 \u{1F44B}"
 The escape sequences are `\"`, `\'`, `\\`, `\n`, `\t`, `\r`, `\uXXXX`, and
 `\u{...}`. A string literal MAY NOT contain a raw newline; to write a
 multi-line string, use a template literal. The type of a string literal is
-`string`. Neither quote form interpolates — interpolation belongs exclusively
+`String`. Neither quote form interpolates — interpolation belongs exclusively
 to templates. See [`../types/primitive-types.md`](../types/primitive-types.md).
 
 ## Template literals
@@ -88,34 +88,34 @@ inside `${}` is an ordinary expression evaluated in the enclosing scope under
 all normal rules, and it MAY itself contain a template — for example
 `` `${`inner: ${n * 2}`}` ``.
 
-Every expression interpolated by `${}` MUST be a base type (`int`, `float`,
-`boolean`, `string`) or a type that implements the built-in `ToString`
+Every expression interpolated by `${}` MUST be a base type (`Int`, `Float`,
+`Boolean`, `String`) or a type that implements the built-in `ToString`
 protocol; otherwise the program is ill-formed at compile time.
 
 ```xulo
 let count = 42
 let ok = true
-let good = `count=${count} ok=${ok}`   // OK: int and boolean convert
+let good = `count=${count} ok=${ok}`   // OK: Int and Boolean convert
 
-struct User { name: string, age: int }
+struct User { name: String, age: Int }
 let u = User(name: "Alice", age: 30)
 let bad = `user: ${u}`                 // error: User has no string form
 ```
 
-The type of a template literal is always `string`, regardless of its
+The type of a template literal is always `String`, regardless of its
 interpolations. See [`../types/primitive-types.md`](../types/primitive-types.md)
 and [`../type-system/checking-rules.md`](../type-system/checking-rules.md).
 
-## Boolean and null literals
+## Boolean and Null literals
 
 ```xulo
 let ok = true
 let no = false
 let missing = null
-let maybe: string? = null
+let maybe: String? = null
 ```
 
-`true` and `false` have type `boolean`. `null` has type `null` and inhabits
+`true` and `false` have type `Boolean`. `null` has type `Null` and inhabits
 every optional type `T?`; assigning `null` to a non-optional type is an error.
 See [`../types/primitive-types.md`](../types/primitive-types.md).
 
@@ -127,12 +127,12 @@ A list literal is a comma-separated sequence of expressions in brackets.
 let xs = [1, 2, 3]
 let ys = [1, 2, 3,]
 let merged = [...xs, 4]
-let rows = [[1, 2], [3]]          // list<list<int>>
+let rows = [[1, 2], [3]]          // List<List<Int>>
 ```
 
 The element type is the common type of the elements, so `[1, 2, 3]` has type
-`list<int>`. A trailing comma is allowed. The prefix spread `...expr` MAY
-appear as an element and its operand MUST be a `list`; the elements of that
+`List<Int>`. A trailing comma is allowed. The prefix spread `...expr` MAY
+appear as an element and its operand MUST be a `List`; the elements of that
 list are appended in order. See
 [`../types/composite-types.md`](../types/composite-types.md).
 
@@ -142,7 +142,7 @@ from a type annotation, a parameter type, or another contextual type. When no
 expected type is available, the literal MUST be annotated:
 
 ```xulo
-let xs: list<int> = []        // OK: element type given by the annotation
+let xs: List<Int> = []        // OK: element type given by the annotation
 let ys = []                   // error: no expected type to infer from
 ```
 
@@ -152,23 +152,23 @@ A map literal is a brace-delimited, comma-separated list of `key: value`
 entries and evaluates to a map.
 
 ```xulo
-let user = { name: "lyy", age: 30 }   // map<string, string | int>
+let user = { name: "lyy", age: 30 }   // Map<String, String | Int>
 let mut updating = { ...user, age: 31 }
 ```
 
 Keys are identifiers; each becomes the string key of the entry, and the
-literal's default type is `map<string, C>` with `C` the union of the value
+literal's default type is `Map<String, C>` with `C` the union of the value
 types. Keys that are not identifiers — arbitrary string keys, computed keys —
-use the typed form `map<K, V>{ … }`
+use the typed form `Map<K, V>{ … }`
 ([`../types/composite-types.md`](../types/composite-types.md)). A literal MAY
 be annotated with a map type, including through an alias:
 
 ```xulo
-type User = map<string, string | int>
+type User = Map<String, String | Int>
 let u: User = { name: "lyy", age: 30 }
 ```
 
-A type is written exactly once. When an expected type `map<K, V>` is in
+A type is written exactly once. When an expected type `Map<K, V>` is in
 scope — a `let` annotation, a declared return type, a parameter, an
 assignment target, any other checking position, after alias expansion — and
 every key of the literal is an identifier (or the literal is empty), the
@@ -179,23 +179,23 @@ is not an identifier — which only the typed form can write, and which keeps it
 legal next to an annotation.
 
 ```xulo
-fn counts(): map<string, int> {
+fn counts(): Map<String, Int> {
   return { "a": 1 }                    // the signature already gives the type
 }
 
-let bad: map<string, int> = map<string, int>{ "a": 1 }  // error[E0221]: repeats the annotation
-let ages: map<int, string> = map<int, string>{ 30: "thirty" }  // OK: a key that is not an identifier
+let bad: Map<String, Int> = Map<String, Int>{ "a": 1 }  // error[E0221]: repeats the annotation
+let ages: Map<Int, String> = Map<Int, String>{ 30: "thirty" }  // OK: a key that is not an identifier
 ```
 
 A trailing comma is allowed, and the prefix spread `...expr` MAY appear as an
-entry; its operand MUST be a `map`, and when the same key occurs more than
+entry; its operand MUST be a `Map`, and when the same key occurs more than
 once, the later occurrence wins — except that a key written twice directly in
 one literal is a compile-time error. An empty `{}` determines its type from
 the expected type, exactly like `[]`, and is a compile-time error when nothing
 determines it:
 
 ```xulo
-let empty: map<string, int> = {}    // OK: entry type given by the annotation
+let empty: Map<String, Int> = {}    // OK: entry type given by the annotation
 let lost = {}                       // error: no expected type to infer from
 ```
 
@@ -215,7 +215,7 @@ expressions:
 
 ```xulo
 let p = (10, "ten")
-let annotated: (int, string) = (10, "ten")
+let annotated: (Int, String) = (10, "ten")
 let more = (1, 2, 3,)         // trailing comma allowed
 ```
 
@@ -225,7 +225,7 @@ let more = (1, 2, 3,)         // trailing comma allowed
 - The type of `(e₁, …, eₙ)` is `(T₁, …, Tₙ)`, the tuple of the element
   types. With an expected tuple type in scope, each element checks against
   the expected element type at that position — an integer literal in a
-  `(float, …)` context becomes a `float`, exactly as an annotation would
+  `(Float, …)` context becomes a `Float`, exactly as an annotation would
   cause ([`../type-system/checking-rules.md`](../type-system/checking-rules.md)).
 - The prefix spread `...expr` does not appear in tuple literals: it exists
   only inside list and map literals ([`operators.md`](operators.md)).
@@ -233,6 +233,6 @@ let more = (1, 2, 3,)         // trailing comma allowed
   and a tuple literal in statement position follows the statement-value rule
   ([`../statements/expression-statements.md`](../statements/expression-statements.md)).
 - For named rather than positional grouping use a `struct` (named fields) or
-  a `map` (dynamic keys); a tuple is chosen when the positions themselves
+  a `Map` (dynamic keys); a tuple is chosen when the positions themselves
   carry the meaning
   ([`../types/composite-types.md`](../types/composite-types.md)).

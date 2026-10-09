@@ -64,16 +64,16 @@ formed first, then classified as keyword, reserved word, or identifier.
 
 ### Keywords
 
-The language has exactly the following closed set of 38 keywords; every other
+The language has exactly the following closed set of 40 keywords; every other
 word is an ordinary identifier unless it is reserved.
 
 ```text
 Keyword = "and" | "as" | "async" | "await" | "break" | "const"
         | "continue" | "copy" | "else" | "enum" | "false" | "fn"
-        | "for" | "from" | "if" | "impl" | "in" | "import" | "let" | "lock"
-        | "match" | "move" | "mut" | "null" | "or" | "panic" | "pub"
-        | "return" | "self" | "shared" | "spawn" | "struct" | "trait" | "true"
-        | "type" | "use" | "where" | "while" ;
+        | "for" | "from" | "if" | "impl" | "in" | "import" | "is" | "let"
+        | "lock" | "match" | "move" | "mut" | "not" | "null" | "or" | "panic"
+        | "pub" | "return" | "self" | "shared" | "spawn" | "struct" | "trait"
+        | "true" | "type" | "use" | "where" | "while" ;
 ```
 
 A `ReservedWord` is a word whose spelling appears in the reserved list of
@@ -126,7 +126,7 @@ with braces counted ([lexical-structure.md](lexical-structure.md)).
 
 ```text
 Operator = WordOperator | SymbolOperator ;
-WordOperator = "and" | "or" ;
+WordOperator = "and" | "or" | "is" | "not" ;
 SymbolOperator =
       "." | "?" | "!" | "=" | "==" | "!=" | "<" | ">" | "<=" | ">="
     | "+" | "-" | "*" | "/" | "%" | "**" | "<<" | ">>" | "&" | "|" | "^" | "~"
@@ -265,9 +265,9 @@ dependency list (a list literal after a `,`). None accepts `mut`, `pub`, or
 ## Types
 
 `?` binds tighter than `&`, which binds tighter than `|`, and parentheses group
-([types/README.md](types/README.md)). Primitive type names — `boolean`,
-`string`, `number`, `int`, `float`, the fixed-bit numerics, `null`, `unit`,
-`unknown`, `View` — are ordinary identifiers written through `NamedType`, listed
+([types/README.md](types/README.md)). Primitive type names — `Boolean`,
+`String`, `Number`, `Int`, `Float`, the fixed-bit numerics, `Null`, `Unit`,
+`Unknown`, `View` — are ordinary identifiers written through `NamedType`, listed
 in [primitive-types.md](types/primitive-types.md).
 
 ```text
@@ -296,7 +296,7 @@ WhereItem      = Identifier ":" TraitBound ;
 ```
 
 Because `>>` lexes as one token, two closing angle brackets MUST NOT be written
-adjacently: a space is REQUIRED between them, as in `list<list<T> >`
+adjacently: a space is REQUIRED between them, as in `List<List<T> >`
 ([generics.md](types/generics.md)). Bounds are written inline `<T: Area>` or
 in a `where` clause, joined with `+` when a parameter has several.
 
@@ -314,10 +314,12 @@ TernaryExpression    = LogicalOrExpression [ "?" Expression ":"
 LogicalOrExpression  = LogicalAndExpression { "or" LogicalAndExpression } ;
 LogicalAndExpression = NullishExpression { "and" NullishExpression } ;
 NullishExpression    = EqualityExpression { "??" EqualityExpression } ;
-EqualityExpression   = RelationalExpression
-                       { ( "==" | "!=" ) RelationalExpression } ;
+EqualityExpression   = IsExpression
+                       { ( "==" | "!=" ) IsExpression } ;
+IsExpression         = RelationalExpression
+                       [ "is" [ "not" ] Type ] ;
 RelationalExpression = RangeExpression
-                       [ ( "<" | ">" | "<=" | ">=" ) RangeExpression ] ;
+                        [ ( "<" | ">" | "<=" | ">=" ) RangeExpression ] ;
 RangeExpression      = BitOrExpression [ ( "..<" | "..." ) BitOrExpression ] ;
 BitOrExpression      = BitXorExpression { "|" BitXorExpression } ;
 BitXorExpression     = BitAndExpression { "^" BitAndExpression } ;
@@ -340,8 +342,9 @@ PostfixOperand       = "(" [ ArgumentList ] ")"
                      | "?" ;
 ```
 
-Relational and range operators are non-associative: `a < b < c` and
-`0..<1..<2` are not well-formed ([operators.md](expressions/operators.md)).
+Relational, range, and type-test operators are non-associative: `a < b < c`,
+`0..<1..<2`, and `x is Int is String` are not well-formed
+([operators.md](expressions/operators.md)).
 `move` and `copy` are prefix operators whose operand and position are
 restricted by [memory-and-runtime.md](memory-and-runtime.md).
 
@@ -371,7 +374,7 @@ ListLiteral   = "[" [ ListElement { "," ListElement } [ "," ] ] "]" ;
 ListElement   = Spread | Expression ;
 Spread        = "..." Expression ;
 MapLiteral    = TypedMap | BraceMap ;
-TypedMap      = "map" TypeArgs "{" [ MapEntry { "," MapEntry } [ "," ] ] "}" ;
+TypedMap      = "Map" TypeArgs "{" [ MapEntry { "," MapEntry } [ "," ] ] "}" ;
 BraceMap      = "{" [ MapField { "," MapField } [ "," ] ] "}" ;
 MapEntry      = Expression ":" Expression ;
 MapField      = Spread | Identifier ":" Expression ;
@@ -390,7 +393,7 @@ ClosureParam       = Identifier [ ":" Type ] ;
 `$` prefixes a name in an argument position and binds a state variable of the
 enclosing component; it is an argument form and nothing else
 ([binding.md](components/binding.md)). Brace-map keys are identifiers only;
-a map keyed by other expressions uses the typed form `map<K, V>{ … }`.
+a map keyed by other expressions uses the typed form `Map<K, V>{ … }`.
 
 The spread and the closed range share one token: an element of a list
 literal or a brace map that *starts* with `...` is a spread, while elsewhere `...` is
@@ -411,7 +414,7 @@ the first arm whose pattern matches wins, and exhaustiveness is a checking rule
 
 ```text
 Pattern        = "_" | LiteralPattern | RangePattern | VariantPattern
-               | StructPattern | Identifier ;
+               | StructPattern | TypePattern | Identifier ;
 LiteralPattern = IntegerLiteral | FloatLiteral | StringLiteral
                | BooleanLiteral | "null" ;
 RangePattern   = ( IntegerLiteral | FloatLiteral ) ( "..<" | "..." )
@@ -427,7 +430,7 @@ PatternList    = Pattern { "," Pattern } [ "," ] ;
 wildcard and a binding of the same spelling are one alternative. Enum variants
 use `::` in patterns exactly as in expressions, and the operands of a range
 pattern are numeric literals. A type pattern is a type designator followed by
-a binder — `string s`, `unknown _`, `string? p` — and the designator admits no
+a binder — `String s`, `Unknown _`, `String? p` — and the designator admits no
 type-argument list; because OR-patterns do not exist, `|` between designators
 can only be a union type ([control-flow.md](expressions/control-flow.md)).
 
@@ -493,7 +496,7 @@ ComponentBlock = "{" { ChildItem } "}" ;
 ChildItem      = Expression | ForStmt ;
 ```
 
-A component invocation, an `if`, and a string, `View`, or `list<View>`
+A component invocation, an `if`, and a string, `View`, or `List<View>`
 expression reach `ChildItem` through `Expression`; `for` is written through
 `ForStmt` because a loop is a statement. Anything else in a block — a binding,
 an assignment, a `return`, an expression of another type — is a compile-time
@@ -502,7 +505,7 @@ error, and those restrictions are typing rules stated in
 
 ```xulo
 fn Counter(): View {
-  @State let count: int = 0
+  @State let count: Int = 0
   VStack(spacing: 8) {
     Text(str(count))
     Button("Inc", onClick: fn() { count = count + 1 })
@@ -551,7 +554,7 @@ production itself appears exactly once, in its own section.
 | `FnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl` | [Declarations](#declarations) |
 | `ComponentDecl`, `StateDecl`, `StoreDecl`, `EffectDecl`, `EnvironmentDecl` | [Declarations](#declarations) |
 | `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `LiteralType`, `TypeArgs`, `TypeList`, `TupleType`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
-| `Expression`, `AssignmentExpression`, `TernaryExpression`, `LogicalOrExpression`, `LogicalAndExpression`, `NullishExpression`, `EqualityExpression`, `RelationalExpression`, `RangeExpression`, `BitOrExpression`, `BitXorExpression`, `BitAndExpression`, `ShiftExpression`, `AdditiveExpression`, `MultiplicativeExpression`, `PowerExpression`, `UnaryExpression`, `PostfixExpression`, `PostfixOperand` | [Expressions](#expressions) |
+| `Expression`, `AssignmentExpression`, `TernaryExpression`, `LogicalOrExpression`, `LogicalAndExpression`, `NullishExpression`, `EqualityExpression`, `IsExpression`, `RelationalExpression`, `RangeExpression`, `BitOrExpression`, `BitXorExpression`, `BitAndExpression`, `ShiftExpression`, `AdditiveExpression`, `MultiplicativeExpression`, `PowerExpression`, `UnaryExpression`, `PostfixExpression`, `PostfixOperand` | [Expressions](#expressions) |
 | `PrimaryExpression`, `VariantPath`, `PanicExpression`, `Place`, `ArgumentList`, `Argument`, `ListLiteral`, `ListElement`, `Spread`, `MapLiteral`, `TypedMap`, `BraceMap`, `MapEntry`, `MapField`, `TupleLiteral`, `ClosureExpression`, `FunctionExpression`, `ArrowClosure`, `ArrowParams`, `ClosureParamList`, `ClosureParam` | [Expressions](#expressions) |
 | `Pattern`, `LiteralPattern`, `RangePattern`, `VariantPattern`, `StructPattern`, `TypePattern`, `PatternType`, `PatternList` | [Patterns](#patterns) |
 | `Statement`, `StatementEnd`, `ReturnStmt`, `BreakStmt`, `ContinueStmt`, `Assignment`, `ExpressionStatement`, `Block` | [Statements](#statements) |

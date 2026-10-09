@@ -86,7 +86,7 @@ at the point where it is used, and only for that use.
 - **ISO/IEC 14977:1996**, *Extended Backus-Naur Form* — the grammar notation
   of [`grammar.md`](grammar.md).
 - **IEEE Std 754-2019**, *IEEE Standard for Floating-Point Arithmetic* — the
-  semantics of `float`, `f32`, and `f64`
+  semantics of `Float`, `F32`, and `F64`
   ([`types/primitive-types.md`](types/primitive-types.md)).
 - **RFC 3629**, *UTF-8, a transformation format of ISO 10646* — the encoding
   of `.xulo` source files (convention 3 above).
@@ -131,9 +131,10 @@ normative for the whole specification.
 | **evaluation order** | The order in which subexpressions are evaluated; left-to-right unless stated otherwise. |
 | **immutable binding** | A binding introduced by `let` or `const`; reassignment is a compile-time error. |
 | **intrinsic** | A function or namespace provided directly by the compiler, available without import. See [`builtins/`](builtins/README.md). |
-| **map** | An insertion-ordered collection of key–value pairs `map<K, V>`, written with a brace literal `{ k: v }` or the typed form `map<K, V>{ … }`. See [`types/composite-types.md`](types/composite-types.md). |
+| **is** | The type test `e is T` and its negation `e is not T`: yields `Boolean` and narrows the branches of an `if`. See [`expressions/control-flow.md`](expressions/control-flow.md). |
+| **map** | An insertion-ordered collection of key–value pairs `Map<K, V>`, written with a brace literal `{ k: v }` or the typed form `Map<K, V>{ … }`. See [`types/composite-types.md`](types/composite-types.md). |
 | **module** | A single source file together with its exported names. |
-| **optional type** | `T?`, shorthand for `T | null`; absence, which is not an error. |
+| **optional type** | `T?`, shorthand for `T | Null`; absence, which is not an error. |
 | **panic** | An unrecoverable stop: a call to `panic(...)` or a runtime failure; it stops the program where it occurs and has no handler. See [`error-handling.md`](error-handling.md). |
 | **pattern** | The left-hand side of a `match` arm; deconstructs a value or tests its type. |
 | **Result** | The built-in `Result<T, E>`: either `Result::Ok(T)` or `Result::Err(E)`; the value a fallible operation returns. See [`error-handling.md`](error-handling.md). |
@@ -141,8 +142,8 @@ normative for the whole specification.
 | **scrutinee** | The expression evaluated by `match` and tested against patterns. |
 | **task** | A unit of asynchronous computation with type `Task<T>`. See [`concurrency.md`](concurrency.md). |
 | **tuple** | An ordered, fixed-length sequence of at least two values with one type per position; written `(T, U)`, read with `p.0`, deconstructed with `let (a, b) = e`. See [`types/composite-types.md`](types/composite-types.md). |
-| **type pattern** | A `match` pattern of the form `Type binder` that tests a value's type and binds it; the language's only type test. See [`expressions/control-flow.md`](expressions/control-flow.md). |
-| **unit** | The type of expressions that produce no meaningful value; written `unit`. |
+| **type pattern** | A `match` pattern of the form `Type binder` that tests a value's type and binds it; `match`'s type test, the other form being the **is** operator. See [`expressions/control-flow.md`](expressions/control-flow.md). |
+| **unit** | The type of expressions that produce no meaningful value; written `Unit`. |
 | **View** | The type produced by a component; a value of the render tree. |
 | **view function** | Synonym for *component*. |
 

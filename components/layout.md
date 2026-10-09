@@ -43,7 +43,7 @@ A container arranges its children according to its kind:
 
 Children contribute to their container in the order they appear in the block,
 including the children contributed by `if`, by `for`, and by a flattened
-`list<View>` ([`view-syntax.md`](view-syntax.md)).
+`List<View>` ([`view-syntax.md`](view-syntax.md)).
 
 ## Size properties
 
@@ -97,11 +97,11 @@ container:
 
 | Attribute | Applies to | Type | Meaning |
 |-----------|-----------|------|---------|
-| `padding` | any node | `number` | Inner spacing: room between the node's own edge and its content |
-| `margin` | any node | `number` | Outer spacing: room outside the node, between it and its neighbors |
-| `spacing` | stack containers | `number` | Gap between adjacent children along the main axis |
-| `alignment` | stack containers | `string` | Cross-axis placement of children |
-| `justify` | stack containers | `string` | Main-axis distribution of children |
+| `padding` | any node | `Number` | Inner spacing: room between the node's own edge and its content |
+| `margin` | any node | `Number` | Outer spacing: room outside the node, between it and its neighbors |
+| `spacing` | stack containers | `Number` | Gap between adjacent children along the main axis |
+| `alignment` | stack containers | `String` | Cross-axis placement of children |
+| `justify` | stack containers | `String` | Main-axis distribution of children |
 
 The values of `alignment` and `justify` are strings, and the values defined
 here are `start`, `center`, `end`, and `space-between`:
@@ -137,19 +137,19 @@ ones:
 
 | Attribute | Type | Meaning |
 |-----------|------|---------|
-| `color` | `string` | Text color |
-| `bg` | `string` | Background **color** |
-| `bgImage` | `string` | Background **image URL** |
-| `border` | `string` | Border color |
-| `size` | `number` | Text size, in logical pixels |
-| `weight` | `string` | Text weight, e.g. `"bold"` |
-| `radius` | `number` | Corner radius |
-| `opacity` | `number` | Opacity, from `0.0` to `1.0` |
-| `alignment` | `string` | Cross-axis alignment of children |
-| `justify` | `string` | Main-axis distribution of children |
-| `width`, `height` | `number` or `string` | Size, as specified in *Size properties* |
-| `padding` | `number` | Inner spacing |
-| `margin` | `number` | Outer spacing |
+| `color` | `String` | Text color |
+| `bg` | `String` | Background **color** |
+| `bgImage` | `String` | Background **image URL** |
+| `border` | `String` | Border color |
+| `size` | `Number` | Text size, in logical pixels |
+| `weight` | `String` | Text weight, e.g. `"bold"` |
+| `radius` | `Number` | Corner radius |
+| `opacity` | `Number` | Opacity, from `0.0` to `1.0` |
+| `alignment` | `String` | Cross-axis alignment of children |
+| `justify` | `String` | Main-axis distribution of children |
+| `width`, `height` | `Number` or `String` | Size, as specified in *Size properties* |
+| `padding` | `Number` | Inner spacing |
+| `margin` | `Number` | Outer spacing |
 
 - **`bg` and `bgImage` are strictly separate.** `bg` accepts colors only and
   `bgImage` accepts image URLs only; an image URL written as `bg`, or a color

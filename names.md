@@ -70,9 +70,9 @@ follow every rule on this page.
 
 Two groups of names are built in rather than declared:
 
-- **Built-in type names** — `string`, `number`, `boolean`, `list`, `map`,
-  `set`, `unit`, `unknown`, `Task`, `Range`, `View`, together with `int`,
-  `float`, and the fixed-bit numeric names — SHOULD NOT be shadowed.
+- **Built-in type names** — `String`, `Number`, `Boolean`, `List`, `Map`,
+  `Set`, `Unit`, `Unknown`, `Task`, `Range`, `View`, together with `Int`,
+  `Float`, and the fixed-bit numeric names — SHOULD NOT be shadowed.
 - **Intrinsic names** — `print`, `println`, `str`, `Math`, `Time` (and the
   namespace `Task`) — SHOULD NOT be shadowed. Intrinsics are described in the
   [builtins chapter](builtins/README.md).
@@ -134,9 +134,9 @@ introduced afterwards, even one with the same name in an enclosing scope, does
 not re-point the captured name.
 
 ```xulo
-fn demo(): int {
+fn demo(): Int {
   let x = 1
-  let read = fn(): int { x }   // captures the outer x
+  let read = fn(): Int { x }   // captures the outer x
   let mut total = 0
   if true {
     let x = 2                  // shadows only inside this branch
@@ -167,11 +167,11 @@ referenced afterwards, because no name was created.
 
 ```xulo
 enum Shape {
-  Circle(radius: number)
+  Circle(radius: Number)
   Point
 }
 
-fn area(s: Shape): number {
+fn area(s: Shape): Number {
   match s {
     Shape::Circle(r) => 3 * r * r
     _ => 0                  // matches anything; binds nothing

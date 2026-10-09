@@ -27,8 +27,8 @@ be used only inside that file. Marking a declaration `pub` exports it, so that
 another module which imports it may refer to it:
 
 ```xulo
-pub fn add(a: int, b: int): int { a + b }   // exported
-fn helper(n: int): int { n * 2 }            // private to this file
+pub fn add(a: Int, b: Int): Int { a + b }   // exported
+fn helper(n: Int): Int { n * 2 }            // private to this file
 ```
 
 `pub` applies to module-level declarations (`fn`, `struct`, `enum`, `trait`,

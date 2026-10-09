@@ -16,12 +16,12 @@ identical structure. Equality is written `A = B` and is an equivalence relation.
   may be expanded to any depth, and expansion terminates because an alias MUST
   NOT expand to itself.
 - **Definitional equalities.** The following pairs are equal by definition:
-  `T?` and `T | null`; `number` and `int | float`; a function type written
-  without a return type and the same type written `fn(…): unit`.
+  `T?` and `T | Null`; `Number` and `Int | Float`; a function type written
+  without a return type and the same type written `fn(…): Unit`.
 - **Generic applications.** `C<A₁, …, Aₙ>` and `C<B₁, …, Bₙ>` are equal exactly
   when the heads `C` are the same declaration and `Aᵢ = Bᵢ` for every `i`.
-  Different arguments give different types: `list<int>` and `list<string>` are
-  unrelated, as are `Pair<int, int>` and `Pair<int, string>`.
+  Different arguments give different types: `List<Int>` and `List<String>` are
+  unrelated, as are `Pair<Int, Int>` and `Pair<Int, String>`.
 - **Nominal types.** A `struct`, `enum`, or `trait` is equal only to the type
   introduced by its own declaration (and to aliases of it). Two declarations with
   identical members are still distinct types.
@@ -40,36 +40,36 @@ least relation containing the following rules.
 
 | Rule | Notes |
 |------|-------|
-| `null <: T?` | the null value inhabits every optional |
+| `Null <: T?` | the null value inhabits every optional |
 | `T <: T?` | every value is a value of its optional |
 | `A <: A \| B`, `A <: B \| A` | union injection |
 | `A & B <: A`, `A & B <: U` for `B <: U` | intersection projection, **not** the converse |
-| `"s" <: string` | a string literal type is a string |
+| `"s" <: String` | a string literal type is a string |
 | `"s" <: "s" \| "t"` | literal union membership |
-| `int <: number`, `float <: number` | from `number = int \| float` |
+| `Int <: Number`, `Float <: Number` | from `Number = Int \| Float` |
 | `A <: B` implies `Task<A> <: Task<B>` | `Task<T>` is covariant |
 | `A <: B` implies `A? <: B?` | the optional is covariant |
-| `T <: unknown` | `unknown` is the top type: every type inhabits it |
+| `T <: Unknown` | `Unknown` is the top type: every type inhabits it |
 
 Rules by type family:
 
-- **Optionals and null.** `T <: T?` and `null <: T?` hold; neither `null <: T`
-  nor `T <: null` holds for a non-optional `T`. `T?` is exactly `T | null`, so
+- **Optionals and null.** `T <: T?` and `Null <: T?` hold; neither `Null <: T`
+  nor `T <: Null` holds for a non-optional `T`. `T?` is exactly `T | Null`, so
   optional subtyping is an instance of the union rule.
 - **Unions and intersections.** A member is a subtype of the union containing
   it, in either position, and a union is a subtype of a union that contains all
   of its members. An intersection is a subtype of each of its operands:
   `T & U <: T` and `T & U <: U`. The converses do **not** hold — a `T` is not a
   subtype of `T & U`, and neither `T` nor `U` alone is a subtype of the other.
-- **Numeric types.** `int` and `float` are subtypes of `number` only because
-  `number` is defined as `int | float`. No other numeric relation holds:
-  `int <: float` is false, `i32 <: i64` is false, and no fixed-bit type is a
+- **Numeric types.** `Int` and `Float` are subtypes of `Number` only because
+  `Number` is defined as `Int | Float`. No other numeric relation holds:
+  `Int <: Float` is false, `I32 <: I64` is false, and no fixed-bit type is a
   subtype of another. Literal adaptation between numerics is coercion, not
   subtyping (see [`../type-system/coercion.md`](../type-system/coercion.md)).
-- **The top type.** `T <: unknown` holds for every `T`, and `unknown <: T`
-  holds only when `T` is `unknown`. No other rule relates `unknown` to another
-  type, so nothing narrows by itself: a value of type `unknown` is used only
-  through a `match` type pattern
+- **The top type.** `T <: Unknown` holds for every `T`, and `Unknown <: T`
+  holds only when `T` is `Unknown`. No other rule relates `Unknown` to another
+  type, so nothing narrows by itself: a value of type `Unknown` is used only
+  through a `match` type pattern or the `is` operator
   ([`../expressions/control-flow.md`](../expressions/control-flow.md)).
 - **Nominal types.** `struct` and `enum` types are nominal. A `struct` with more
   fields is **not** a subtype of one with fewer; field count never creates
@@ -87,8 +87,8 @@ Rules by type family:
 - **Bounds are not supertypes.** A bound `T: Area` constrains which types may be
   substituted for `T`; it does not make `T` a subtype of `Area`. See
   [`traits.md`](traits.md).
-- **Built-in generics.** Whether subtyping lifts through `list<T>`, `map<K, V>`,
-  `set<T>`, `struct`s, `enum`s, and tuples is decided by their variance,
+- **Built-in generics.** Whether subtyping lifts through `List<T>`, `Map<K, V>`,
+  `Set<T>`, `struct`s, `enum`s, and tuples is decided by their variance,
   below.
 
 ## Assignability vs subtyping vs coercion
@@ -108,11 +108,11 @@ Three distinct relations are used by this specification.
   coercion may exist where no subtype relation holds.
 - **Subtyping** is context-free: it depends only on the two types.
   **Assignability** is context-sensitive, because whether a coercion applies can
-  depend on the expected type (a literal is adapted differently toward `int`,
-  `u32`, and `float`).
+  depend on the expected type (a literal is adapted differently toward `Int`,
+  `U32`, and `Float`).
 - **Coercion** is owned by
   [`../type-system/coercion.md`](../type-system/coercion.md), which lists every
-  permitted conversion, including numeric literal adaptation, the `int + float`
+  permitted conversion, including numeric literal adaptation, the `Int + Float`
   promotion of the arithmetic operators, and the string coercion used by
   template interpolation.
 
@@ -125,9 +125,9 @@ lifts except when `A = B`.
 
 | Constructor | Variance | Reason |
 |-------------|----------|--------|
-| `list<T>` | invariant in `T` | elements may be replaced through a `list` value |
-| `map<K, V>` | invariant in `K` and `V` | entries may be inserted, replaced, and removed |
-| `set<T>` | invariant in `T` | membership may be changed |
+| `List<T>` | invariant in `T` | elements may be replaced through a `List` value |
+| `Map<K, V>` | invariant in `K` and `V` | entries may be inserted, replaced, and removed |
+| `Set<T>` | invariant in `T` | membership may be changed |
 | `(T₁, …, Tₙ)` | invariant in each element | elements may be written through a mutable tuple |
 | `T?` | covariant | an optional only produces a `T` or `null` |
 | `T \| U` | covariant in each operand | a union only produces one of its members |
@@ -141,15 +141,15 @@ lifts except when `A = B`.
 
 Consequences:
 
-- Because the collections are invariant, `list<int>` and `list<number>` are
+- Because the collections are invariant, `List<Int>` and `List<Number>` are
   unrelated types: neither is assignable to the other. This is what makes
-  inference precise — unifying `list<T>` with `list<int>` has the single
-  solution `T = int`.
+  inference precise — unifying `List<T>` with `List<Int>` has the single
+  solution `T = Int`.
 - Invariance constrains *existing values*, not construction. A list literal
-  checked against the expected type `list<number>` types its elements as
-  `number`, and `let xs: list<number> = [1, 2, 3]` is well-formed.
-- Function variance is why a function that accepts *any* `number` may be used
-  where a function accepting only `int` is expected, but not the other way
+  checked against the expected type `List<Number>` types its elements as
+  `Number`, and `let xs: List<Number> = [1, 2, 3]` is well-formed.
+- Function variance is why a function that accepts *any* `Number` may be used
+  where a function accepting only `Int` is expected, but not the other way
   around.
 
 ## Local Inference
@@ -159,7 +159,7 @@ never across function signatures.
 
 - **Signatures are explicit.** Every parameter of a module-level `fn`
   declaration MUST be annotated with its type. A function declared `pub` MUST
-  declare its return type. A return type that is omitted means `unit`, and the
+  declare its return type. A return type that is omitted means `Unit`, and the
   return type of a function is never inferred from its body. Closures MAY omit
   parameter and return annotations when the expected type or the body
   determines them; an unannotated parameter that stays undetermined is an
@@ -168,13 +168,13 @@ never across function signatures.
   of a callee: only the declared signature participates in checking, so a
   module's exported declarations are sufficient to check its clients without
   their bodies (see [`../modules/README.md`](../modules/README.md)).
-- **Literal typing.** An integer literal is `int` and a float literal is `float`
-  unless the expected type adapts it: a literal checked against `u32`, `f32`,
-  `number`, or another numeric type takes that type when it is in range. A
-  string literal is `string`, except when the expected type is a union of
+- **Literal typing.** An integer literal is `Int` and a float literal is `Float`
+  unless the expected type adapts it: a literal checked against `U32`, `F32`,
+  `Number`, or another numeric type takes that type when it is in range. A
+  string literal is `String`, except when the expected type is a union of
   string literal types, in which case it takes the matching literal type, so
   `type Status = "active" | "inactive"` accepts `"active"`. No literal is ever
-  typed `unknown`: `unknown` is written, never inferred.
+  typed `Unknown`: `Unknown` is written, never inferred.
 - **Expected-type propagation.** Checking is bidirectional. When the context
   provides an expected type, it is pushed into literals, list and map
   literals, empty collections, closures, and generic calls; otherwise the
@@ -185,10 +185,10 @@ never across function signatures.
   rewrite the type of `e`.
 
 ```xulo
-let a = 42                 // int
-let b = 3.14               // float
-let c: number = 42         // int literal adapted to number
-let d: u32 = 800           // int literal coerced to u32
+let a = 42                 // Int
+let b = 3.14               // Float
+let c: Number = 42         // int literal adapted to Number
+let d: U32 = 800           // int literal coerced to U32
 let e: Status = "active"   // the literal checks as "active"
 let f = null               // error: no expected type, nothing to infer
 ```
@@ -210,7 +210,7 @@ Checking a body generates constraints that are then solved.
    constructors in the table above are invariant where they are writable,
    decomposition has at most one solution.
 3. **Occurs check.** If solving would require a variable to be a proper part of
-   itself — `T = list<T>` — the constraint set is infinite and MUST be rejected
+   itself — `T = List<T>` — the constraint set is infinite and MUST be rejected
    as a type error rather than accepted as a cyclic type.
 4. **Assignability.** Once variables are solved, the remaining constraints are
    discharged as assignability checks between closed types, using subtyping and

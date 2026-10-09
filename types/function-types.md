@@ -12,45 +12,45 @@ FnParams = FnParam { ',' FnParam } ;
 FnParam  = [ Identifier ':' ] Type ;
 ```
 
-- Parameter names are optional: `fn(string): int` and `fn(name: string): int` are both well-formed. Parameter names in a function type are documentation — two function types that differ only in parameter names are the same type.
-- A zero-parameter function type is `fn(): R`. The spelling `fn(unit): R` is *not* an alternative for it: `unit` is an ordinary parameter type, and a function that takes no arguments is written `fn(): R`.
-- The result type may be omitted: `fn(string)` denotes the same type as `fn(string): unit`.
+- Parameter names are optional: `fn(String): Int` and `fn(name: String): Int` are both well-formed. Parameter names in a function type are documentation — two function types that differ only in parameter names are the same type.
+- A zero-parameter function type is `fn(): R`. The spelling `fn(Unit): R` is *not* an alternative for it: `Unit` is an ordinary parameter type, and a function that takes no arguments is written `fn(): R`.
+- The result type may be omitted: `fn(String)` denotes the same type as `fn(String): Unit`.
 - Variadic parameters do not exist. Every function type has a fixed parameter list, and a call MUST supply exactly the parameters the type lists — except that a direct call to a *declaration* MAY omit trailing defaulted parameters (see [Parameters](#parameters)).
 - `async fn(A): B` is notation for the type `fn(A): Task<B>` (see [async function types](#async-function-types)); either spelling MAY be used wherever that type is required.
 
 ## Values of function type
 
 ```xulo
-fn add(a: int, b: int): int { a + b }
+fn add(a: Int, b: Int): Int { a + b }
 
-let f: fn(int, int): int = add      // a named function is a value
-let g = fn(x: int): int { x * 2 }   // function literal
-let h = (x: int): int => x * 3      // arrow form, same type
+let f: fn(Int, Int): Int = add      // a named function is a value
+let g = fn(x: Int): Int { x * 2 }   // function literal
+let h = (x: Int): Int => x * 3      // arrow form, same type
 
-fn apply(f: fn(int): int, x: int): int { f(x) }
+fn apply(f: fn(Int): Int, x: Int): Int { f(x) }
 
-let xs = [fn(): int { 1 }, fn(): int { 2 }]   // function values in a list
+let xs = [fn(): Int { 1 }, fn(): Int { 2 }]   // function values in a list
 ```
 
-- Every function declaration introduces a binding of its own signature type: `add` above has type `fn(int, int): int`. Its declared parameter types and result type are exactly its type as a value.
+- Every function declaration introduces a binding of its own signature type: `add` above has type `fn(Int, Int): Int`. Its declared parameter types and result type are exactly its type as a value.
 - Function values are assigned, passed as arguments, returned, stored in fields and collections, and called like any other value. A call of a function-typed expression is written `f(x, y)` and has the result type of the function type.
 - **`null` is not a member of a function type.** Assigning `null` to a value of type `fn(A): B` is a compile-time error. A nullable function value must say so: `(fn(A): B)?` is the optional type over a function type, and reading it follows the optional rules in [`composite-types.md`](composite-types.md).
 
 ## Parameters
 
 ```xulo
-fn greet(name: string = "stranger"): string {
+fn greet(name: String = "stranger"): String {
   `Hello, ${name}`
 }
 
-fn area(rect: { w: int, h: int }): int { rect.w * rect.h }
-fn grow(rect: mut { w: int, h: int }) { rect.w = rect.w + 1 }
+fn area(rect: { w: Int, h: Int }): Int { rect.w * rect.h }
+fn grow(rect: mut { w: Int, h: Int }) { rect.w = rect.w + 1 }
 ```
 
 - Parameter types are written in the declaration and are never inferred from the arguments: every argument expression MUST be assignable to the type of its parameter, and arguments are evaluated left to right. The one exception is a closure, which MAY omit an annotation when the expected type or the body determines it (see [`type-relations.md`](type-relations.md)).
 - **Value and borrow modes.** A parameter written `p: T` receives an immutable borrow and `p: mut T` a mutable borrow; `move` and `copy` at the call site transfer ownership or deep-copy the argument. These rules are specified in [`../memory-and-runtime.md`](../memory-and-runtime.md) and [`../functions.md`](../functions.md).
-- **Default parameters belong to the declaration, not to the type.** The function type of a function with default parameters lists *all* of its parameters: `fn greet(name: string = "stranger"): string` has type `fn(string): string`. A direct call MAY omit any trailing parameter that the declaration gives a default to; a call through a value of type `fn(string): string` MUST pass exactly one argument, because defaults are not recoverable from a function type.
-- A trailing parameter of optional type may likewise be omitted at a direct call site, defaulting to `null`: a function declared `fn greet(name: string?): string` may be called as `greet()`.
+- **Default parameters belong to the declaration, not to the type.** The function type of a function with default parameters lists *all* of its parameters: `fn greet(name: String = "stranger"): String` has type `fn(String): String`. A direct call MAY omit any trailing parameter that the declaration gives a default to; a call through a value of type `fn(String): String` MUST pass exactly one argument, because defaults are not recoverable from a function type.
+- A trailing parameter of optional type may likewise be omitted at a direct call site, defaulting to `null`: a function declared `fn greet(name: String?): String` may be called as `greet()`.
 - **Named arguments** belong to the declaration as well: a direct call MAY name its arguments (`Button(variant: "outline", label: "Submit")`); once one argument is named, every argument MUST be named, and order is free. A call through a value of function type uses positional arguments only. See [`../functions.md`](../functions.md).
 
 ```xulo
@@ -58,7 +58,7 @@ greet()                 // trailing default applied
 greet("Ada")            // positional
 greet(name: "Ada")      // named; all arguments named
 
-let g: fn(string): string = greet
+let g: fn(String): String = greet
 g("Ada")                // OK: the type lists exactly one parameter
 g()                     // error: the type lists one parameter
 ```
@@ -68,8 +68,8 @@ g()                     // error: the type lists one parameter
 A closure expression is a value whose type is the function type written by its own signature:
 
 ```xulo
-fn makeAdder(n: int): fn(int): int {
-  fn(v: int): int { v + n }
+fn makeAdder(n: Int): fn(Int): Int {
+  fn(v: Int): Int { v + n }
 }
 
 let add5 = makeAdder(5)
@@ -88,20 +88,20 @@ An `async` declaration writes the type that the *body* produces; the type of the
 | Written form | Value's type | Body must produce |
 |--------------|--------------|-------------------|
 | `async fn foo(): T` | `fn(): Task<T>` | `T` |
-| `async fn bar()` | `fn(): Task<unit>` | `unit` |
-| `async (x: int): int => x + 1` | `fn(int): Task<int>` | `int` |
+| `async fn bar()` | `fn(): Task<Unit>` | `Unit` |
+| `async (x: Int): Int => x + 1` | `fn(Int): Task<Int>` | `Int` |
 
 - The declared result type of an `async` function is the *evaluated* type: inside the body, `return` and the trailing expression MUST match `T`, and the value is wrapped as `Task<T>` before it leaves the function.
 - `await expr` requires `expr` to have type `Task<T>` and yields `T`; it is legal only inside an `async` function or closure body. These rules are specified in [`../expressions/async-expressions.md`](../expressions/async-expressions.md).
-- A non-`async` function MAY declare a `Task` result directly — `fn load(): Task<int>` — and is then an ordinary function that returns a task; it is not itself an async body and MUST NOT use `await`.
+- A non-`async` function MAY declare a `Task` result directly — `fn load(): Task<Int>` — and is then an ordinary function that returns a task; it is not itself an async body and MUST NOT use `await`.
 
 ```xulo
-async fn fetch(url: string): string { url }
+async fn fetch(url: String): String { url }
 
-fn load(): Task<int> { Task.resolve(1) }
+fn load(): Task<Int> { Task.resolve(1) }
 
-let a: fn(string): Task<string> = fetch   // async function as a value
-let b: fn(): Task<int> = load             // sync function returning a task
+let a: fn(String): Task<String> = fetch   // async function as a value
+let b: fn(): Task<Int> = load             // sync function returning a task
 ```
 
 - `Task<T>` is a built-in generic type used as the result of an `async` function type; it requires no import. Its built-in utilities (`Task.all`, `Task.race`, `Task.resolve`) are specified in [`../expressions/async-expressions.md`](../expressions/async-expressions.md), and their concurrency model in [`../concurrency.md`](../concurrency.md).
@@ -115,49 +115,49 @@ Function types are compared structurally, with variance:
 - **Arity is exact**: types with different parameter counts are never compatible; there is no optional-argument widening at the type level.
 
 ```xulo
-fn count_any(v: int?): int { 0 }
+fn count_any(v: Int?): Int { 0 }
 
-fn run(g: fn(int): int): int {
+fn run(g: fn(Int): Int): Int {
   g(1)
 }
 
-let n = run(count_any)  // OK: count_any accepts every int? — and int
+let n = run(count_any)  // OK: count_any accepts every Int? — and Int
 ```
 
-Here `int` is assignable to `int?`, so `fn(int?): int` is a subtype of
-`fn(int): int` by parameter contravariance: `count_any` — which accepts more
-than `run` requires — satisfies the required type `fn(int): int`.
+Here `Int` is assignable to `Int?`, so `fn(Int?): Int` is a subtype of
+`fn(Int): Int` by parameter contravariance: `count_any` — which accepts more
+than `run` requires — satisfies the required type `fn(Int): Int`.
 
-Function types may appear in any position, including as the parameter or result of another function type, so higher-order functions are written directly (`fn(fn(int): int): int`); the language has no separate notation for higher-rank polymorphism. A generic function used where a function type is expected MUST have its type parameters determined by the expected type or the arguments at that point; otherwise a compile-time error is reported. The complete compatibility and subtyping rules are in [`type-relations.md`](type-relations.md).
+Function types may appear in any position, including as the parameter or result of another function type, so higher-order functions are written directly (`fn(fn(Int): Int): Int`); the language has no separate notation for higher-rank polymorphism. A generic function used where a function type is expected MUST have its type parameters determined by the expected type or the arguments at that point; otherwise a compile-time error is reported. The complete compatibility and subtyping rules are in [`type-relations.md`](type-relations.md).
 
 ## Method types
 
 Methods are functions declared in an `impl` block or a `trait`. The first parameter of a method is its receiver.
 
 ```xulo
-struct Rectangle { w: int, h: int }
+struct Rectangle { w: Int, h: Int }
 
 impl Rectangle {
-  fn area(self): int { self.w * self.h }
+  fn area(self): Int { self.w * self.h }
   fn grow(mut self) { self.w = self.w + 1 }
 }
 
 trait Area {
-  fn area(self): int
+  fn area(self): Int
 }
 
 impl Area for Rectangle {
-  fn area(self): int { self.w * self.h }
+  fn area(self): Int { self.w * self.h }
 }
 ```
 
 - The receiver is written `self` — an immutable borrow of the receiver — or `mut self`, a mutable borrow; a method that assigns to `self` or its fields MUST declare `mut self`, and the receiver at the call site must be a mutable place (see [`../memory-and-runtime.md`](../memory-and-runtime.md)). The receiver of a trait method and of its implementation MUST use the same form.
-- The receiver counts as the first parameter of the method's function type: the trait method `Area.area` above corresponds to `fn(Rectangle): int`. A call `r.area()` evaluates the receiver once, passes it as the receiver argument, and has the method's declared result type.
+- The receiver counts as the first parameter of the method's function type: the trait method `Area.area` above corresponds to `fn(Rectangle): Int`. A call `r.area()` evaluates the receiver once, passes it as the receiver argument, and has the method's declared result type.
 - **Method references are explicit paths.** The only way to reference a method as a value is the trait-qualified path `Trait.method`. Its type is the trait's method signature with `self` replaced by the receiver type, and the receiver type MUST be determined by the surrounding context — including a visible `impl` for that receiver type:
 
 ```xulo
 fn main() {
-  let measure: fn(Rectangle): int = Area.area
+  let measure: fn(Rectangle): Int = Area.area
 }
 ```
 

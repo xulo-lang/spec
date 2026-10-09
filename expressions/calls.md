@@ -57,7 +57,7 @@ argument appears, every following argument MUST be named as well. Mixing is
 therefore one-directional:
 
 ```xulo
-fn render(text: string, size: int, bold: boolean): View {
+fn render(text: String, size: Int, bold: Boolean): View {
   Text(text)
 }
 
@@ -85,14 +85,14 @@ specified in [`../components/binding.md`](../components/binding.md).
 A parameter MAY declare a default with `=`.
 
 ```xulo
-fn greet(name: string = "stranger"): string {
+fn greet(name: String = "stranger"): String {
   "Hello, " + name
 }
 ```
 
 A default value is evaluated at each call that omits the argument, not once at
 declaration, so a default may depend on values computed at call time. The
-parameter's type MUST admit the default value: `name: string = 42` is a
+parameter's type MUST admit the default value: `name: String = 42` is a
 compile-time error.
 
 Any parameter MAY have a default. An omitted argument MUST be supplied by name
@@ -108,7 +108,7 @@ A parameter whose type is optional (`T?`) MAY be omitted at the call site, in
 which case it is bound to `null`.
 
 ```xulo
-fn greet(name: string?): string {
+fn greet(name: String?): String {
   if name != null { "Hello, " + name } else { "Hello, stranger" }
 }
 
@@ -117,7 +117,7 @@ greet("Ada")
 ```
 
 An optional parameter without a default accepts `null` explicitly as well, so
-`greet(null)` and `greet()` are equivalent. Optional and defaulted parameters
+`greet(Null)` and `greet()` are equivalent. Optional and defaulted parameters
 follow the same positional-trailing or named rule stated above.
 
 ## Method calls
@@ -147,16 +147,16 @@ Type arguments of a generic function are inferred at the call site from the
 actual arguments and from the expected type.
 
 ```xulo
-fn first<T>(items: list<T>): T {
+fn first<T>(items: List<T>): T {
   items[0]
 }
 
-let n: int = first([1, 2, 3])    // T is int
-let s = first(["a", "b"])        // T is string
+let n: Int = first([1, 2, 3])    // T is Int
+let s = first(["a", "b"])        // T is String
 ```
 
 Explicit type arguments at a call site are not part of the language: writing
-`first<int>(...)` is not well-formed. Inference, bounds, and unification are
+`first<Int>(...)` is not well-formed. Inference, bounds, and unification are
 specified in [`../types/generics.md`](../types/generics.md).
 
 ## Closures as callees
@@ -169,7 +169,7 @@ double(21)
 xs[0](10)
 getFn()(x)
 (f)(5)
-(fn(x: int): int { x })(1)
+(fn(x: Int): Int { x })(1)
 ```
 
 The callee is evaluated first, then the arguments left-to-right. A call made

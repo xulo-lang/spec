@@ -5,7 +5,7 @@ programs are built by composing expressions rather than by sequencing
 instructions. Literals, operators, calls, closures, `if`, `match`, blocks, and
 `await` all produce values. Constructs that exist only to introduce a name or
 to effect a change produce no meaningful value; where such a construct must be
-given a type, that type is `unit` (see
+given a type, that type is `Unit` (see
 [`../types/primitive-types.md`](../types/primitive-types.md)).
 
 ## Expressions versus Statements
@@ -68,6 +68,7 @@ each level; [`../grammar.md`](../grammar.md) encodes the same structure.
 | logical and | `and` | left |
 | nullish | `??` | left |
 | equality | `==` `!=` | left |
+| type test | `is` `is not` | non-assoc |
 | relational | `<` `>` `<=` `>=` | non-assoc |
 | range | `..<` `...` | non-assoc |
 | bitwise or | `\|` | left |

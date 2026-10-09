@@ -68,8 +68,8 @@ statement terminator — so formatting never changes the meaning of a file.
   [`type-system/coercion.md`](type-system/coercion.md). There is no
   string/number juggling, no truthiness, and no automatic conversion between
   unrelated types.
-- **Not a replacement for a systems language.** The fixed-bit types (`i8` …
-  `u64`, `f32`, `f64`) exist for ABI and FFI precision, not for competing with
+- **Not a replacement for a systems language.** The fixed-bit types (`I8` …
+  `U64`, `F32`, `F64`) exist for ABI and FFI precision, not for competing with
   C on its own ground: memory layout, inline assembly, and bare-metal control
   are outside the language's ambitions.
 - **No macro system in v1.** The language as specified has no macro
@@ -94,7 +94,7 @@ enum Level {
 }
 
 // A match must cover every variant of the scrutinee.
-fn weight(level: Level): int {
+fn weight(level: Level): Int {
   match level {
     Level::Low => 1
     Level::High => 100
@@ -102,7 +102,7 @@ fn weight(level: Level): int {
 }
 
 // `let mut` makes a binding assignable; `let` bindings are not.
-fn sumTo(n: int): int {
+fn sumTo(n: Int): Int {
   let mut acc = 0
   for i in 1...n {
     acc = acc + i
@@ -112,7 +112,7 @@ fn sumTo(n: int): int {
 
 // A component: the declared return type is View.
 fn Counter(): View {
-  @State let count: int = 0
+  @State let count: Int = 0
 
   VStack(spacing: 8) {
     Text(`count = ${count}, sum = ${sumTo(count)}`)
@@ -130,7 +130,7 @@ fn Counter(): View {
 - `let mut acc = 0` creates a mutable binding — `acc = acc + i` would be an
   error on a plain `let`. `1...n` is a closed range, and `for i in ...`
   iterates it.
-- `@State let count: int = 0` is a state declaration: it is legal only at the
+- `@State let count: Int = 0` is a state declaration: it is legal only at the
   top level of a component body, and assigning to `count` re-renders the
   component.
 - `` `count = ${count}` `` is a template literal: backticks interpolate, while

@@ -25,7 +25,7 @@ prelude and whose signature is that of an intrinsic.
 - **No import is required.** A module that imports nothing still has every
   name of both layers, from its first line to its last.
 - **A module-level declaration MUST NOT bear a prelude or intrinsic name.**
-  Declaring `fn print(...)`, `struct Task { … }`, `type map<K, V> = …`, or
+  Declaring `fn print(...)`, `struct Task { … }`, `type Map<K, V> = …`, or
   `let str = …` at file scope is a compile-time error. The complete list of
   reserved names is given in
   [prelude.md](prelude.md#reserved-names), and the diagnostic category for a
@@ -55,12 +55,12 @@ only when nothing in the earlier scopes matches, which is why a local binding
 of the same name hides them for as long as it is in scope.
 
 ```xulo
-fn report(total: int): unit {
+fn report(total: Int): Unit {
   let str = "label"            // hides the intrinsic in this scope only
   print(str)
 }
 
-fn remaining(): string {
+fn remaining(): String {
   str(42)                      // "42": no shadowing here, so `str` is intrinsic
 }
 ```

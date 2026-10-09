@@ -12,8 +12,8 @@ type relations used by bounds are defined in
 
 ```xulo
 trait Area {
-  fn area(self): float;
-  fn perimeter(self): float
+  fn area(self): Float;
+  fn perimeter(self): Float
 }
 ```
 
@@ -25,7 +25,7 @@ Rules:
   and has no body. A trait MUST NOT provide a default implementation, and an
   implementation therefore cannot inherit code from the trait it implements.
 - Every trait method MUST declare a return type. Unlike an ordinary `fn`, whose
-  omitted return type means `unit`, a trait method may not omit it.
+  omitted return type means `Unit`, a trait method may not omit it.
 - The first parameter of a trait method is its *receiver*, written `self` or
   `mut self`. `self` borrows the receiver immutably; `mut self` borrows it
   mutably. Borrowing rules are specified in
@@ -48,21 +48,21 @@ An `impl` block attaches methods to a type. It either implements a trait
 (`impl Trait for Type`) or declares inherent methods (`impl Type`).
 
 ```xulo
-struct Rectangle { w: float, h: float }
+struct Rectangle { w: Float, h: Float }
 
 impl Area for Rectangle {
-  fn area(self): float { self.w * self.h }
-  fn perimeter(self): float { 2.0 * (self.w + self.h) }
+  fn area(self): Float { self.w * self.h }
+  fn perimeter(self): Float { 2.0 * (self.w + self.h) }
 }
 
-struct User { name: string, age: int }
+struct User { name: String, age: Int }
 
 impl User {
-  fn rename(mut self, next: string) {
+  fn rename(mut self, next: String) {
     self.name = next
   }
 
-  pub fn years(self): int { self.age }
+  pub fn years(self): Int { self.age }
 }
 ```
 
@@ -86,7 +86,7 @@ Rules:
   }
 
   impl<T: Area + Scalable> Palette<T> {
-    fn render(self): float { Area.area(self.shape) }
+    fn render(self): Float { Area.area(self.shape) }
   }
   ```
 
@@ -147,11 +147,11 @@ Inside a body that carries the bound, values of type `T` expose the members the
 bound declares, and either spelling denotes the same static call:
 
 ```xulo
-fn area_of<T: Area>(shape: T): float {
+fn area_of<T: Area>(shape: T): Float {
   Area.area(shape)      // explicit static dispatch
 }
 
-fn area_twice<T: Area>(shape: T): float {
+fn area_twice<T: Area>(shape: T): Float {
   shape.area() + shape.area()   // member form, resolves through the bound
 }
 ```
@@ -173,7 +173,7 @@ The language rule for calls that depend on a type parameter is:
 - A type satisfies a trait **only through an `impl`**. A type that happens to
   declare methods with the right names and signature does not implement the
   trait; satisfaction is never inferred from the shape of a type.
-- `map` and tuple types are structural for *assignability* — they depend only
+- `Map` and tuple types are structural for *assignability* — they depend only
   on their element types — while `struct` types are nominal: a `struct` is
   assignable only to its own type. In both cases, structural compatibility
   never implies trait satisfaction (see
@@ -183,14 +183,14 @@ The language rule for calls that depend on a type parameter is:
   type an alias expands to, never to the alias itself (see
   [`composite-types.md`](composite-types.md)).
 - `ToString` is a built-in trait. A value interpolated in a template literal
-  `` `…${expr}…` `` must be a base type (`int`, `float`, `boolean`, `string`) or
+  `` `…${expr}…` `` must be a base type (`Int`, `Float`, `Boolean`, `String`) or
   implement `ToString`; other types are a compile-time error in that position.
 
   ```xulo
-  struct User { name: string, age: int }
+  struct User { name: String, age: Int }
 
   impl ToString for User {
-    fn to_string(self): string {
+    fn to_string(self): String {
       `${self.name} (${self.age})`
     }
   }
@@ -203,24 +203,24 @@ trait, and explicit dispatch.
 
 ```xulo
 trait Area {
-  fn area(self): float;
-  fn perimeter(self): float
+  fn area(self): Float;
+  fn perimeter(self): Float
 }
 
-struct Rectangle { w: float, h: float }
-struct Circle { r: float }
+struct Rectangle { w: Float, h: Float }
+struct Circle { r: Float }
 
 impl Area for Rectangle {
-  fn area(self): float { self.w * self.h }
-  fn perimeter(self): float { 2.0 * (self.w + self.h) }
+  fn area(self): Float { self.w * self.h }
+  fn perimeter(self): Float { 2.0 * (self.w + self.h) }
 }
 
 impl Area for Circle {
-  fn area(self): float { 3.14159 * self.r * self.r }
-  fn perimeter(self): float { 2.0 * 3.14159 * self.r }
+  fn area(self): Float { 3.14159 * self.r * self.r }
+  fn perimeter(self): Float { 2.0 * 3.14159 * self.r }
 }
 
-fn describe<T: Area>(shape: T): float {
+fn describe<T: Area>(shape: T): Float {
   Area.area(shape) + Area.perimeter(shape)
 }
 

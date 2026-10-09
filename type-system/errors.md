@@ -34,11 +34,11 @@ error[E0202] semantic: argument type mismatch
  --> app.xulo:4:9
   │
 4 │   greet(42)
-  │         ^^ expected `string`, found `int`
+  │         ^^ expected `String`, found `Int`
   │
  --> app.xulo:1:10
   │
-1 │ fn greet(name: string): string { "Hello, " + name }
+1 │ fn greet(name: String): String { "Hello, " + name }
   │          ---- parameter declared here
   = note: convert the value with `str(42)` before passing it
 ```
@@ -76,7 +76,7 @@ same pipeline.
 ## Message style guide
 
 - A mismatch message reads `expected <type>, found <type>`, with both types in
-  backticks: ``expected `string`, found `int` ``.
+  backticks: ``expected `String`, found `Int` ``.
 - A name appears in backticks exactly as written in the source, and a type is
   named the way its declaration names it.
 - Messages are lowercase, contain no trailing period, and fit one line; the
@@ -109,27 +109,28 @@ the source line, a caret line, and optional notes.
 
 | Code | Trigger | Example | Message shape |
 |------|---------|---------|---------------|
-| `E0201` | a value is not assignable to a type that is known: an annotation or annotated initializer, a condition, a list element, an assignment, mixed fixed-bit operands, an operator applied to an `unknown` operand | `let s: string = 42` | ``expected `string`, found `int` `` |
-| `E0202` | an argument is not assignable to its parameter | `greet(42)` | ``expected `string`, found `int` `` |
-| `E0203` | a `return` operand or a final expression differs from the declared return type | `fn f(): int { "x" }` | ``expected `int`, found `string` `` |
-| `E0204` | a callee has no function or component type | `let n = 1` then `n()` | `` `int` is not callable `` |
+| `E0201` | a value is not assignable to a type that is known: an annotation or annotated initializer, a condition, a list element, an assignment, mixed fixed-bit operands, an operator applied to an `Unknown` operand | `let s: String = 42` | ``expected `String`, found `Int` `` |
+| `E0202` | an argument is not assignable to its parameter | `greet(42)` | ``expected `String`, found `Int` `` |
+| `E0203` | a `return` operand or a final expression differs from the declared return type | `fn f(): Int { "x" }` | ``expected `Int`, found `String` `` |
+| `E0204` | a callee has no function or component type | `let n = 1` then `n()` | `` `Int` is not callable `` |
 | `E0205` | a required field is absent from an initializer | `User(name: "A")` with `age` required | ``missing field `age` in initializer of `User` `` |
 | `E0206` | a field does not exist on the type — in a read, an initializer, or a destructuring | `u.namee`, `let { age } = u` | `` `User` has no field `age` `` |
-| `E0207` | the number of arguments is wrong | `f(1, 2)` for `fn f(a: int)` | ``expected 1 argument, found 2`` |
+| `E0207` | the number of arguments is wrong | `f(1, 2)` for `fn f(a: Int)` | ``expected 1 argument, found 2`` |
 | `E0208` | an argument label is unknown, duplicated, or a positional argument follows a named one | `f(on: 1)` | ``unknown argument label `on` `` |
-| `E0209` | a literal does not fit the type it is given — its default type or a type it is coerced into | `let b: u8 = 300` | ``literal `300` does not fit in `u8` `` |
+| `E0209` | a literal does not fit the type it is given — its default type or a type it is coerced into | `let b: U8 = 300` | ``literal `300` does not fit in `U8` `` |
 | `E0210` | constant arithmetic divides by zero, takes a remainder by zero, or overflows its type | `const H = 1 / 0` | ``division by zero in constant expression`` |
-| `E0211` | operands, branches, or arms have no common type | `flag ? 1 : "x"` | `` `int` and `string` have no common type `` |
+| `E0211` | operands, branches, or arms have no common type | `flag ? 1 : "x"` | `` `Int` and `String` have no common type `` |
 | `E0212` | a value has no string form, in `${…}` or in `str` | `` `${user}` `` without `ToString` | `` `User` has no string form; implement `ToString` `` |
-| `E0213` | the iterable of a `for` loop is not a supported type | `for x in 42` | `` `int` is not iterable `` |
+| `E0213` | the iterable of a `for` loop is not a supported type | `for x in 42` | `` `Int` is not iterable `` |
 | `E0214` | `break`, `continue`, or `return` is written outside its context | `return` at file scope | `` `return` outside of a function `` |
-| `E0215` | a subscript is applied to a type that is not a `list` or `map` | `"abc"[0]` | `` `string` cannot be indexed `` |
+| `E0215` | a subscript is applied to a type that is not a `List` or `Map` | `"abc"[0]` | `` `String` cannot be indexed `` |
 | `E0216` | a type cannot be determined: an empty collection, a bare `null`, an unannotated closure, an unsolved generic argument | `let xs = []` | `type annotations needed` |
-| `E0217` | a `?` propagation is ill-formed: its operand is neither `T?` nor `Result<T, E>`; it appears outside a function or in one with no declared return type; or the early return's value does not fit the declared return type | `fn f(): int { half(3)? }` | ``cannot propagate `?` to return type `int``` |
-| `E0218` | an expression statement in statement position has a type other than `unit` and is not an excepted control-flow construct | `a + b` with `a: int` | ``expected `unit`, found `int``` |
-| `E0219` | a tuple destructuring's initializer is not a tuple type, or the name count differs from the tuple's arity | `let (a, b) = 42` | ``expected a tuple of 2 elements, found `int` `` |
-| `E0220` | a positional access has a non-tuple receiver, or the position is at or past the arity | `p.2` for `p: (int, int)` | `` `(int, int)` has no element `.2` `` |
-| `E0221` | a typed map literal repeats a type an expected `map<K, V>` already gives, with identifier keys or no entries | `let m: map<string, int> = map<string, int>{}` | ``literal `map<string, int>{ … }` repeats the expected type`` |
+| `E0217` | a `?` propagation is ill-formed: its operand is neither `T?` nor `Result<T, E>`; it appears outside a function or in one with no declared return type; or the early return's value does not fit the declared return type | `fn f(): Int { half(3)? }` | ``cannot propagate `?` to return type `Int``` |
+| `E0218` | an expression statement in statement position has a type other than `Unit` and is not an excepted control-flow construct | `a + b` with `a: Int` | ``expected `Unit`, found `Int``` |
+| `E0219` | a tuple destructuring's initializer is not a tuple type, or the name count differs from the tuple's arity | `let (a, b) = 42` | ``expected a tuple of 2 elements, found `Int` `` |
+| `E0220` | a positional access has a non-tuple receiver, or the position is at or past the arity | `p.2` for `p: (Int, Int)` | `` `(Int, Int)` has no element `.2` `` |
+| `E0221` | a typed map literal repeats a type an expected `Map<K, V>` already gives, with identifier keys or no entries | `let m: Map<String, Int> = Map<String, Int>{}` | ``literal `Map<String, Int>{ … }` repeats the expected type`` |
+| `E0222` | the right operand of `is` is not a testable type, or is not assignable to the left operand's type | `data is List<Int>` | ``type `List<Int>` is not testable`` |
 
 ### Pattern errors
 
@@ -137,7 +138,7 @@ the source line, a caret line, and optional notes.
 |------|---------|---------|---------------|
 | `E0301` | a `match` does not cover every variant, both booleans, or every testable member of a union without a covering arm | `match c { Color::Red => 0 }` | `` `match` does not cover every variant of `Color` (missing `Blue`) `` |
 | `E0302` | an arm can never be selected | an arm after `_ =>` | ``this arm is unreachable`` |
-| `E0303` | a pattern does not fit the scrutinee's type, or names a type that cannot be tested | `Color::Red` against `int`, `list<int> xs` anywhere | ``pattern `Color::Red` does not match `int` `` |
+| `E0303` | a pattern does not fit the scrutinee's type, or names a type that cannot be tested | `Color::Red` against `Int`, `List<Int> xs` anywhere | ``pattern `Color::Red` does not match `Int` `` |
 
 ### Place and assignment errors
 
@@ -163,8 +164,8 @@ the source line, a caret line, and optional notes.
 | Code | Trigger | Example | Message shape |
 |------|---------|---------|---------------|
 | `E0501` | `await` is written outside an `async` context: in a non-`async` function or closure body, in a component body, in an `@Effect` body, or at module top level | `await t` in a plain `fn` | `` `await` outside of an `async` context `` |
-| `E0502` | the operand of `await` is not a `Task<T>` | `await 3` | ``cannot await `int`; expected `Task<T>` `` |
-| `E0503` | an `async` body returns a value that differs from its declared type | returning `Task<int>` from `async fn f(): int` | ``expected `int`, found `Task<int>` `` |
+| `E0502` | the operand of `await` is not a `Task<T>` | `await 3` | ``cannot await `Int`; expected `Task<T>` `` |
+| `E0503` | an `async` body returns a value that differs from its declared type | returning `Task<Int>` from `async fn f(): Int` | ``expected `Int`, found `Task<Int>` `` |
 
 ### Module and visibility errors
 
@@ -178,21 +179,21 @@ the source line, a caret line, and optional notes.
 | `E0606` | a type-only binding is used where a value is required | `let u = User` after `import type { User }` | `` `User` was imported with `import type` and is not a value `` |
 | `E0607` | a specifier resolves to nothing or to more than one module | `import "nope"` | ``cannot resolve module specifier `nope` `` |
 | `E0608` | the entry module declares no `main` | an entry module without `main` | ``entry module does not declare `main` `` |
-| `E0609` | `main` has parameters or any return type but `unit` or `View` | `fn main(argc: int)` | `` `main` must take no parameters `` |
+| `E0609` | `main` has parameters or any return type but `Unit` or `View` | `fn main(argc: Int)` | `` `main` must take no parameters `` |
 
 ### Component errors
 
 | Code | Trigger | Example | Message shape |
 |------|---------|---------|---------------|
 | `E0701` | `@State`, `@Store`, `@Effect`, or `@Environment` is not a top-level item of a component body | `@State` in an ordinary `fn` | `` `@State` is only valid at the top level of a component body `` |
-| `E0702` | a child item is not a `string`, `View`, or `list<View>` — including an un-narrowed `View?`, a binding, an assignment, or a `return` | `Row { count }` | ``child of type `int` is not a `View` `` |
+| `E0702` | a child item is not a `String`, `View`, or `List<View>` — including an un-narrowed `View?`, a binding, an assignment, or a `return` | `Row { count }` | ``child of type `Int` is not a `View` `` |
 | `E0703` | `$` is written outside an argument position, or on a name that is not a bindable state place of the enclosing component body | `$tally` with no `@State tally` | `` `$tally` does not name a state declaration `` |
-| `E0704` | a component body's trailing expression is not a `View` | `fn Panel(): View { 42 }` | ``expected `View`, found `int` `` |
+| `E0704` | a component body's trailing expression is not a `View` | `fn Panel(): View { 42 }` | ``expected `View`, found `Int` `` |
 | `E0705` | a component block follows a call to a function that does not declare `View` | `greet("Ada") { … }` | `` `greet` does not return `View`, so it takes no component block `` |
 | `E0706` | `await` in a component body or an `@Effect` body | `await load()` inside a component | `` `await` is not allowed in a component body `` |
 | `E0707` | a component invocation has neither an argument list nor a block | `Counter` used where a call is required | ``component invocation requires an argument list or a block`` |
 | `E0708` | the dependency list of an `@Effect` is not a list literal | `@Effect fn() { … }, count` | ``the dependency list of `@Effect` must be a list literal`` |
-| `E0709` | the value of an `@Effect` declaration is not a `fn(): unit` | `@Effect 42` | `` `@Effect` requires a function of type `fn(): unit` `` |
+| `E0709` | the value of an `@Effect` declaration is not a `fn(): Unit` | `@Effect 42` | `` `@Effect` requires a function of type `fn(): Unit` `` |
 
 Argument failures inside a component invocation — an unknown label, too many
 or too few arguments, an argument of the wrong type, an undeclared callee — are
@@ -204,10 +205,10 @@ reported with the call codes `E0202`, `E0204`, `E0207`, and `E0208`.
 |------|---------|---------|---------------|
 | `E0801` | a type argument satisfies no bound, or an explicit `Trait.method(…)` finds no impl | `perimeter(Triangle)` for a type without `Area` | `` `Triangle` does not implement `Area` `` |
 | `E0802` | a trait impl omits a method of the trait | `impl Area for Rect` without `area` | `` `impl Area for Rect` is missing `area` `` |
-| `E0803` | an impl method's signature differs from the trait's | `fn area(self, k: int)` for `fn area(self)` | ```method `area` has an incompatible signature``` |
+| `E0803` | an impl method's signature differs from the trait's | `fn area(self, k: Int)` for `fn area(self)` | ```method `area` has an incompatible signature``` |
 | `E0804` | an impl declares a method the trait does not declare | an extra `extra` in `impl Area for Rect` | `` `impl Area for Rect` declares `extra`, which `Area` does not `` |
 | `E0805` | two impls of one trait for one type in one module | a second `impl Area for Rect` | `` `Area` is already implemented for `Rect` `` |
-| `E0806` | a bound does not name a visible trait | `<T: int>` | ``bound `int` is not a trait`` |
+| `E0806` | a bound does not name a visible trait | `<T: Int>` | ``bound `Int` is not a trait`` |
 
 ## Warnings
 

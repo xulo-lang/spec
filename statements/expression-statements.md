@@ -10,7 +10,7 @@ expression of a block are specified in [`return-and-block.md`](return-and-block.
 
 ## The statement-value rule
 
-> An expression statement that is not `unit` is an error, EXCEPT when it is a
+> An expression statement that is not `Unit` is an error, EXCEPT when it is a
 > control-flow construct (`if`, `match`, `for`, `while`) whose value is
 > discarded.
 
@@ -18,13 +18,13 @@ The rule exists because a computed value that nobody reads is almost always a
 mistake: a comparison that was meant to be a call, a call whose result was
 meant to initialize a binding, an arithmetic expression left over from an
 edit. Effects are the reason to write an expression as a statement; anything
-the expression computes beyond `unit` is required to be used.
+the expression computes beyond `Unit` is required to be used.
 
 ```xulo
 let mut xs = [1, 2, 3]
 let mut total = 0
 
-xs.sort()            // legal: sort returns unit
+xs.sort()            // legal: sort returns Unit
 total + 1            // error: value discarded (E0218)
 if total > 0 { print("positive") } else { print("zero") }   // legal
 total > 0 ? a() : b() // error: ternary is not a control-flow construct
@@ -81,7 +81,7 @@ as one. To use a map literal in statement-like position, parenthesize it
 
 A final expression in a block is the block's value; writing `;` after it
 turns it into an expression statement, which discards the value — an error
-for a non-`unit` value under the rule above
+for a non-`Unit` value under the rule above
 ([`return-and-block.md`](return-and-block.md)). The converse holds too: an
 expression statement separated by an optional `;` discards its value
 regardless of what follows it on the line
@@ -100,7 +100,7 @@ No reordering across statement boundaries is permitted by this chapter.
 
 | Code | Trigger | Example | Message shape |
 |------|---------|---------|---------------|
-| `E0218` | an expression statement has a type other than `unit` and is not an excepted control-flow construct | `a + b` with `a: int` | ``expected `unit`, found `int``` |
+| `E0218` | an expression statement has a type other than `Unit` and is not an excepted control-flow construct | `a + b` with `a: Int` | ``expected `Unit`, found `Int``` |
 | `E0402` | the statement is an assignment whose target is not a place | `f() = 2` | ``invalid assignment target`` |
 | `W0103` | a statement can never run | a statement after `return` | ``unreachable code`` |
 

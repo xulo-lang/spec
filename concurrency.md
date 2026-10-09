@@ -47,7 +47,7 @@ spawn.process Type { FieldInit , … }
 | `spawn async { … }` | on the default task scheduler |
 | `spawn.thread async { … }` | on an operating-system thread |
 | `spawn.process async { … }` | in a separate process |
-| `spawn.on(pool) async { … }` where `pool` has type `fn(fn(): unit): unit` | where `pool` decides |
+| `spawn.on(pool) async { … }` where `pool` has type `fn(fn(): Unit): Unit` | where `pool` decides |
 | `spawn.process Type { … }` | as a service of type `Type` ([Services](#services)) |
 
 - The `async` keyword is required in the block forms, and the block is an
@@ -60,7 +60,7 @@ spawn.process Type { FieldInit , … }
   cancellation rules are identical in every mode.
 - `spawn` is an ordinary expression: it may appear in a synchronous or an
   `async` body, in any expression position its type permits.
-- A `spawn` expression is not `unit`, so — like every non-`unit` expression —
+- A `spawn` expression is not `Unit`, so — like every non-`Unit` expression —
   it may not stand alone as an expression statement
   ([`statements/README.md`](statements/README.md)). Bind it, `await` it, or
   pass it on.
@@ -101,7 +101,7 @@ Capture is decided when the `spawn` expression is evaluated, before the body
 runs, so what a block receives never changes while it executes:
 
 ```xulo
-fn upload_files(): Task<unit> {
+fn upload_files(): Task<Unit> {
   let config = load_config()
   let data = gather()
   let job = spawn.thread async {
@@ -200,16 +200,16 @@ lock state { Block }             // a critical section
   a runtime failure defined in [Runtime failures](#runtime-failures).
 
 ```xulo
-struct AppState { total_online: int, names: list<string> }
+struct AppState { total_online: Int, names: List<String> }
 
-fn join(state: shared AppState, name: string) {
+fn join(state: shared AppState, name: String) {
   lock state {
     state.total_online = state.total_online + 1
     state.names = state.names + [name]
   }
 }
 
-fn report(state: shared AppState): int {
+fn report(state: shared AppState): Int {
   lock state { state.total_online }
 }
 ```
@@ -257,10 +257,10 @@ A **service** is an actor: a struct with an `on_message` method, running in
 its own process, reached only by sending messages.
 
 ```xulo
-struct Tally { total: int }
+struct Tally { total: Int }
 
 impl Tally {
-  fn on_message(mut self, cmd: int) {
+  fn on_message(mut self, cmd: Int) {
     self.total = self.total + cmd
     reply(self.total)
   }
@@ -293,7 +293,7 @@ async fn main() {
   message begins.
 - `reply(e)` may be called only inside `on_message`. The reply type `R` is the
   common type of the `reply` operands in the method (`E0211` if they have
-  none), or `unit` when the method never calls `reply`. The send's task
+  none), or `Unit` when the method never calls `reply`. The send's task
   settles when `on_message` returns, carrying the operand of the `reply` the
   executed path performed — or, when that path performed none although the
   method contains `reply` calls, settling as cancelled.

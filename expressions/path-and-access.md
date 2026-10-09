@@ -45,10 +45,10 @@ receiver (see [`../functions.md`](../functions.md)); the call itself is
 specified in [`calls.md`](calls.md). The type of a namespace member is its
 declared type.
 
-When the receiver has type `map<string, V>`, `expr.name` is the **member form
+When the receiver has type `Map<String, V>`, `expr.name` is the **member form
 of a map entry**: it is exactly `expr["name"]` — type `V`, and a missing key
 is the same runtime error as the subscript read of that key. On a map whose
-key type is not `string` no member form exists
+key type is not `String` no member form exists
 ([`../types/composite-types.md`](../types/composite-types.md)).
 
 A member that does not exist on the receiver's type is a compile-time error
@@ -109,14 +109,14 @@ xs[0]          // list element
 counts[key]    // map value
 ```
 
-The index type follows the collection: a `list<T>` is indexed by `int` and
-yields `T`; a `map<K, V>` is indexed by `K` and yields `V`. Strings are not
+The index type follows the collection: a `List<T>` is indexed by `Int` and
+yields `T`; a `Map<K, V>` is indexed by `K` and yields `V`. Strings are not
 indexable (see [`../types/primitive-types.md`](../types/primitive-types.md));
 select a character by other means, such as the built-in string intrinsics.
 
 Element access yields the element type directly — there is no automatic
-optional. Reading past the end of a `list` (a negative index included), or
-reading a `map` key that is absent, is a runtime error as defined in
+optional. Reading past the end of a `List` (a negative index included), or
+reading a `Map` key that is absent, is a runtime error as defined in
 [`../memory-and-runtime.md`](../memory-and-runtime.md); a lookup that may be
 absent is therefore guarded by an explicit presence test before the subscript
 is evaluated.
@@ -148,7 +148,7 @@ inner chain is never evaluated, the result is `null`, and `??` supplies
 test applies to it. If `a` has type `T?` and `T` has a member of type `U`,
 then `a?.b` has type `U?`, so an optional chain is always consumed with `??`,
 a ternary, a `null` test, or a context that admits `null`. The same holds for
-a position: if `q` has type `(int, string)?`, then `q?.0` has type `int?`.
+a position: if `q` has type `(Int, String)?`, then `q?.0` has type `Int?`.
 Optional chaining combines with `??` exactly this way, and with method calls
 as in `session?.refresh()`; the operator is specified in
 [`operators.md`](operators.md).
@@ -180,7 +180,7 @@ method was called on:
 
 ```xulo
 impl Rectangle {
-  fn area(self): float {
+  fn area(self): Float {
     self.w * self.h
   }
 }

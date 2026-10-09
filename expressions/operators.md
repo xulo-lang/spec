@@ -17,6 +17,7 @@ Levels are listed from loosest to tightest binding.
 | logical and | `and` | left |
 | nullish | `??` | left |
 | equality | `==` `!=` | left |
+| type test | `is` `is not` | non-assoc |
 | relational | `<` `>` `<=` `>=` | non-assoc |
 | range | `..<` `...` | non-assoc |
 | bitwise or | `\|` | left |
@@ -50,9 +51,9 @@ The target MUST be a place expression, and that place MUST be backed by a
 `mut` binding or by a mutable field or borrow (see
 [`../memory-and-runtime.md`](../memory-and-runtime.md)). Assigning to anything
 else is a compile-time error. The right-hand side is evaluated before the
-place is written, and the result of an assignment expression is `unit`.
+place is written, and the result of an assignment expression is `Unit`.
 Assignment is right-associative, so `a = b = c` groups as `a = (b = c)`; since
-each assignment yields `unit`, chaining is well-formed only where `unit` is an
+each assignment yields `Unit`, chaining is well-formed only where `Unit` is an
 admitted value.
 
 Compound assignment does not exist. There is no `+=`, `-=`, `*=`, `/=`, or any
@@ -71,14 +72,14 @@ The conditional operator selects one of two expressions.
 let grade = score >= 90 ? "A" : score >= 60 ? "B" : "C"
 ```
 
-The condition MUST have type `boolean`; there is no truthiness. The two
+The condition MUST have type `Boolean`; there is no truthiness. The two
 branches MUST have a common type, which becomes the type of the expression
 (see [`../type-system/checking-rules.md`](../type-system/checking-rules.md)).
 The operator is right-associative, so `c ? a : d ? e : f` groups as
 `c ? a : (d ? e : f)`. A ternary nested inside another ternary SHOULD be
 parenthesized for clarity — the parentheses never change the meaning. A
 ternary is not a control-flow construct, so in statement position it follows
-the ordinary expression-statement rule and MUST have type `unit` (see
+the ordinary expression-statement rule and MUST have type `Unit` (see
 [`../statements/expression-statements.md`](../statements/expression-statements.md));
 to run one of two branches as a statement, use `if`.
 
@@ -100,11 +101,11 @@ print(!flag)
 
 `and` and `or` short-circuit: `and` does not evaluate its right operand when
 its left operand is `false`, and `or` does not evaluate its right operand when
-its left operand is `true`. Both operands MUST have type `boolean`, and the
-result is `boolean`. `!` takes a `boolean` and yields its negation.
+its left operand is `true`. Both operands MUST have type `Boolean`, and the
+result is `Boolean`. `!` takes a `Boolean` and yields its negation.
 
 Truthiness does not exist. No value of any other type is accepted where a
-`boolean` is required, so `x and y` with `x: int` is a compile-time error;
+`Boolean` is required, so `x and y` with `x: Int` is a compile-time error;
 write an explicit comparison instead, such as `x != 0 and y`.
 
 ## Nullish coalescing
@@ -136,8 +137,8 @@ let same = [1, 2] == [1, 2]
 let none = maybe == null
 ```
 
-Equality is structural for all value types: primitives (`boolean`, `string`,
-`int`, `float`, fixed-bit numerics), `list`, `map`, `set`, tuples,
+Equality is structural for all value types: primitives (`Boolean`, `String`,
+`Int`, `Float`, fixed-bit numerics), `List`, `Map`, `Set`, tuples,
 named `struct`s, and `enum`s — for an `enum`, the variant
 and every payload value are compared; for a tuple, the arities must be equal
 and every pair of elements is compared, so different arities are a
@@ -148,6 +149,35 @@ value requires that value's type to be optional. Values that carry identity —
 rather than structural content — are compared by identity, as defined in
 [`../memory-and-runtime.md`](../memory-and-runtime.md).
 
+## Type tests
+
+`e is T` tests whether `e`'s value has type `T`; `e is not T` is its
+negation. Both yield `Boolean`.
+
+```xulo
+let ok = data is String
+if size is not Int {
+  // ...
+}
+```
+
+The type `T` MUST be a **testable type** — the same set a `match` type
+pattern accepts: a base type name, a non-generic `struct` or `enum`,
+`Unknown`, or a union or optional built from testable types. A type-argument
+list or a type parameter may never appear, and any other type — a `List`, a
+`Map`, a function type, a generic instantiation — is `E0222`
+([`control-flow.md`](control-flow.md)). `T` MUST also be assignable to the
+type of `e` (`E0222` otherwise), so `x is Int` for `x: String` is an error
+while `x is String` for the same `x` is a test that yields `true`. The
+operand MAY have type `Unknown` — testing what a value is, when the type
+records only that it exists, is the operator's main use.
+
+Type tests are non-associative: `x is Int is String` does not parse. In any
+`Boolean` position `is` is an ordinary test; the narrowing it performs when
+it is the condition of an `if` is specified in
+[`control-flow.md`](control-flow.md) and
+[`../type-system/checking-rules.md`](../type-system/checking-rules.md).
+
 ## Relational
 
 `<`, `>`, `<=`, and `>=` compare two operands.
@@ -157,11 +187,11 @@ let small = n < 10
 let sorted = "apple" < "banana"
 ```
 
-Operands MUST both be numeric or both be `string`. Numeric operands follow the
-promotion rules of the arithmetic operators. Two `string`s compare
+Operands MUST both be numeric or both be `String`. Numeric operands follow the
+promotion rules of the arithmetic operators. Two `String`s compare
 lexicographically by Unicode code point, not by locale. Relational operators
 are non-associative: `a < b < c` MUST NOT parse and MUST be rewritten, as
-`(a < b) and (b < c)` or an equivalent form. The result is always `boolean`.
+`(a < b) and (b < c)` or an equivalent form. The result is always `Boolean`.
 
 ## Ranges
 
@@ -177,9 +207,9 @@ let slice = lo...hi
 
 Both operators are non-associative and yield the built-in generic type
 `Range<T>`. The operands MUST have the same numeric type, and `T` is that type:
-`0..<n` with `n: int` is `Range<int>` and `0.0..<x` with `x: float` is
-`Range<float>`. Mixed operand types are not promoted, so `0..<x` with
-`x: float` is an error and MUST be written `0.0..<x`.
+`0..<n` with `n: Int` is `Range<Int>` and `0.0..<x` with `x: Float` is
+`Range<Float>`. Mixed operand types are not promoted, so `0..<x` with
+`x: Float` is an error and MUST be written `0.0..<x`.
 
 A `Range<T>` is the operand of `for … in` iteration and is usable as a range
 pattern in `match`; both are specified in
@@ -205,15 +235,15 @@ let half = -x
   `2 ** 9`, and `a * b ** c` is `a * (b ** c)`.
 - Unary `-` binds tighter than any binary operator: `-a * b` is `(-a) * b`.
 
-Numeric promotion applies to mixed operands: `int + float` yields `float`, and
-any combination of `int` and `float` in one expression yields `float`. Two
+Numeric promotion applies to mixed operands: `Int + Float` yields `Float`, and
+any combination of `Int` and `Float` in one expression yields `Float`. Two
 operands of the same fixed-bit type yield that same fixed-bit type; other
 mixtures of distinct numeric types are errors unless one side is a literal
 that adapts to the other side's type. Overflow of a literal is a compile-time
 error and of a computed fixed-bit value is a runtime trap. See
 [`../types/primitive-types.md`](../types/primitive-types.md).
 
-## String and list `+`
+## String and List `+`
 
 `+` also concatenates strings and lists.
 
@@ -223,9 +253,9 @@ print("Hello, " + who + "!")
 let all = head + tail
 ```
 
-`string + string` yields `string`. `list<T> + list<U>` yields a list whose
+`String + String` yields `String`. `List<T> + List<U>` yields a list whose
 element type is the common type of `T` and `U` — for equal element types, that
-type. Mixing a `string` with any non-string is a compile-time error: convert
+type. Mixing a `String` with any non-string is a compile-time error: convert
 explicitly with the intrinsic `str(x)` first (see
 [`../builtins/intrinsic-functions.md`](../builtins/intrinsic-functions.md)).
 There is no implicit conversion anywhere in the language.
@@ -242,7 +272,7 @@ let half = n >> 1
 let inverted = ~n
 ```
 
-Both operands of a binary bitwise operator MUST be integers — `int` or a
+Both operands of a binary bitwise operator MUST be integers — `Int` or a
 fixed-bit integer type — and both MUST have the same type; the result has that
 same type. `~` is the prefix complement of an integer and yields the operand's
 type. Shifting is defined as follows: `<<` fills from the right with `0`; `>>`
@@ -286,17 +316,17 @@ let all = [...head, ...tail]
 let merged = { ...base, active: true }
 ```
 
-In a list literal the operand MUST be a `list`; in a map literal it MUST
-be a `map`. When a map spread and a later entry specify the same key, the
+In a list literal the operand MUST be a `List`; in a map literal it MUST
+be a `Map`. When a map spread and a later entry specify the same key, the
 later occurrence wins. See [`literals.md`](literals.md).
 
 ## Unary summary table
 
 | Operator | Operand | Result |
 |----------|---------|--------|
-| `!` | `boolean` | `boolean` |
-| `-` | numeric (`int`, `float`, fixed-bit) | the operand's type |
-| `~` | integer (`int` or fixed-bit) | the operand's type |
+| `!` | `Boolean` | `Boolean` |
+| `-` | numeric (`Int`, `Float`, fixed-bit) | the operand's type |
+| `~` | integer (`Int` or fixed-bit) | the operand's type |
 | `await` | `Task<T>` | `T` |
 
 All four are prefix operators at the `unary` precedence level, below every

@@ -26,7 +26,7 @@ The following forms, and only these, MAY appear at file scope:
 
 | Form | Example | Notes |
 |------|---------|-------|
-| Function | `fn f(x: int): int` | A function whose return type is `View` is a component |
+| Function | `fn f(x: Int): Int` | A function whose return type is `View` is a component |
 | Struct | `struct User { … }` | Introduces a nominal type |
 | Enum | `enum Theme { … }` | Introduces a nominal type and its variants |
 | Trait | `trait Area { … }` | Signature-only capability declaration |
@@ -56,9 +56,9 @@ import { add, PI } from "math"     // header
 import * as m from "util"
 import type { User } from "types"
 
-pub struct Account { owner: User, balance: int }
+pub struct Account { owner: User, balance: Int }
 
-pub fn deposit(a: Account, amount: int): Account {
+pub fn deposit(a: Account, amount: Int): Account {
   Account(owner: a.owner, balance: a.balance + amount)
 }
 ```
@@ -77,19 +77,19 @@ Declarations fall into two classes with different ordering rules:
 
 ```xulo
 // forward references: fine, whichever order these appear in
-fn area(r: Rectangle): float { r.w * r.h }
+fn area(r: Rectangle): Float { r.w * r.h }
 
-struct Rectangle { w: float, h: float }
+struct Rectangle { w: Float, h: Float }
 
-fn describe(r: Rectangle): string {
+fn describe(r: Rectangle): String {
   `${name()} rectangle`
 }
 
-fn name(): string { "large" }
+fn name(): String { "large" }
 ```
 
 ```xulo
-fn total(): int { running + 1 }   // error: `running` used before its declaration
+fn total(): Int { running + 1 }   // error: `running` used before its declaration
 let running = 0
 ```
 
@@ -107,17 +107,17 @@ and declares no entry point.
 Allowed signatures:
 
 ```xulo
-fn main() { … }            // ordinary program: returns unit
+fn main() { … }            // ordinary program: returns Unit
 fn main(): View { … }       // renderable program: returns View
-async fn main() { … }       // asynchronous program: returns Task<unit>
+async fn main() { … }       // asynchronous program: returns Task<Unit>
 ```
 
 - `main` MUST take no parameters and MUST be declared at file scope.
-- Its declared return type MUST be omitted (which means `unit`) or MUST be
+- Its declared return type MUST be omitted (which means `Unit`) or MUST be
   `View`; the two signatures are the headless and the renderable program of
   [`../components/view-syntax.md`](../components/view-syntax.md).
 - `main` MAY be declared `async`, in which case its declared return type
-  denotes `Task<unit>` or `Task<View>` as usual
+  denotes `Task<Unit>` or `Task<View>` as usual
   ([`../expressions/async-expressions.md`](../expressions/async-expressions.md)).
 - `main` MAY be marked `pub`.
 - A program whose entry module declares no `main` is rejected, and a `main`
@@ -138,8 +138,8 @@ bindings (`let`, `let mut`, `const`), parameters, loop variables, `match` arm
 bindings, and any **nested `fn`**:
 
 ```xulo
-fn outer(n: int): int {
-  fn double(v: int): int { v * 2 }   // nested function: a local declaration
+fn outer(n: Int): Int {
+  fn double(v: Int): Int { v * 2 }   // nested function: a local declaration
   double(n) + double(n)
 }
 ```

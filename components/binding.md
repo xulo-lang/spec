@@ -60,7 +60,7 @@ not a component is a compile-time error.
 
 ```xulo
 fn Settings(): View {
-  @State let name: string = ""
+  @State let name: String = ""
   let mode = "dark"                   // ordinary binding
 
   VStack {
@@ -78,7 +78,7 @@ receiver does no more with it than any other argument.
 
 ```xulo
 fn NameField(): View {
-  @State let name: string = ""
+  @State let name: String = ""
 
   VStack(spacing: 8) {
     Input(value: $name, placeholder: "Your name")
@@ -114,7 +114,7 @@ type, written with a closure:
 
 ```xulo
 fn Counter(): View {
-  @State let count: int = 0
+  @State let count: Int = 0
 
   HStack(spacing: 4) {
     Button("-", onClick: fn() { count = count - 1 })

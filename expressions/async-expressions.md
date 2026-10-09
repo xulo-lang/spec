@@ -15,7 +15,7 @@ An `async` function is a function declaration written with the `async` keyword
 before `fn` (after `pub` when present):
 
 ```xulo
-async fn fetchUser(id: int): User {
+async fn fetchUser(id: Int): User {
   let raw = await request(`/users/${id}`)
   decodeUser(raw)
 }
@@ -33,14 +33,14 @@ async fn notify() {
   task is automatic
   ([`checking-rules.md`](../type-system/checking-rules.md)).
 - An `async` function without a declared return type has the evaluated type
-  `fn(): Task<unit>` and its body produces `unit`.
+  `fn(): Task<Unit>` and its body produces `Unit`.
 - Calling an `async` function yields its `Task`; the result `T` is obtained
   with `await`.
 
 | Written form | Value type |
 |--------------|------------|
 | `async fn f(): T { ... }` | `fn(): Task<T>` |
-| `async fn f() { ... }` | `fn(): Task<unit>` |
+| `async fn f() { ... }` | `fn(): Task<Unit>` |
 | `async (x: A): R => ...` | `fn(A): Task<R>` |
 | `async (x: A) => ...` | `fn(A): Task<R>` (result from the body) |
 | `async fn(x: A): R { ... }` | `fn(A): Task<R>` |
@@ -50,8 +50,8 @@ prefixed with `async`:
 
 ```xulo
 async fn main() {
-  let double = async (x: int): int => x * 2
-  let t: Task<int> = double(21)
+  let double = async (x: Int): Int => x * 2
+  let t: Task<Int> = double(21)
   print(await t)     // 42
 }
 ```
@@ -75,12 +75,12 @@ async fn main() {
   anywhere an expression may appear — including argument position.
 
 ```xulo
-async fn greet(id: int): string {
+async fn greet(id: Int): String {
   let user = await fetchUser(id)   // suspends here until the task settles
   "hello " + user.name
 }
 
-async fn sumPrices(a: int, b: int): int {
+async fn sumPrices(a: Int, b: Int): Int {
   let x = await priceOf(a)         // the second await does not begin
   let y = await priceOf(b)         //   until the first has completed
   x + y
@@ -88,7 +88,7 @@ async fn sumPrices(a: int, b: int): int {
 ```
 
 ```xulo
-async fn demo(a: Task<int>, b: Task<int>) {
+async fn demo(a: Task<Int>, b: Task<Int>) {
   let r1 = await cache.get("k")    // == await (cache.get("k"))
   let r2 = await a + await b       // == (await a) + (await b)
   print(await fetchCount())        // await in argument position
@@ -133,15 +133,15 @@ and the built-in `Task` namespace is accessed with `.`:
 
 | Member | Signature | Meaning |
 |--------|-----------|---------|
-| `Task.all` | `all<T>(tasks: list<Task<T>>): Task<list<T>>` | completes when every task has completed; results in argument order |
-| `Task.race` | `race<T>(tasks: list<Task<T>>): Task<T>` | completes with the first task to complete |
+| `Task.all` | `all<T>(tasks: List<Task<T>>): Task<List<T>>` | completes when every task has completed; results in argument order |
+| `Task.race` | `race<T>(tasks: List<Task<T>>): Task<T>` | completes with the first task to complete |
 | `Task.resolve` | `resolve<T>(value: T): Task<T>` | an already-completed task holding `value` |
 
 Generic type arguments are inferred at the call site. `Task.all` and
 `Task.race` are commonly combined with `await`:
 
 ```xulo
-async fn fetchAll(): list<User> {
+async fn fetchAll(): List<User> {
   let a = fetchUser(1)
   let b = fetchUser(2)
   await Task.all([a, b])
@@ -168,7 +168,7 @@ and its failure model is the synchronous one:
   ([`../concurrency.md`](../concurrency.md)).
 
 ```xulo
-async fn log_user(id: int) {
+async fn log_user(id: Int) {
   match await find_user(id) {
     Result::Ok(user) => print(user.name)
     Result::Err(reason) => print(reason)
@@ -187,14 +187,14 @@ its call, and awaiting their tasks afterwards lets the started work overlap:
 
 ```xulo
 // sequential: each await completes before the next call is made
-async fn sequential(): int {
+async fn sequential(): Int {
   let a = await stepA()
   let b = await stepB()
   a + b
 }
 
 // concurrent: both tasks start at their calls, then both are awaited
-async fn concurrent(): int {
+async fn concurrent(): Int {
   let ta = stepA()
   let tb = stepB()
   await ta + await tb
@@ -224,7 +224,7 @@ and may appear in any expression position, including `f(await g())`,
 conditions, initializers, and `for` iterables.
 
 ```xulo
-async fn cached(id: int): User {
+async fn cached(id: Int): User {
   if await isCached(id) {
     return await readCache(id)
   }

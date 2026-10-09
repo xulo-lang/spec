@@ -24,12 +24,12 @@ cancellation, and services in [`concurrency.md`](concurrency.md).
   connection, a malformed input: the caller may need the reason, so the
   reason travels as data.
 - **When absence and failure are both possible, use `Result<T?, E>`:** `Err`
-  is why the operation failed; `Ok(null)` is that it succeeded but found
+  is why the operation failed; `Ok(Null)` is that it succeeded but found
   nothing.
 
 ```xulo
 // Ok(user) found, Ok(null) absent, Err(reason) the lookup itself failed
-fn find_user(id: int): Result<User?, LoadError> {
+fn find_user(id: Int): Result<User?, LoadError> {
   if id < 0 { return Result::Err(LoadError::Denied("negative id")) }
   query(id)
 }
@@ -52,17 +52,17 @@ Result::Err(error)   // the operation failed
 ```
 
 - `Result<T, E>` holds either a `T` or an `E`, and nothing else.
-  `Result<int, string>` denotes one type in every module; the type is
+  `Result<Int, String>` denotes one type in every module; the type is
   invariant in both arguments, exactly like an ordinary `enum`
   ([`types/type-relations.md`](types/type-relations.md)).
 - A function that can fail returns a `Result` instead of raising anything:
 
 ```xulo
-fn half(n: int): Result<int, string> {
+fn half(n: Int): Result<Int, String> {
   if n % 2 == 0 { Result::Ok(n / 2) } else { Result::Err("odd input") }
 }
 
-fn doubled_half(n: int): int {
+fn doubled_half(n: Int): Int {
   match half(n) {
     Result::Ok(v) => v * 2
     Result::Err(reason) => { print(reason); 0 }
@@ -80,17 +80,17 @@ fn doubled_half(n: int): int {
   ([`expressions/control-flow.md`](expressions/control-flow.md)).
 - **`Error` is the built-in base error type.** It is constructed by calling
   it with a message string — `Error("timed out")` — and carries one field,
-  `message` of type `string`. `Result<T, Error>` is the conventional shape for
+  `message` of type `String`. `Result<T, Error>` is the conventional shape for
   system-level failures: file not found, connection refused, malformed input.
 - **Domain failures are the program's own enums.** `Error` has no subtypes
   and Xulo has no inheritance, so a failure with structure is carried as an
-  ordinary `enum` in the `E` slot — `Result<string, LoadError>` — and matched
+  ordinary `enum` in the `E` slot — `Result<String, LoadError>` — and matched
   by name ([`types/enums.md`](types/enums.md)).
 
 ```xulo
-enum LoadError { Missing(string), Denied(string) }
+enum LoadError { Missing(String), Denied(String) }
 
-fn read_config(path: string): Result<string, LoadError> {
+fn read_config(path: String): Result<String, LoadError> {
   if path == "" { return Result::Err(LoadError::Missing(path)) }
   load(path)
 }
@@ -121,12 +121,12 @@ Rules:
   `Result<T, E>`, or a union containing it). A `?` in a body with no declared
   return type, or one whose failure value does not fit `R`, is `E0217`.
 - **The operand MUST be `T?` or `Result<T, E>`.** Any other operand — a plain
-  `int`, a `Task<T>`, an `Error` — is `E0217`.
+  `Int`, a `Task<T>`, an `Error` — is `E0217`.
 - Inside an `async` body, `await` and `?` combine with parentheses:
   `(await t)?`. Because `await` is a prefix operator and `?` a postfix one,
   `await t?` would try to propagate the *task* and is `E0217`.
 - In statement position `e?` is an ordinary expression statement: when its
-  success type is not `unit`, the statement-value rule applies (`E0218`)
+  success type is not `Unit`, the statement-value rule applies (`E0218`)
   ([`statements/expression-statements.md`](statements/expression-statements.md)).
 
 ### Reading `?` beside the ternary
@@ -142,18 +142,18 @@ program.
 ### Examples
 
 ```xulo
-fn quarter(n: int): Result<int, string> {
+fn quarter(n: Int): Result<Int, String> {
   let h = half(n)?     // Err("odd input") is returned from `quarter` as-is
   half(h)              // the trailing expression, itself a Result
 }
 
-fn fetch_name(id: int): string? {
+fn fetch_name(id: Int): String? {
   let u = find_user(id)?   // null propagates: `fetch_name` returns null
   u.name
 }
 
-fn still_wrong(n: int): int {
-  half(n)?    // E0217: `Result::Err` is not assignable to `int`
+fn still_wrong(n: Int): Int {
+  half(n)?    // E0217: `Result::Err` is not assignable to `Int`
 }
 ```
 
@@ -164,7 +164,7 @@ profile out of a function returning an optional, one step at a time.
 
 `panic(message)` is an expression that stops the program where it is written.
 
-- The operand MUST be a `string`; build a message with a template literal —
+- The operand MUST be a `String`; build a message with a template literal —
   `` panic(`bad count ${n}`) `` — or with the intrinsic `str`. The operand is
   evaluated exactly once, then the program stops. Nothing after the call
   runs, in any frame.
@@ -174,13 +174,13 @@ profile out of a function returning an optional, one step at a time.
 - The expression may be given **any type the context requires**: a `panic`
   checks against every expected type, so a branch that cannot produce the
   branch type can stop instead. In statement position it is checked against
-  `unit`, which always succeeds, so a bare `panic(...)` statement is
+  `Unit`, which always succeeds, so a bare `panic(...)` statement is
   well-formed.
 
 ```xulo
 let label = if n > 0 { "positive" } else { panic("n must be positive") }
 
-fn double_or_stop(n: int): int {
+fn double_or_stop(n: Int): Int {
   if n < 0 { panic("negative input") }
   n * 2
 }
@@ -205,7 +205,7 @@ and its failure model is the same as a synchronous one:
   and `?` propagates from there — with parentheses, `(await t)?`.
 
 ```xulo
-async fn fetch_user(id: int): Result<User, LoadError> {
+async fn fetch_user(id: Int): Result<User, LoadError> {
   let raw = (await get_json(`/users/${id}`))?   // Err propagates out
   decode_user(raw)                              // Result<User, LoadError>
 }
@@ -250,7 +250,7 @@ operations themselves.
 | List index out of bounds | reading or writing `xs[i]` where `i` is negative or at or past the list's length | [`types/composite-types.md`](types/composite-types.md) |
 | Absent map key | reading `m[k]` for a key with no binding | [`expressions/path-and-access.md`](expressions/path-and-access.md) |
 | Division or remainder by zero | `/` or `%` on non-constant operands whose value is zero | [`expressions/operators.md`](expressions/operators.md) |
-| Arithmetic overflow | an `int` or fixed-bit operation whose result exceeds its type, on non-constant operands | [`types/primitive-types.md`](types/primitive-types.md) |
+| Arithmetic overflow | an `Int` or fixed-bit operation whose result exceeds its type, on non-constant operands | [`types/primitive-types.md`](types/primitive-types.md) |
 | Unprovided environment key | reading an `@Environment` key no provision supplies | [`components/environment.md`](components/environment.md) |
 | Stack or task exhaustion | recursion depth or the runtime's task limit is exceeded | [`functions.md`](functions.md) |
 
