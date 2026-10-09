@@ -175,9 +175,9 @@ An expression written as a child item MUST have type `string`, `View`, or
   element of a `list<View>` is itself a `View`, so a `list<View>` contributes
   exactly as many children as it has elements, at that one position.
 - An expression child MAY be parenthesized — `VStack { (row) }` is
-  well-formed. An expression that would begin with `{` — an object literal —
+  well-formed. An expression that would begin with `{` — a map literal —
   MUST be parenthesized when written in statement-like position, exactly as
-  elsewhere ([`../statements/README.md`](../statements/README.md)); an object
+  elsewhere ([`../statements/README.md`](../statements/README.md)); a map
   literal is in any case not of an admissible child type.
 - The child type is checked statically. An expression whose type is not one of
   the three admissible types is an error; in particular an optional such as

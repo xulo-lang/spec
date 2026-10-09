@@ -1,7 +1,7 @@
 # Literals
 
 A literal is a source-level expression that denotes a fixed value: a number, a
-string, a template, a boolean, `null`, a list, an object, or a tuple.
+string, a template, a boolean, `null`, a list, a map, or a tuple.
 Literals are value expressions with no side effects. Ranges are not literals —
 they are built from the range operators and are specified in
 [`operators.md`](operators.md).
@@ -146,40 +146,47 @@ let xs: list<int> = []        // OK: element type given by the annotation
 let ys = []                   // error: no expected type to infer from
 ```
 
-## Object literals
+## Map literals
 
-An object literal is a brace-delimited, comma-separated list of `key: value`
-fields and evaluates to an anonymous structural object.
+A map literal is a brace-delimited, comma-separated list of `key: value`
+entries and evaluates to a map.
 
 ```xulo
-let user = { name: "lyy", age: 30 }
-let empty = {}
-let updated = { ...user, age: 31 }
+let user = { name: "lyy", age: 30 }   // map<string, string | int>
+let mut updating = { ...user, age: 31 }
 ```
 
-Keys are identifiers. Object literals do not accept string keys; a value with
-arbitrary string keys is a `map`, which is produced by the built-in map
-facilities rather than by a literal (see
-[`../types/composite-types.md`](../types/composite-types.md)). A named shape is
-expressed with a `type` alias, and an object literal MAY be annotated with that
-alias:
+Keys are identifiers; each becomes the string key of the entry, and the
+literal's default type is `map<string, C>` with `C` the union of the value
+types. Keys that are not identifiers — arbitrary string keys, computed keys —
+use the typed form `map<K, V>{ … }`
+([`../types/composite-types.md`](../types/composite-types.md)). A literal MAY
+be annotated with a map type, including through an alias:
 
 ```xulo
-type User = { name: string, age: int }
+type User = map<string, string | int>
 let u: User = { name: "lyy", age: 30 }
 ```
 
-A trailing comma is allowed, `{}` is the empty object, and the prefix spread
-`...expr` MAY appear as a field; its operand MUST be an object, and when the
-same key occurs more than once, the later occurrence wins.
+A trailing comma is allowed, and the prefix spread `...expr` MAY appear as an
+entry; its operand MUST be a `map`, and when the same key occurs more than
+once, the later occurrence wins — except that a key written twice directly in
+one literal is a compile-time error. An empty `{}` determines its type from
+the expected type, exactly like `[]`, and is a compile-time error when nothing
+determines it:
+
+```xulo
+let empty: map<string, int> = {}    // OK: entry type given by the annotation
+let lost = {}                       // error: no expected type to infer from
+```
 
 At statement position `{` always introduces a block, so an expression statement
-MUST NOT begin with `{`. To use an object literal where a leading `{` would be
+MUST NOT begin with `{`. To use a map literal where a leading `{` would be
 ambiguous, parenthesize it:
 
 ```xulo
 { a: 1 }          // error: `{` starts a block here, not a literal
-({ a: 1 })        // OK: an object literal, parenthesized
+({ a: 1 })        // OK: a map literal, parenthesized
 ```
 
 ## Tuple literals
@@ -202,10 +209,11 @@ let more = (1, 2, 3,)         // trailing comma allowed
   `(float, …)` context becomes a `float`, exactly as an annotation would
   cause ([`../type-system/checking-rules.md`](../type-system/checking-rules.md)).
 - The prefix spread `...expr` does not appear in tuple literals: it exists
-  only inside list and object literals ([`operators.md`](operators.md)).
+  only inside list and map literals ([`operators.md`](operators.md)).
 - Element evaluation is left to right, like every other composite literal,
   and a tuple literal in statement position follows the statement-value rule
   ([`../statements/expression-statements.md`](../statements/expression-statements.md)).
-- For named rather than positional grouping use a `struct` or an `object`;
-  a tuple is chosen when the positions themselves carry the meaning
+- For named rather than positional grouping use a `struct` (named fields) or
+  a `map` (dynamic keys); a tuple is chosen when the positions themselves
+  carry the meaning
   ([`../types/composite-types.md`](../types/composite-types.md)).

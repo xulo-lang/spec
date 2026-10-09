@@ -237,7 +237,7 @@ ConstDecl = [ "pub" ] "const" Identifier [ ":" Type ] "=" Expression ;
 `:=` appears only directly after `let`, never after `let mut` or `const`, and
 `let x := e` means exactly `let mut x = e`
 ([let-and-assignment.md](statements/let-and-assignment.md)); initialization is
-required. A `DestructuringBinding` deconstructs an object with `{ … }` or a
+required. A `DestructuringBinding` deconstructs a `struct` with `{ … }` or a
 tuple with `( … )`; the two forms take an initializer of the matching shape
 and nothing else.
 
@@ -267,7 +267,7 @@ dependency list (a list literal after a `,`). None accepts `mut`, `pub`, or
 `?` binds tighter than `&`, which binds tighter than `|`, and parentheses group
 ([types/README.md](types/README.md)). Primitive type names — `boolean`,
 `string`, `number`, `int`, `float`, the fixed-bit numerics, `null`, `unit`,
-`object`, `View` — are ordinary identifiers written through `NamedType`, listed
+`unknown`, `View` — are ordinary identifiers written through `NamedType`, listed
 in [primitive-types.md](types/primitive-types.md).
 
 ```text
@@ -275,7 +275,7 @@ Type             = UnionType ;
 UnionType        = IntersectionType { "|" IntersectionType } ;
 IntersectionType = PostfixType { "&" PostfixType } ;
 PostfixType      = PrimaryType { "?" } ;
-PrimaryType      = NamedType | "(" Type ")" | TupleType | ObjectType
+PrimaryType      = NamedType | "(" Type ")" | TupleType
                  | FunctionType | LiteralType ;
 NamedType        = Identifier [ TypeArgs ] ;
 LiteralType      = StringLiteral | IntegerLiteral | FloatLiteral
@@ -284,8 +284,6 @@ LiteralType      = StringLiteral | IntegerLiteral | FloatLiteral
 TypeArgs       = "<" TypeList ">" ;
 TypeList       = Type { "," Type } ;
 TupleType      = "(" Type "," Type { "," Type } [ "," ] ")" ;
-ObjectType     = "{" [ TypeField { "," TypeField } [ "," ] ] "}" ;
-TypeField      = Identifier ":" Type ;
 FunctionType   = [ "async" ] "fn" "(" [ FnTypeParams ] ")" [ ":" Type ] ;
 FnTypeParams   = FnTypeParam { "," FnTypeParam } ;
 FnTypeParam    = [ Identifier ":" ] Type ;
@@ -357,7 +355,7 @@ postfix reading survives only when the ternary reading fails, so
 ```text
 PrimaryExpression = Literal | TemplateLiteral | Identifier | VariantPath
                   | "(" Expression ")" | TupleLiteral
-                  | ListLiteral | ObjectLiteral | MapLiteral
+                  | ListLiteral | MapLiteral
                   | IfExpression | MatchExpression | PanicExpression
                   | ClosureExpression | ComponentCall
                   | SpawnExpression | LockExpression ;
@@ -372,10 +370,11 @@ Argument     = [ Identifier ":" ] ( "$" Identifier | Expression ) ;
 ListLiteral   = "[" [ ListElement { "," ListElement } [ "," ] ] "]" ;
 ListElement   = Spread | Expression ;
 Spread        = "..." Expression ;
-ObjectLiteral = "{" [ ObjectField { "," ObjectField } [ "," ] ] "}" ;
-ObjectField   = Spread | Identifier ":" Expression ;
-MapLiteral    = "map" TypeArgs "{" [ MapEntry { "," MapEntry } [ "," ] ] "}" ;
+MapLiteral    = TypedMap | BraceMap ;
+TypedMap      = "map" TypeArgs "{" [ MapEntry { "," MapEntry } [ "," ] ] "}" ;
+BraceMap      = "{" [ MapField { "," MapField } [ "," ] ] "}" ;
 MapEntry      = Expression ":" Expression ;
+MapField      = Spread | Identifier ":" Expression ;
 TupleLiteral  = "(" Expression "," Expression { "," Expression } [ "," ] ")" ;
 
 ClosureExpression = FunctionExpression | ArrowClosure ;
@@ -390,11 +389,11 @@ ClosureParam       = Identifier [ ":" Type ] ;
 
 `$` prefixes a name in an argument position and binds a state variable of the
 enclosing component; it is an argument form and nothing else
-([binding.md](components/binding.md)). Object literal keys are identifiers
-only; a value with arbitrary string keys uses `MapLiteral`.
+([binding.md](components/binding.md)). Brace-map keys are identifiers only;
+a map keyed by other expressions uses the typed form `map<K, V>{ … }`.
 
-The spread and the closed range share one token: an element of a list or
-object literal that *starts* with `...` is a spread, while elsewhere `...` is
+The spread and the closed range share one token: an element of a list
+literal or a brace map that *starts* with `...` is a spread, while elsewhere `...` is
 the range operator, so `[...xs]` spreads `xs` but `[1...5]` is one range
 element ([lexical-structure.md](lexical-structure.md)).
 
@@ -419,13 +418,18 @@ RangePattern   = ( IntegerLiteral | FloatLiteral ) ( "..<" | "..." )
                                  ( IntegerLiteral | FloatLiteral ) ;
 VariantPattern = Identifier "::" Identifier [ "(" [ PatternList ] ")" ] ;
 StructPattern  = Identifier "(" [ PatternList ] ")" ;
+TypePattern    = PatternType ( "_" | Identifier ) ;
+PatternType    = Identifier [ "?" ] { "|" Identifier [ "?" ] } ;
 PatternList    = Pattern { "," Pattern } [ "," ] ;
 ```
 
 `_` is the wildcard and binds nothing; it lexes as an identifier, so the
 wildcard and a binding of the same spelling are one alternative. Enum variants
 use `::` in patterns exactly as in expressions, and the operands of a range
-pattern are numeric literals.
+pattern are numeric literals. A type pattern is a type designator followed by
+a binder — `string s`, `unknown _`, `string? p` — and the designator admits no
+type-argument list; because OR-patterns do not exist, `|` between designators
+can only be a union type ([control-flow.md](expressions/control-flow.md)).
 
 ## Statements
 
@@ -546,10 +550,10 @@ production itself appears exactly once, in its own section.
 | `Program`, `Declaration`, `Entry`, `EntryPoint`, `ImportDecl`, `TypeImport`, `NamedImport`, `NamespaceImport`, `SideEffectImport`, `NamedImports`, `ImportEntry`, `PubUse` | [Program and modules](#program-and-modules) |
 | `FnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl` | [Declarations](#declarations) |
 | `ComponentDecl`, `StateDecl`, `StoreDecl`, `EffectDecl`, `EnvironmentDecl` | [Declarations](#declarations) |
-| `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `LiteralType`, `TypeArgs`, `TypeList`, `TupleType`, `ObjectType`, `TypeField`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
+| `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `LiteralType`, `TypeArgs`, `TypeList`, `TupleType`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
 | `Expression`, `AssignmentExpression`, `TernaryExpression`, `LogicalOrExpression`, `LogicalAndExpression`, `NullishExpression`, `EqualityExpression`, `RelationalExpression`, `RangeExpression`, `BitOrExpression`, `BitXorExpression`, `BitAndExpression`, `ShiftExpression`, `AdditiveExpression`, `MultiplicativeExpression`, `PowerExpression`, `UnaryExpression`, `PostfixExpression`, `PostfixOperand` | [Expressions](#expressions) |
-| `PrimaryExpression`, `VariantPath`, `PanicExpression`, `Place`, `ArgumentList`, `Argument`, `ListLiteral`, `ListElement`, `Spread`, `ObjectLiteral`, `ObjectField`, `MapLiteral`, `MapEntry`, `TupleLiteral`, `ClosureExpression`, `FunctionExpression`, `ArrowClosure`, `ArrowParams`, `ClosureParamList`, `ClosureParam` | [Expressions](#expressions) |
-| `Pattern`, `LiteralPattern`, `RangePattern`, `VariantPattern`, `StructPattern`, `PatternList` | [Patterns](#patterns) |
+| `PrimaryExpression`, `VariantPath`, `PanicExpression`, `Place`, `ArgumentList`, `Argument`, `ListLiteral`, `ListElement`, `Spread`, `MapLiteral`, `TypedMap`, `BraceMap`, `MapEntry`, `MapField`, `TupleLiteral`, `ClosureExpression`, `FunctionExpression`, `ArrowClosure`, `ArrowParams`, `ClosureParamList`, `ClosureParam` | [Expressions](#expressions) |
+| `Pattern`, `LiteralPattern`, `RangePattern`, `VariantPattern`, `StructPattern`, `TypePattern`, `PatternType`, `PatternList` | [Patterns](#patterns) |
 | `Statement`, `StatementEnd`, `ReturnStmt`, `BreakStmt`, `ContinueStmt`, `Assignment`, `ExpressionStatement`, `Block` | [Statements](#statements) |
 | `IfExpression`, `MatchExpression`, `MatchArmList`, `MatchArm`, `ForStmt`, `WhileStmt` | [Control flow](#control-flow) |
 | `ComponentCall`, `ComponentBlock`, `ChildItem` | [Components and UI](#components-and-ui) |
@@ -563,7 +567,7 @@ production itself appears exactly once, in its own section.
   `( T )` and `( e )` only group, `f( a, b )` passes two arguments, and `()`
   does not parse — and there is no `export` keyword: module-level and member
   visibility are both written with `pub`, the default being private.
-- `{` begins a block, an object literal, or a component's children block, told
+- `{` begins a block, a brace map, or a component's children block, told
   apart by their contents, and an expression statement MUST NOT begin with `{`
   ([statements/README.md](statements/README.md)).
 - When `?` follows an expression it is the ternary operator if

@@ -100,6 +100,7 @@ match score {          // statement position: the arm values are discarded
 | Variant | `Enum::Variant` | a payload-less variant |
 | Variant with payload | `Enum::Variant(p1, ..., pn)` | that variant; one sub-pattern per payload field, in declaration order |
 | Struct deconstruction | `Type(p1, ..., pn)` | a value of that struct type; one sub-pattern per field, in declaration order |
+| Type | `string s`, `unknown _`, `string \| int v` | a value whose type is the written type; binds the name for the body of the arm |
 | Range | `a..<b`, `a...b` | numeric values inside the half-open or closed range |
 
 - Enum variants are written with `::` in patterns and in expressions
@@ -113,6 +114,25 @@ match score {          // statement position: the arm values are discarded
 - The operands of a range pattern MUST be numeric literals of the same numeric
   type as the scrutinee. `0...9` includes both endpoints, `0..<10` excludes the
   upper endpoint.
+- **Type patterns** test the type of the scrutinee. The form is `Type binder`,
+  where `binder` is an identifier or `_`: `string s` matches a value of type
+  `string` and binds `s : string` for the arm's body, and `unknown _` accepts
+  any `unknown` value without binding it. A type pattern is the language's only
+  type test — there is no `is` operator and no guard — and `match` is the only
+  place it is written.
+- The written type MUST be a **testable type**: a base type name (`int`,
+  `string`, `boolean`, `float`, `number`, the fixed-bit numerics, `null`,
+  `unit`, `View`), a non-generic `struct` or `enum`, `unknown`, or an optional
+  or union built from testable types (`string?`, `string | int`). A type
+  argument list (`list<int>`, `map<string, int>`) and a type parameter may
+  never appear in a pattern, and any other type — a `list`, a `map`, a
+  function type, a generic instantiation — is not testable; a pattern naming
+  one is a compile-time error
+  ([`../type-system/errors.md`](../type-system/errors.md)).
+- The written type MUST be assignable to the scrutinee's type after alias
+  expansion: `int i` fits a scrutinee of type `int` or `string | int`, but not
+  one of type `string` (`E0303`). A designator that resolves to something that
+  is not a type is `E0101`.
 - **Tuples have no pattern form.** A tuple scrutinee is matched with a
   binding or `_`; to test its elements, read them with `p.0` or destructure
   with `let (a, b) = p` first, and `match` on those
@@ -134,22 +154,46 @@ fn describe(s: Shape): string {
     Shape::Rect(w, h) => `${w}x${h}`
   }
 }
+
+fn tag(v: string | int): string {
+  match v {
+    string s => s
+    int i => str(i)
+  }
+}
+
+fn name(v: unknown): string {
+  match v {
+    string s => s
+    null => "none"
+    _ => "other"        // unknown is never exhausted by type patterns
+  }
+}
 ```
 
 ### Exhaustiveness and reachability
 
-- A `match` over an enum MUST cover every variant of that enum, either with a
-  variant pattern (possibly nested inside another pattern) or with a wildcard
-  or binding arm.
-- A `match` over `boolean` MUST cover `true` and `false`, or have a wildcard or
-  binding arm.
-- For every other scrutinee type, the arms MUST include a wildcard or binding
-  arm, because literal and range patterns cannot cover the whole type.
+- An arm **covers** a type when its pattern matches every value of that type:
+  a wildcard `_`, a binding `x`, or a type pattern of that exact type.
+- A `match` MUST be exhaustive for the scrutinee's type. **`enum`**: every
+  variant, by a variant pattern (possibly nested inside another pattern), or a
+  covering arm. **`boolean`**: `true` and `false`, or a covering arm. **A
+  union**: every member — by a type pattern of that member, by its literal
+  pattern when the member is a literal type, by `true` and `false` when the
+  member is `boolean`, or by a covering arm — and a covering arm is REQUIRED
+  as soon as any member is not testable, because only a covering arm can
+  match it; `string | int` is exhausted by `string s` and `int i`, and
+  `"active" | "inactive"` by its two literals. **Any other type**: a covering
+  arm, because literal and range patterns cannot cover a whole type and a type
+  pattern can cover only a testable type exactly — in particular `list<int>`,
+  a `map`, and `unknown` need one, and `unknown` is exhausted only by an exact
+  `unknown` pattern or a covering arm, never by enumerating concrete types.
 - A `match` that fails these requirements is a compile-time error
   ([`errors.md`](../type-system/errors.md)).
 - An arm that can never be selected is an error. In particular, every arm
-  after a wildcard or binding arm is unreachable, and a literal that repeats an
-  earlier literal arm is unreachable.
+  after a wildcard or binding arm is unreachable, a literal that repeats an
+  earlier literal arm is unreachable, and a type pattern whose type is already
+  covered by an earlier arm is unreachable.
 
 ```xulo
 fn describe(flag: boolean): string {
@@ -240,7 +284,7 @@ fn sum(xs: list<int>): int {
   no reverse iteration: neither `..<` nor `...` descends.
 - `..<` and `...` are non-associative operators at the range level of the
   precedence table in [`operators.md`](operators.md).
-- Inside a list or object literal an element that starts with `...` is a spread
+- Inside a list or map literal an element that starts with `...` is a spread
   of that literal ([`literals.md`](literals.md)); in every other position `...`
   is the closed-range operator.
 

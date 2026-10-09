@@ -49,6 +49,7 @@ least relation containing the following rules.
 | `int <: number`, `float <: number` | from `number = int \| float` |
 | `A <: B` implies `Task<A> <: Task<B>` | `Task<T>` is covariant |
 | `A <: B` implies `A? <: B?` | the optional is covariant |
+| `T <: unknown` | `unknown` is the top type: every type inhabits it |
 
 Rules by type family:
 
@@ -65,16 +66,15 @@ Rules by type family:
   `int <: float` is false, `i32 <: i64` is false, and no fixed-bit type is a
   subtype of another. Literal adaptation between numerics is coercion, not
   subtyping (see [`../type-system/coercion.md`](../type-system/coercion.md)).
+- **The top type.** `T <: unknown` holds for every `T`, and `unknown <: T`
+  holds only when `T` is `unknown`. No other rule relates `unknown` to another
+  type, so nothing narrows by itself: a value of type `unknown` is used only
+  through a `match` type pattern
+  ([`../expressions/control-flow.md`](../expressions/control-flow.md)).
 - **Nominal types.** `struct` and `enum` types are nominal. A `struct` with more
   fields is **not** a subtype of one with fewer; field count never creates
   subtyping between distinct declarations. Two different enums are never in a
   subtype relation.
-- **Structural records.** Object types (and the aliases of them) are structural.
-  Depth and width subtyping both hold: `{ f₁: T₁, …, fₙ: Tₙ } <: { g₁: U₁, …,
-  gₘ: Uₘ }` exactly when every `gⱼ` occurs among the `fᵢ` with `Tᵢ <: Uⱼ`. A
-  record with **more** fields is therefore a subtype of a record with fewer, and
-  a field may be replaced by one of its subtypes; a record that lacks a field of
-  the target type is not a subtype.
 - **Tuples.** Arity is part of a tuple's identity and is never a source of
   subtyping: `(T₁, …, Tₙ) <: (U₁, …, Uₘ)` holds only when `n = m` and
   `Tᵢ = Uᵢ` for every `i` — that is, when the two types are equal. There is
@@ -97,9 +97,9 @@ Three distinct relations are used by this specification.
 
 | Relation | Kind | Used where |
 |----------|------|------------|
-| Subtyping `A <: B` | a relation on types alone; no conversion | record width/depth, function types, unions, variance, bound reasoning |
+| Subtyping `A <: B` | a relation on types alone; no conversion | function types, unions, variance, bound reasoning |
 | Coercion `A ⇝ B` | a set of directed implicit conversions | adapting a value where subtyping does not hold, e.g. a numeric literal to a fixed-bit type |
-| Assignability `A ≼ B` | the judgement applied at checking sites | `let` annotations, arguments, `return`, assignment targets, list, object, and tuple literals, `match` arm results, expected types |
+| Assignability `A ≼ B` | the judgement applied at checking sites | `let` annotations, arguments, `return`, assignment targets, list, map, and tuple literals, `match` arm results, expected types |
 
 - **Assignability** is the practical question "may a value of type `A` be used
   where `B` is expected?". `A ≼ B` holds exactly when `A <: B`, or when a
@@ -173,9 +173,10 @@ never across function signatures.
   `number`, or another numeric type takes that type when it is in range. A
   string literal is `string`, except when the expected type is a union of
   string literal types, in which case it takes the matching literal type, so
-  `type Status = "active" | "inactive"` accepts `"active"`.
+  `type Status = "active" | "inactive"` accepts `"active"`. No literal is ever
+  typed `unknown`: `unknown` is written, never inferred.
 - **Expected-type propagation.** Checking is bidirectional. When the context
-  provides an expected type, it is pushed into literals, list and object
+  provides an expected type, it is pushed into literals, list and map
   literals, empty collections, closures, and generic calls; otherwise the
   expression is checked bottom-up and the result is then checked against the
   context. An expected type never overrides a type that inference has already

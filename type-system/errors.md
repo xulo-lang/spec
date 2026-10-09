@@ -109,7 +109,7 @@ the source line, a caret line, and optional notes.
 
 | Code | Trigger | Example | Message shape |
 |------|---------|---------|---------------|
-| `E0201` | a value is not assignable to a type that is known: an annotation or annotated initializer, a condition, a list element, an assignment, mixed fixed-bit operands | `let s: string = 42` | ``expected `string`, found `int` `` |
+| `E0201` | a value is not assignable to a type that is known: an annotation or annotated initializer, a condition, a list element, an assignment, mixed fixed-bit operands, an operator applied to an `unknown` operand | `let s: string = 42` | ``expected `string`, found `int` `` |
 | `E0202` | an argument is not assignable to its parameter | `greet(42)` | ``expected `string`, found `int` `` |
 | `E0203` | a `return` operand or a final expression differs from the declared return type | `fn f(): int { "x" }` | ``expected `int`, found `string` `` |
 | `E0204` | a callee has no function or component type | `let n = 1` then `n()` | `` `int` is not callable `` |
@@ -134,9 +134,9 @@ the source line, a caret line, and optional notes.
 
 | Code | Trigger | Example | Message shape |
 |------|---------|---------|---------------|
-| `E0301` | a `match` does not cover every variant, both booleans, or every type without a catch-all | `match c { Color::Red => 0 }` | `` `match` does not cover every variant of `Color` (missing `Blue`) `` |
+| `E0301` | a `match` does not cover every variant, both booleans, or every testable member of a union without a covering arm | `match c { Color::Red => 0 }` | `` `match` does not cover every variant of `Color` (missing `Blue`) `` |
 | `E0302` | an arm can never be selected | an arm after `_ =>` | ``this arm is unreachable`` |
-| `E0303` | a pattern does not fit the scrutinee's type | `Color::Red` against `int` | ``pattern `Color::Red` does not match `int` `` |
+| `E0303` | a pattern does not fit the scrutinee's type, or names a type that cannot be tested | `Color::Red` against `int`, `list<int> xs` anywhere | ``pattern `Color::Red` does not match `int` `` |
 
 ### Place and assignment errors
 

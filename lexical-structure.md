@@ -222,7 +222,7 @@ precedence is defined in [expressions/operators.md](expressions/operators.md).
 
 | Category | Tokens | Reading |
 |----------|--------|---------|
-| Grouping | `(` `)` `{` `}` `[` `]` | Call, block, list/object literal, subscript |
+| Grouping | `(` `)` `{` `}` `[` `]` | Call, block, list/map literal, subscript |
 | Separators | `,` `;` | Item separator; optional statement terminator |
 | Type and name separator | `:` `::` | Type/attribute label; enum variant path |
 | Member access | `.` `?.` | Field, method, namespace member, tuple position; optional member |
@@ -265,7 +265,7 @@ Because `..` does not exist, `..<` and `...` are always taken whole, and `?`
 only when not followed by `.` or `?`: `p?.y` and `a??b` each form one token,
 and separating the marks, as in `a? ?? b`, is how the postfix propagation
 operator is written next to `??`. Whether `...` spreads or closes a range
-is decided by position, not by lexing: inside a list or object literal an
+is decided by position, not by lexing: inside a list literal or a brace map an
 element beginning with `...` is a spread, while a `...` between two operands
 is the closed-range operator. Both emit the same token.
 

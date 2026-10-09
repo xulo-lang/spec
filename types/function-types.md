@@ -115,16 +115,18 @@ Function types are compared structurally, with variance:
 - **Arity is exact**: types with different parameter counts are never compatible; there is no optional-argument widening at the type level.
 
 ```xulo
-fn take_any(o: object): int { 0 }
+fn count_any(v: int?): int { 0 }
 
-fn run(g: fn({ name: string }): int): int {
-  g({ name: "x" })
+fn run(g: fn(int): int): int {
+  g(1)
 }
 
-let n = run(take_any)   // OK: take_any accepts every object
+let n = run(count_any)  // OK: count_any accepts every int? — and int
 ```
 
-Here `{ name: string }` is assignable to `object`, so `take_any` — which accepts more than `run` requires — satisfies the required type `fn({ name: string }): int`.
+Here `int` is assignable to `int?`, so `fn(int?): int` is a subtype of
+`fn(int): int` by parameter contravariance: `count_any` — which accepts more
+than `run` requires — satisfies the required type `fn(int): int`.
 
 Function types may appear in any position, including as the parameter or result of another function type, so higher-order functions are written directly (`fn(fn(int): int): int`); the language has no separate notation for higher-rank polymorphism. A generic function used where a function type is expected MUST have its type parameters determined by the expected type or the arguments at that point; otherwise a compile-time error is reported. The complete compatibility and subtyping rules are in [`type-relations.md`](type-relations.md).
 

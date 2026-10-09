@@ -69,7 +69,7 @@ let x = a + b      // legal in expression position: value initializes x
 ```
 
 An expression statement MUST NOT begin with `{`, because such a construct
-would be read as a block; write an object literal in parentheses when it
+would be read as a block; write a map literal in parentheses when it
 must appear in statement-like position.
 
 ## Blocks and Scope

@@ -173,10 +173,10 @@ The language rule for calls that depend on a type parameter is:
 - A type satisfies a trait **only through an `impl`**. A type that happens to
   declare methods with the right names and signature does not implement the
   trait; satisfaction is never inferred from the shape of a type.
-- Object types are structural for *assignability* — a record with more fields
-  may be used where a record with fewer is expected — while `struct` types are
-  nominal: a `struct` is assignable only to its own type. In both cases,
-  structural compatibility never implies trait satisfaction (see
+- `map` and tuple types are structural for *assignability* — they depend only
+  on their element types — while `struct` types are nominal: a `struct` is
+  assignable only to its own type. In both cases, structural compatibility
+  never implies trait satisfaction (see
   [`type-relations.md`](type-relations.md)).
 - A `type` alias is transparent: it introduces no new type, and it never, by
   itself, causes a type to implement a trait. Implementations attach to the

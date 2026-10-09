@@ -27,7 +27,7 @@ required, is a compile-time error (see
 `expr.name` reads a field, invokes a method, or reaches into a namespace.
 
 ```xulo
-user.name            // field of an object or struct
+user.name            // field of a struct, or an entry of a map
 r.area()             // method declared in an `impl` block
 Math.PI              // constant in a built-in namespace
 Task.all(tasks)      // function in a built-in namespace
@@ -44,6 +44,12 @@ method access is the method's function type with `self` bound to the
 receiver (see [`../functions.md`](../functions.md)); the call itself is
 specified in [`calls.md`](calls.md). The type of a namespace member is its
 declared type.
+
+When the receiver has type `map<string, V>`, `expr.name` is the **member form
+of a map entry**: it is exactly `expr["name"]` — type `V`, and a missing key
+is the same runtime error as the subscript read of that key. On a map whose
+key type is not `string` no member form exists
+([`../types/composite-types.md`](../types/composite-types.md)).
 
 A member that does not exist on the receiver's type is a compile-time error
 (see [`../type-system/errors.md`](../type-system/errors.md)). Members are

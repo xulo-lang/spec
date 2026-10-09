@@ -148,7 +148,7 @@ fn Counter(): View {
 | Mutability default | `let` immutable, `let mut` mutable, `const` a compile-time constant | `let` and `var` mutable; `const` blocks reassignment only | `let` immutable, `let mut` mutable, top-level `const` |
 | Components | A component is a `fn` whose return type is `View`; the tree comes from `{ }` blocks | Components are a library convention (JSX or framework APIs) | No component model in the language; UI is a library concern |
 | Async model | `async fn` has evaluated type `Task<T>`; `await` unwraps it; `spawn` starts tasks | `async fn` returns a `Promise` run on the host event loop | `async fn` for asynchronous code; effects appear in signatures |
-| Pattern matching | `match` over literals, `_`, bindings, deconstruction, and ranges, checked for exhaustiveness | No pattern matching; `switch` plus type-narrowing checks | `match` over algebraic data types, checked for exhaustiveness |
+| Pattern matching | `match` over literals, types, `_`, bindings, deconstruction, and ranges, checked for exhaustiveness | No pattern matching; `switch` plus type-narrowing checks | `match` over algebraic data types, checked for exhaustiveness |
 | Module system | A file is a module; `pub` marks exports and member visibility; `import { a } from "m"` | ESM `import`/`export` declarations; packages come from a manifest | A file is a module; `pub` controls visibility; packages are toolchain-level |
 
 Against JavaScript and TypeScript, Xulo keeps the surface that aids reading —
@@ -169,7 +169,7 @@ differs in where it points: components with a declared `View` return type,
 state declarations that live in the language, and targets that are presentation
 layers rather than instruction sets. Tuples stay deliberately small — at
 least two elements, positional access `p.0`, destructured with `let` — so
-named multi-value results still reach for `struct`, `object`, or `enum`, and
+named multi-value results still reach for `struct` or `enum`, and
 trait dispatch is written explicitly, as `Trait.method(receiver)`, rather
 than being resolved implicitly through a receiver's type.
 

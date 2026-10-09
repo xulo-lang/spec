@@ -50,13 +50,14 @@ Each literal has a default type, which an expected type may adapt exactly as
 | `"ok"`, `'ok'` | `string` | takes the matching member when `T` is a union of string-literal types |
 | `` `…${e}…` `` | `string` | always `string`; each `e` must be a base type or `ToString` (`E0212`) |
 | `true`, `false` | `boolean` | checks only if `boolean ≼ T` |
-| `null` | `null` | checks only against an optional `T?` |
+| `null` | `null` | checks only against an optional `T?` or `unknown` |
 | `[e₁, …]` | `list<C>`, `C` the join of the element types | each element checks against the expected element type |
-| `[]` | none | requires an expected type or an annotation; else `E0216` |
-| `{ k: v, … }` | structural object type | every expected field must be present and fit (`E0205`, `E0206`) |
+| `[]`, `{}` | none | requires an expected type or an annotation; else `E0216` |
+| `{ k: v, … }` | `map<string, C>`, `C` the join of the value types | every value checks against the expected value type, and the expected key type must admit `string` (`E0201`) |
 | `(e₁, …)` | `(T₁, …, Tₙ)` with `Tᵢ` the element types | with an expected `(U₁, …, Uₙ)` each `eᵢ` checks against `Uᵢ` and the arities must match (`E0201`) |
 
 A negative number is not part of a literal — it is unary `-` applied to one.
+No literal has type `unknown`: `unknown` is written, never inferred.
 
 ## Expression rules
 
@@ -68,7 +69,9 @@ A negative number is not part of a literal — it is unary `-` applied to one.
   `E0101`.
 - `Γ ⊢ e.m : U` when `e : T` and `T` (after alias expansion) declares member
   `m` of type `U`; unknown member → `E0102`, a non-`pub` member examined
-  outside its module → `E0602`. Method resolution is inherent `impl` methods
+  outside its module → `E0602`. When `e : map<string, V>`, `e.m` reads the
+  entry `e["m"]` with `U = V`; on `e : unknown` there is no member at all, so
+  `e.m` is `E0102`. Method resolution is inherent `impl` methods
   first, then trait methods in scope, with explicit `Trait.method(recv)` always
   available; a method used without a call has its function type
   with the receiver bound. On a type parameter, access succeeds only
@@ -132,6 +135,11 @@ Mixing distinct fixed-bit types, or a fixed-bit type with `int`, `float`, or
 `number`, is `E0201` unless one side is a literal that adapts; `int + float`
 promotes to `float` in arithmetic only, never in assignment.
 
+An `unknown` operand is accepted only by `==` and `!=` (their common type is
+then `unknown`) and as a `match` scrutinee: every other operator requires the
+operand types its row declares, so applying one to `unknown` is `E0201`, and
+member access — written `.` or `?.` — on `unknown` is `E0102`.
+
 If `a : T?` and `T` has a member of type `U`, then `a?.b : U?`,
 step by step through a chain; when `a` is `null` the chain yields `null`
 without evaluating anything to its right. `??` requires an optional left
@@ -186,7 +194,7 @@ literal ([`../types/composite-types.md`](../types/composite-types.md)).
   ([`../expressions/literals.md`](../expressions/literals.md)). A template
   literal always has type `string`.
 - Prefix `...e` is well-formed only as a list-literal element (`e` a `list`) or
-  an object-literal field (`e` an object); a wrong operand type is `E0201`, and
+  a map-literal entry (`e` a `map`); a wrong operand type is `E0201`, and
   elsewhere `...` is not part of the expression grammar.
 
 ### Component invocation and children
@@ -214,25 +222,33 @@ derives the bindings the arm's body may use.
 | `E::V(sp₁ … spₙ)` | `T` expands to enum `E`; `V` a variant of `E`; `n` equals its payload arity; each sub-pattern checks against its payload type | the sub-patterns' bindings |
 | `Type(sp₁ … spₙ)` | `T` expands to struct `Type`; one sub-pattern per field, in declaration order | the sub-patterns' bindings |
 | `a..<b`, `a...b` | `T` is numeric and both operands are literals of `T`'s type | none |
+| `Type b` (type) | after alias expansion, `Type` is a testable type and `Type ≼ T` (`E0303` otherwise); `b` an identifier or `_` | `b : Type` when `b` is an identifier |
 
-Exhaustiveness: a `match` over an `enum` MUST cover every variant — a variant
-pattern, possibly nested, or a wildcard or binding arm; over `boolean`, `true`
-and `false` or a wildcard or binding arm; over any other type, a wildcard or
-binding arm, because literals and ranges cannot cover it. Failure is `E0301`;
-an arm that can never be selected is `E0302`. OR-patterns and guards do not
-exist.
+Exhaustiveness: an arm **covers** a type when it is a wildcard, a binding, or
+a type pattern of that exact type. A `match` MUST be exhaustive for the
+scrutinee's type: an `enum` — every variant, by a variant pattern possibly
+nested, or a covering arm; `boolean` — `true` and `false`, or a covering arm;
+a union — every member, by a type pattern of it, by its literal pattern when
+the member is a literal type, by `true` and `false` when the member is
+`boolean`, or by a covering arm, plus a covering arm whenever a member is not
+testable; any other type — a covering arm, because literals, ranges, and type
+patterns cannot cover it (`unknown` included: concrete type patterns never
+exhaust it). Failure is `E0301`; an arm that can never be selected is
+`E0302`; a pattern that names a type that is not testable, or whose type is
+not assignable to the scrutinee's type, is `E0303`. OR-patterns and guards do
+not exist.
 
 ## Statement rules
 
 - **Bindings.** `let x = e` checks `e` and binds `x` to its type;
   `let x: T = e` checks `e ⇐ T` (`E0201` on failure). A destructuring binding
   checks the initializer against the shape it deconstructs: `let { f, … } = e`
-  requires an object type declaring every listed field (`E0206`), and
+  requires a `struct` type declaring every listed field (`E0206`), and
   `let (a, …) = e` requires a tuple type whose arity equals the name count
   (`E0219`). An annotation is
-  REQUIRED whenever `e` leaves the type undetermined — an empty list literal,
-  `null`, a closure with no expected type. Every `let` has an initializer; a
-  `const` initializer MUST be a constant expression, whose division or
+  REQUIRED whenever `e` leaves the type undetermined — an empty list or map
+  literal, `null`, a closure with no expected type. Every `let` has an
+  initializer; a `const` initializer MUST be a constant expression, whose division or
   remainder by zero and out-of-range results are `E0210`.
 - **Assignment.** The target MUST be a place expression (`E0402`) backed by a
   `mut` binding (`E0401`), and the value MUST be assignable to the place's type

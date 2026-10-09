@@ -2,7 +2,7 @@
 
 A binding associates a name with a value; assignment writes a new value into
 an existing mutable place. This chapter defines the binding forms — `let`,
-`let mut`, `const`, the `:=` sugar, and object and tuple destructuring — the
+`let mut`, `const`, the `:=` sugar, and struct and tuple destructuring — the
 rules of assignment, and how bindings are shadowed and ordered. Scoping and
 name resolution are specified in [`../names.md`](../names.md).
 
@@ -164,9 +164,9 @@ n = n + 1
 
 ## Destructuring bindings
 
-An object or a tuple may be deconstructed into several bindings at once.
+A `struct` or a tuple may be deconstructed into several bindings at once.
 
-### Object destructuring
+### Struct destructuring
 
 ```xulo
 struct Person { name: string, age: int }
@@ -180,16 +180,18 @@ print(age)         // 30
 - The form is `let { f1, f2, … } = expr`. Each listed field name binds a new
   **immutable** binding of the same name. The language provides no rename
   form: `let { name: n } = person` is not part of the syntax.
-- The initializer MUST have an object type (an `object` or a `struct` value)
-  that declares every listed field. Destructuring an object that is missing
-  a listed field is a compile-time error
+- The initializer MUST have a `struct` type that declares every listed
+  field. Destructuring a struct that is missing a listed field is a
+  compile-time error
   ([`../type-system/errors.md`](../type-system/errors.md)).
 - Destructuring binds one level of fields. Deeper structure is obtained with
   field access, or with `match` when the value is an enum or a list.
-- **List and enum values are deconstructed with `match`, not with `let`.**
-  There is no list-destructuring or enum-destructuring binding form; patterns
-  are specified in [`../expressions/control-flow.md`](../expressions/control-flow.md).
-- Component state declarations use the same object form with an `@` prefix —
+- **Map, list, and enum values are not deconstructed with `let`.** Map keys
+  are not statically declared — read entries with the subscript or member form
+  ([`../expressions/path-and-access.md`](../expressions/path-and-access.md));
+  lists and enums come apart with `match`, whose patterns are specified in
+  [`../expressions/control-flow.md`](../expressions/control-flow.md).
+- Component state declarations use the same struct form with an `@` prefix —
   `@Store let { user, theme } = useAppStore()` — and add the component rules
   of [`../components/state.md`](../components/state.md).
 
@@ -211,7 +213,7 @@ let (first, _) = p            // `_` discards an element
 - There is no `let mut (a, b)` form. To write the elements later, keep the
   tuple itself mutable — `let mut t = (1, 2)` then `t.0 = 5`.
 - The forms are exclusive: an initializer is deconstructed either with
-  `{ … }` (an object type) or with `( … )` (a tuple type), never both.
+  `{ … }` (a `struct` type) or with `( … )` (a tuple type), never both.
 
 ## Rebinding and shadowing
 

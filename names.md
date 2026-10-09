@@ -71,7 +71,7 @@ follow every rule on this page.
 Two groups of names are built in rather than declared:
 
 - **Built-in type names** — `string`, `number`, `boolean`, `list`, `map`,
-  `set`, `object`, `unit`, `Task`, `Range`, `View`, together with `int`,
+  `set`, `unit`, `unknown`, `Task`, `Range`, `View`, together with `int`,
   `float`, and the fixed-bit numeric names — SHOULD NOT be shadowed.
 - **Intrinsic names** — `print`, `println`, `str`, `Math`, `Time` (and the
   namespace `Task`) — SHOULD NOT be shadowed. Intrinsics are described in the

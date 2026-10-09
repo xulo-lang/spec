@@ -68,12 +68,12 @@ let t = spawn async { compute() }   // legal: the task is bound
 
 An expression statement MUST NOT begin with `{`: statement-position `{`
 always introduces a block, so a construct that started with `{` would be read
-as one. To use an object literal in statement-like position, parenthesize it
+as one. To use a map literal in statement-like position, parenthesize it
 ([`../expressions/literals.md`](../expressions/literals.md)):
 
 ```xulo
-{ name: "lyy" }        // not an object literal: parsed as a block
-({ name: "lyy" })      // legal: parenthesized object literal
+{ name: "lyy" }        // not a map literal: parsed as a block
+({ name: "lyy" })      // legal: parenthesized map literal
 { print("hi") }        // a block, whose value is discarded under the rule
 ```
 

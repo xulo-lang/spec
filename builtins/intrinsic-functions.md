@@ -54,15 +54,12 @@ of a container is built from the renderings of its elements.
 | `float` | the decimal numeral, with no fractional part when the value is whole (`3.0` renders as `3`); the special values render as `NaN`, `Infinity`, and `-Infinity` |
 | `null` | `null` |
 | `list<T>` | `[`, then the renderings of the elements separated by `, `, then `]` — `[1, 2]` |
-| `object` | `{`, a space, then `field: value` pairs separated by `, `, then a space and `}` — `{ name: "lyy", age: 30 }` |
-| `map<K, V>` | as an object, entries in insertion order with each key rendered by this table — `{ a: 1 }` |
+| `map<K, V>` | `{`, then the entries in insertion order as `key: value` pairs separated by `, `, each side rendered by this table, then `}` — `{ name: "lyy", age: 30 }` |
 | `set<T>` | as a list, in an unspecified order |
 | an `enum` value | `Enum::Variant`, or `Enum::Variant(p, …)` when the variant has payloads, each payload rendered by this table |
 | a function, a `Task`, a `View` | `<function>`, `<task>`, `<view>` |
 
-A `map` and an `object` therefore share the shape of their rendering while
-remaining distinct values, and the order of a `set` rendering is as
-unspecified as its iteration order.
+The order of a `set` rendering is as unspecified as its iteration order.
 
 ```xulo
 print("hi")                     // hi
@@ -92,7 +89,7 @@ println("done")                 // done, then a line terminator
   a `ToString` implementor the result is the value of `to_string` on the
   operand.
 - Any other operand is a compile-time error — a `list`, a `map`, a `set`, an
-  `object`, an `enum` with no `impl ToString`, or `null`
+  `enum` with no `impl ToString`, or `null`
   ([`../type-system/errors.md`](../type-system/errors.md)).
 
 There is no implicit conversion anywhere else in the language: `+` concatenates

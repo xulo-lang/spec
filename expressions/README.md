@@ -23,7 +23,7 @@ value) or a statement (it does not). Statements are specified in
 | `for … in … { … }`, `while … { … }` | Statement |
 | Expression statement (a bare expression in statement position) | Statement |
 | `if` … `else` …, `match` …, block `{ … }` | Expression |
-| Literals: integer, float, string, template, boolean, null, list, object, tuple | Expression |
+| Literals: integer, float, string, template, boolean, null, list, map, tuple | Expression |
 | Operators, member access, subscript, calls | Expression |
 | Closures, `await` | Expression |
 
@@ -41,7 +41,7 @@ order stated here.
 
 - The operands of a binary operator are evaluated left-to-right.
 - The arguments of a call are evaluated left-to-right.
-- The elements of a list literal, an object literal, or a tuple literal are
+- The elements of a list literal, a map literal, or a tuple literal are
   evaluated left-to-right, spreads included.
 - The scrutinee of `if` or `match` is evaluated before any arm is tested.
 
@@ -80,7 +80,7 @@ each level; [`../grammar.md`](../grammar.md) encodes the same structure.
 | unary | `!` `-` `~` `await` | prefix |
 | postfix | `f(x)` `x[i]` `x.y` `x.0` `x?.y` `x?.0` `x?` | left |
 
-Prefix spread `...expr` exists only inside list and object literals; it is not
+Prefix spread `...expr` exists only inside list and map literals; it is not
 part of the precedence chain. An element that begins with `...` is a spread,
 otherwise `...` is the closed-range operator (see [`operators.md`](operators.md)).
 
@@ -100,10 +100,10 @@ Assigning to an identifier that is not backed by `mut` is a compile-time error.
 
 ## Index
 
-- [`literals.md`](literals.md) — Integer, float, string, template, boolean, null, list, object, and tuple literals.
+- [`literals.md`](literals.md) — Integer, float, string, template, boolean, null, list, map, and tuple literals.
 - [`operators.md`](operators.md) — Precedence, associativity, and the rules of every operator.
 - [`path-and-access.md`](path-and-access.md) — Identifiers, member access, positional tuple access, `::` variant paths, subscripts, optional chaining.
 - [`calls.md`](calls.md) — Call syntax, argument matching, method and generic calls, components.
-- [`control-flow.md`](control-flow.md) — `if` and `match` as expressions, loops and `break`/`continue` as statements.
+- [`control-flow.md`](control-flow.md) — `if` and `match` as expressions, patterns and exhaustiveness, loops and `break`/`continue` as statements.
 - [`closures.md`](closures.md) — Anonymous functions, capture, and function types.
 - [`async-expressions.md`](async-expressions.md) — `async` bodies, `await`, and `Task<T>`.

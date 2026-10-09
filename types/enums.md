@@ -93,7 +93,7 @@ Rules:
 - The names of a named payload label the slots: they document the payload and
   appear in diagnostics, but they are not argument labels, because construction
   and matching are always positional. A payload slot may have any type —
-  `struct`s, `enum`s, `list`s, `object`s, and type parameters alike.
+  `struct`s, `enum`s, `list`s, `map`s, and type parameters alike.
 - Construction applies arguments positionally, exactly as many as the variant
   declares: `Shape::Circle(2.0)`, `Shape::Rect(3.0, 4.0)`,
   `Person::Named("Ada", 36)`. The arity MUST match the declaration, and each
@@ -148,7 +148,8 @@ Rules:
   ```
 
 - A `match` whose scrutinee has an enum type MUST be exhaustive: every variant
-  must be covered, either by an arm naming it or by a catch-all `_` arm. A
+  must be covered, either by an arm naming it or by a covering arm — a
+  wildcard, a binding, or a type pattern of the enum type itself. A
   `match` that leaves a variant uncovered is a compile-time error; see
   [`../type-system/errors.md`](../type-system/errors.md).
 
@@ -183,10 +184,11 @@ fn message(e: LoadError): string {
 
 ## Conversion and testing
 
-- `match` is the sole *variant test*: it is the only construct that selects a
-  case by variant, independently of the payloads. The language defines no `is`
-  operator, no conversion operator between enum types, and no implicit
-  conversion from an enum to any other type.
+- `match` is the sole *variant and type test*: it is the only construct that
+  selects a case by variant — independently of the payloads — or narrows a
+  value by its type. The language defines no `is` operator, no conversion
+  operator between enum types, and no implicit conversion from an enum to any
+  other type.
 - Outside `match`, the only comparison available is `==`/`!=` against a value of
   the same enum type. It compares the whole value — variant and payloads — so for
   a payload-less variant it coincides with a variant test
@@ -244,7 +246,7 @@ Enums and the union type `T | U` overlap in purpose but differ in kind.
 | Naming | introduces a new nominal type and new case names | names no new type; combines existing types |
 | Membership | decided by which variant was constructed | decided by the type of the value |
 | Data | each case may declare its own payload, slot by slot | each case is a whole existing type |
-| Checking | exhaustive `match` over a fixed set of cases | narrowing works over whatever types the union lists |
+| Checking | exhaustive `match` over a fixed set of cases | narrowing by type patterns, exhaustiveness over the testable members |
 | Typing | nominal — two identical declarations are unrelated | structural — aliases are transparent |
 
 Use an `enum` when introducing a domain concept with a closed set of cases —

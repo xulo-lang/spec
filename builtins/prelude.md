@@ -24,10 +24,10 @@ written; `null` additionally has a literal form usable in expression position.
 | `float` | 64-bit IEEE-754 binary64 floating point | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `number` | the user-facing numeric type, the union `int \| float` | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64` | fixed-bit numeric types for exact layout and foreign interfaces | [`../types/primitive-types.md`](../types/primitive-types.md) |
+| `unknown` | the top type: a value of any type, whose type is not known | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `list<T>` | ordered, growable sequence of elements of one type | [`../types/composite-types.md`](../types/composite-types.md) |
 | `map<K, V>` | insertion-ordered dictionary with unique keys | [`../types/composite-types.md`](../types/composite-types.md) |
 | `set<T>` | unordered collection of unique values | [`../types/composite-types.md`](../types/composite-types.md) |
-| `object` | the open structural record: some object whose fields are unknown | [`../types/composite-types.md`](../types/composite-types.md) |
 | `unit` | the type of expressions that produce no meaningful value | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `null` | the sole value of the type `null`; a member of every `T?` | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `Task<T>` | the value an `async` call produces; unwrapped by `await` | [`../types/function-types.md`](../types/function-types.md) |
@@ -78,7 +78,7 @@ in [`../type-system/errors.md`](../type-system/errors.md).
 | Category | Names |
 |----------|-------|
 | Base and numeric types | `boolean`, `string`, `int`, `float`, `number`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64` |
-| Value and marker types | `null`, `unit`, `object`, `list`, `map`, `set`, `Task`, `Range`, `Result`, `View`, `Error` |
+| Value and marker types | `null`, `unit`, `unknown`, `list`, `map`, `set`, `Task`, `Range`, `Result`, `View`, `Error` |
 | Protocols | `ToString` |
 | Namespaces | `Math`, `Time`, `Task` |
 | Intrinsic functions | `print`, `println`, `str` |
@@ -92,10 +92,9 @@ so is every intrinsic listed in
 
 Iteration, subscripts, and concatenation on the collections are core syntax and
 are specified with the types themselves. Everything else that the built-in
-collections need — removal, size, entry tests, bulk conversion, the `set`
-constructor, and movement between `object` and `map` — is a prelude operation:
-an unqualified function in scope in every module, called like any other
-function.
+collections need — removal, size, entry tests, bulk conversion, and the `set`
+constructor — is a prelude operation: an unqualified function in scope in every
+module, called like any other function.
 
 ```xulo
 let mut counts: map<string, int> = map<string, int>{ "a": 1, "b": 2 }
@@ -108,9 +107,8 @@ print(set_size(tags))                // 2: the duplicate collapsed
 let added = set_insert(tags, "c")
 print(set_contains(tags, "c"))       // true
 
-let user = { name: "lyy", age: 30 }
-let entry_map = object_to_map(user)  // map<string, string | int>
-let back = map_to_object(entry_map)  // object
+let user = { name: "lyy", age: 30 }  // a map<string, string | int>
+print(user["name"])                  // lyy
 ```
 
 ### Map operations
@@ -120,8 +118,8 @@ let back = map_to_object(entry_map)  // object
 | `map_size<K, V>(m: map<K, V>): int` | the number of entries in `m` |
 | `map_has_key<K, V>(m: map<K, V>, k: K): boolean` | `true` when `k` has a binding in `m` |
 | `map_remove<K, V>(m: mut map<K, V>, k: K): V?` | removes the binding for `k` and returns the value it had, or `null` when `k` was absent |
-| `map_to_entries<K, V>(m: map<K, V>): list<{ key: K, value: V }>` | one entry object per entry, in insertion order (bulk conversion) |
-| `map_from_entries<K, V>(entries: list<{ key: K, value: V }>): map<K, V>` | builds a map from entry objects, in list order; a repeated key keeps the later entry |
+| `map_to_entries<K, V>(m: map<K, V>): list<(K, V)>` | one `(key, value)` tuple per entry, in insertion order (bulk conversion) |
+| `map_from_entries<K, V>(entries: list<(K, V)>): map<K, V>` | builds a map from `(key, value)` tuples, in list order; a repeated key keeps the later entry |
 
 - Reading (`m[k]`), writing (`m[k] = v`), and iterating the keys (`for k in m`)
   are core syntax and need no prelude function
@@ -148,25 +146,6 @@ and the operations that manipulate a set.
 - A set has no specified order: neither `set_from_list` nor any other
   operation defines the order of the elements, and programs MUST NOT depend on
   one ([`../types/composite-types.md`](../types/composite-types.md)).
-
-### Object and map conversion
-
-An object is not a map and a map is not an object; there is no implicit
-conversion in either direction. The prelude provides both.
-
-| Signature | Meaning |
-|-----------|---------|
-| `object_to_map<V>(o: object): map<string, V>` | one entry per field of `o`, keyed by the field name; `V` is inferred from the operand's static object type as the union of its field types |
-| `map_to_object<V>(m: map<string, V>): object` | one field per entry of `m`, named by the key; the result has the open type `object` |
-
-- The parameter of `object_to_map` is written `object` because every object
-  value is assignable to it; the conversion itself reads the fields of the
-  operand's *static* object type, so `V` is determined by that type — or by an
-  annotation when the static type is the open type `object`.
-- Because a map's keys are not statically known, `map_to_object` yields
-  `object`, and a value of type `object` has no readable member: a program that
-  needs to read the fields annotates a structural object type instead
-  ([`../types/composite-types.md`](../types/composite-types.md)).
 
 `list<T>` needs no prelude operations of its own: `+`, the subscript, and
 iteration are core syntax

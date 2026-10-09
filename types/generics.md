@@ -160,7 +160,9 @@ Each distinct assignment of type arguments identifies a separate
   `Pair<int, string>` differs from `Pair<string, int>`, and `list<int>` differs
   from `list<string>`.
 - No operation observes a type argument at runtime: no value carries one, no
-  expression can request one, and no dynamic type test exists. There is therefore
+  expression can request one, and no type pattern may name a type argument or
+  a type parameter — a `match` type pattern tests a whole type only
+  ([`../expressions/control-flow.md`](../expressions/control-flow.md)). There is therefore
   no observable difference between a program written with generics and the same
   program written with one concrete definition per instantiation. Diagnostics are
   correspondingly per-instantiation: an error in a generic body applies whenever

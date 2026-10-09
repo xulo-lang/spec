@@ -147,6 +147,31 @@ fn log(message: string) {
 - An `async` function with no declared return type has evaluated type `fn(...): Task<unit>`, and the built-in task type `Task<T>` is specified in [`function-types.md`](function-types.md).
 - A `unit`-valued expression MUST NOT be used where a value is required: as a binding initializer, as a call argument, as an operand, or as a condition. Its permitted uses are as an expression statement and as the result of a function that returns `unit` (see [`../statements/expression-statements.md`](../statements/expression-statements.md)).
 
+## unknown
+
+`unknown` is the **top type**: every type is a subtype of it, so a value of
+any type fits a position declared `unknown`. It is how a deliberately
+heterogeneous slot is written — `list<unknown>` holds values of any type, and
+`map<string, unknown>` maps strings to anything.
+
+- Subtyping runs one way only: `T <: unknown` for every `T`, and `unknown <: T`
+  only when `T` is `unknown`. Nothing else relates `unknown` to another type
+  ([`type-relations.md`](type-relations.md)).
+- An `unknown` value supports no operation except `==`/`!=` and `match`:
+  member access on it is `E0102`, and using it as the operand of any other
+  operator is `E0201`. The type records that a value exists, not what it is.
+- `==` and `!=` accept an `unknown` operand, because `unknown` is the common
+  type of any pair it joins, so `x == null` tests for absence. The test yields
+  a `boolean` like any other comparison and does **not** narrow `x`: a value of
+  type `unknown` stays `unknown` in both branches, and neither does `x != null`.
+- Inference never produces `unknown` on its own: a literal is `int`,
+  `float`, `string`, `boolean`, or `null`, or a type the context adapts it to.
+  `unknown` appears only where it is written — an annotation, a type argument,
+  a field type — or as the tested type of a `match` type pattern.
+- The one way to *use* such a value is `match` with a type pattern, which
+  narrows it for that arm (`string s => …`)
+  ([`../expressions/control-flow.md`](../expressions/control-flow.md)).
+
 ## View
 
 `View` is the built-in marker type produced by components: a component is a function whose declared return type is `View` (see [`../components/README.md`](../components/README.md)).
@@ -179,6 +204,6 @@ for i in a {
 
 The names of the built-in types are reserved for the language. A module-scope `struct`, `enum`, `trait`, or `type` declaration MUST NOT use any of the following names:
 
-`boolean`, `string`, `int`, `float`, `number`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64`, `null`, `unit`, `object`, `list`, `map`, `set`, `Task`, `Range`, `Result`, `View`, `Error`
+`boolean`, `string`, `int`, `float`, `number`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64`, `null`, `unit`, `unknown`, `list`, `map`, `set`, `Task`, `Range`, `Result`, `View`, `Error`
 
 Declaring a type with one of these names at module scope is a compile-time error. Elsewhere — as a type parameter name or an ordinary value binding — a built-in type name is an ordinary identifier, though using one conflicts with the naming conventions in [`../names.md`](../names.md).

@@ -44,7 +44,7 @@ holds and what an assignment does.
 | Category | Types | A binding denotes | `let x = e` and assignment |
 |----------|-------|-------------------|----------------------------|
 | **Value** | `boolean`, `string`, `int`, `float`, `number`, fixed-bit numerics, `null`, `unit`, `struct`, `enum`, `Range<T>`, tuples | the value itself | a fresh, independent copy of `e`'s value; a `struct`, `enum`, or tuple copy is shallow — each field or element is copied by its own category |
-| **Reference** | `list<T>`, `map<K, V>`, `set<T>`, `object` | a reference to one shared value | the same value, shared: `x` and `e` then denote the one underlying value |
+| **Reference** | `list<T>`, `map<K, V>`, `set<T>` | a reference to one shared value | the same value, shared: `x` and `e` then denote the one underlying value |
 
 Four further values carry **identity** rather than content — function values
 (closures), `Task<T>`, `View`, and `Error` — and behave as references to a
@@ -83,8 +83,8 @@ and never copies it, whatever the category ([Borrowing](#borrowing)).
 ## Equality and identity
 
 `==` compares by content for every value-carrying type — primitives, `string`,
-`struct`, `enum`, `Range`, `list`, `map`, `set`, tuples (element-wise, equal
-arity), and objects — as specified in
+`struct`, `enum`, `Range`, `list`, `map`, `set`, and tuples (element-wise,
+equal arity) — as specified in
 [`expressions/operators.md`](expressions/operators.md). Identity-carrying
 values — function values, `Task<T>`, `View`, and `Error` — are compared by
 identity: `==` is `true` exactly when both operands denote the same value.
@@ -146,8 +146,8 @@ later writes through either copy are invisible to the other. `copy` accepts
 any expression as its operand and, like `move`, appears only as a `let`
 initializer, an argument, or a `return` operand.
 
-- Deep copying follows references through `list`, `map`, `set`, `object`,
-  `struct`, and `enum` fields and through tuple elements, and duplicates
+- Deep copying follows references through `list`, `map`, and `set` values,
+  through `struct` and `enum` fields, and through tuple elements, and duplicates
   their contents. Copying a cyclic
   structure terminates: a value already being copied is represented by the
   copy made for it, so the copy graph mirrors the original.
@@ -316,7 +316,7 @@ What this specification fixes, it fixes for every conforming program:
 - Propagation: a `?` evaluates its operand exactly once and either yields its
   success value or performs the early return, abandoning the rest of the body
   at that point ([`error-handling.md`](error-handling.md)).
-- Collection order: `map` and object fields iterate in insertion order, and
+- Collection order: `map` entries iterate in insertion order, and
   `Task.all` yields results in argument order
   ([`expressions/async-expressions.md`](expressions/async-expressions.md)).
 - Termination of the structural operations: `==` and `copy` halt on cyclic

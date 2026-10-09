@@ -125,8 +125,7 @@ type TypeNode =
   | OptionalType
   | UnionType
   | IntersectionType
-  | FnType
-  | ObjectType;
+  | FnType;
 
 interface IdentifierType extends BaseNode {
   type: 'IdentifierType';
@@ -186,7 +185,7 @@ type ExpressionNode =
   | PanicExpr
   | PropagateExpr
   | ListExpr
-  | ObjectExpr
+  | MapExpr
   | ComponentExpr
   | TemplateLiteralNode;
 

@@ -1,6 +1,6 @@
 # Types
 
-Xulo is a statically typed language with local type inference: every expression has a type that the checker determines before the program runs, but inference never crosses a function boundary. Named records are nominal — every `struct` and `enum` declaration introduces a distinct type — while object types, unions, intersections, and optionals are structural combinations built from existing types. The numeric system has two layers: an everyday layer (`number`, `int`, `float`) and a formal fixed-bit layer (`i8`…`u64`, `f32`, `f64`) for exact layout and FFI. Function signatures are written explicitly at module boundaries: parameter types are always annotated, every `pub` function declares its return type, and an omitted return type means `unit`. This chapter defines every type constructor, the values that inhabit it, and the rules for combining and comparing types.
+Xulo is a statically typed language with local type inference: every expression has a type that the checker determines before the program runs, but inference never crosses a function boundary. Named records are nominal — every `struct` and `enum` declaration introduces a distinct type — while unions, intersections, and optionals are structural combinations built from existing types. The numeric system has two layers: an everyday layer (`number`, `int`, `float`) and a formal fixed-bit layer (`i8`…`u64`, `f32`, `f64`) for exact layout and FFI. Function signatures are written explicitly at module boundaries: parameter types are always annotated, every `pub` function declares its return type, and an omitted return type means `unit`. This chapter defines every type constructor, the values that inhabit it, and the rules for combining and comparing types.
 
 ## Type Kinds
 
@@ -12,16 +12,16 @@ The kinds of type in Xulo form a closed set; a program cannot introduce a new ki
 | Numeric | `number`, `int`, `float`, `i8` … `u64`, `f32`, `f64` | [`primitive-types.md`](primitive-types.md) |
 | Null | `null` | [`primitive-types.md`](primitive-types.md) |
 | Unit | `unit` | [`primitive-types.md`](primitive-types.md) |
+| Top | `unknown` | [`primitive-types.md`](primitive-types.md) |
 | Range | `Range<T>` | [`primitive-types.md`](primitive-types.md) |
 | View | `View` | [`primitive-types.md`](primitive-types.md) |
 | Collection | `list<T>`, `map<K, V>`, `set<T>` | [`composite-types.md`](composite-types.md) |
-| Object (structural) | `object`, `{ name: string, age: int }` | [`composite-types.md`](composite-types.md) |
 | Tuple (positional) | `(int, string)`, `p.0` | [`composite-types.md`](composite-types.md) |
 | Struct (nominal) | `struct User { … }` | [`composite-types.md`](composite-types.md) |
 | Optional | `T?` (shorthand for `T \| null`) | [`composite-types.md`](composite-types.md) |
 | Union | `T \| U` | [`composite-types.md`](composite-types.md) |
 | Intersection | `T & U` | [`composite-types.md`](composite-types.md) |
-| Type alias | `type ApiResponse<T> = { … }` | [`composite-types.md`](composite-types.md) |
+| Type alias | `type ApiResponse<T> = map<string, T>` | [`composite-types.md`](composite-types.md) |
 | Function | `fn(A): R`, `async fn(A): B` | [`function-types.md`](function-types.md) |
 | Task | `Task<T>` | [`function-types.md`](function-types.md) |
 | Enum | `enum Theme { … }` | [`enums.md`](enums.md) |
@@ -65,8 +65,8 @@ TypeList        = Type { "," Type } ;
 
 ## How to Read This Chapter
 
-- [`primitive-types.md`](primitive-types.md) — `boolean`, `string`, the two-layer numeric system, `null`, `unit`, `View`, and `Range<T>`.
-- [`composite-types.md`](composite-types.md) — `list`, `map`, `set`, structural object types, positional tuples, nominal `struct` records, optional/union/intersection types, and type aliases.
+- [`primitive-types.md`](primitive-types.md) — `boolean`, `string`, the two-layer numeric system, `null`, `unit`, `unknown`, `View`, and `Range<T>`.
+- [`composite-types.md`](composite-types.md) — `list`, `map`, `set`, positional tuples, nominal `struct` records, optional/union/intersection types, and type aliases.
 - [`function-types.md`](function-types.md) — the syntax and meaning of `fn(...)` types, function and closure values, default and named parameters, `async`/`Task<T>` types, subtyping, and method types.
 - [`generics.md`](generics.md) — type parameters, bounds (`<T: Trait>`, `where` clauses), and call-site inference.
 - [`enums.md`](enums.md) — enum declarations, variants with payloads, and `Enum::Variant` paths.

@@ -29,7 +29,7 @@ Levels are listed from loosest to tightest binding.
 | unary | `!` `-` `~` `await` | prefix |
 | postfix | `f(x)` `x[i]` `x.y` `x.0` `x?.y` `x?.0` `x?` | left |
 
-Prefix spread `...expr` exists only inside list and object literals; it is not
+Prefix spread `...expr` exists only inside list and map literals; it is not
 part of this chain. An element that begins with `...` is a spread, otherwise
 `...` is the closed-range operator.
 
@@ -138,7 +138,7 @@ let none = maybe == null
 
 Equality is structural for all value types: primitives (`boolean`, `string`,
 `int`, `float`, fixed-bit numerics), `list`, `map`, `set`, tuples,
-anonymous objects, named `struct`s, and `enum`s — for an `enum`, the variant
+named `struct`s, and `enum`s — for an `enum`, the variant
 and every payload value are compared; for a tuple, the arities must be equal
 and every pair of elements is compared, so different arities are a
 compile-time error rather than `false`. Both operands MUST have a common
@@ -277,7 +277,7 @@ combined with `??`, as in `session?.profile?.name ?? "anonymous"`. See
 
 ## Spread
 
-Prefix `...` expands a collection inside a list or object literal and appears
+Prefix `...` expands a collection inside a list or map literal and appears
 nowhere else: it MUST NOT be used in an argument list, a return, or any other
 expression position.
 
@@ -286,8 +286,8 @@ let all = [...head, ...tail]
 let merged = { ...base, active: true }
 ```
 
-In a list literal the operand MUST be a `list`; in an object literal it MUST
-be an object. When an object spread and a later field specify the same key, the
+In a list literal the operand MUST be a `list`; in a map literal it MUST
+be a `map`. When a map spread and a later entry specify the same key, the
 later occurrence wins. See [`literals.md`](literals.md).
 
 ## Unary summary table
@@ -308,7 +308,7 @@ body and is specified in [`async-expressions.md`](async-expressions.md).
 `(expr)` groups a subexpression and changes only how it groups; it has the
 value and type of `expr`. Parentheses are also required where an expression
 must start with a construct that cannot begin an expression statement, such as
-an object literal, and around a callee that is itself an expression:
+a map literal, and around a callee that is itself an expression:
 
 ```xulo
 ({ a: 1 })
