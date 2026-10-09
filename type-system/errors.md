@@ -129,6 +129,7 @@ the source line, a caret line, and optional notes.
 | `E0218` | an expression statement in statement position has a type other than `unit` and is not an excepted control-flow construct | `a + b` with `a: int` | ``expected `unit`, found `int``` |
 | `E0219` | a tuple destructuring's initializer is not a tuple type, or the name count differs from the tuple's arity | `let (a, b) = 42` | ``expected a tuple of 2 elements, found `int` `` |
 | `E0220` | a positional access has a non-tuple receiver, or the position is at or past the arity | `p.2` for `p: (int, int)` | `` `(int, int)` has no element `.2` `` |
+| `E0221` | a typed map literal repeats a type an expected `map<K, V>` already gives, with identifier keys or no entries | `let m: map<string, int> = map<string, int>{}` | ``literal `map<string, int>{ … }` repeats the expected type`` |
 
 ### Pattern errors
 

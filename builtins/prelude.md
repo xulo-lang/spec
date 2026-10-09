@@ -97,7 +97,7 @@ constructor — is a prelude operation: an unqualified function in scope in ever
 module, called like any other function.
 
 ```xulo
-let mut counts: map<string, int> = map<string, int>{ "a": 1, "b": 2 }
+let mut counts: map<string, int> = { "a": 1, "b": 2 }
 print(map_size(counts))              // 2
 print(map_has_key(counts, "a"))      // true
 let previous = map_remove(counts, "a")   // counts loses "a"; previous is 1

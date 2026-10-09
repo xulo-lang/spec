@@ -48,13 +48,19 @@ A map literal has two forms:
   it, exactly like `[]`.
 - **The typed form** `map<K, V>{ key: value, … }` — keys are expressions of
   the hashable type `K` — constructs a value whose static type is exactly
-  `map<K, V>`; with no entries it constructs an empty map.
+  `map<K, V>`; with no entries it constructs an empty map. It is written only
+  where no expected map type is in effect, or where a key is not an
+  identifier: when an expected `map<K, V>` is in scope and every key is an
+  identifier (or the literal is empty), the brace form MUST be used, and the
+  typed form repeats the context's type — a compile-time error (`E0221`,
+  see [`../expressions/literals.md`](../expressions/literals.md)).
 
 ```xulo
-let empty: map<string, int> = map<string, int>{ }
-let counts: map<string, int> = map<string, int>{ "a": 1, "b": 2 }
+let counts = { "a": 1, "b": 2 }                 // map<string, int>, inferred
 let user = { name: "lyy", age: 30 }             // map<string, string | int>
 let same: map<string, int> = { a: 1, b: 2 }     // brace form, expected type applied
+let empty: map<string, int> = {}                // entry type from the annotation
+let ages = map<int, string>{ 30: "thirty" }     // typed form: keys are not identifiers
 ```
 
 - The key type `K` MUST be hashable. The hashable types are `string`, `int`,
@@ -76,7 +82,7 @@ let same: map<string, int> = { a: 1, b: 2 }     // brace form, expected type app
 let user = { name: "x" }                 // map<string, string>
 let a = user.name                        // the member form: "x"
 let b = user["name"]                     // the subscript form: "x"
-let table: map<string, string> = map<string, string>{ "name": "x" }
+let table: map<string, string> = { name: "x" }      // the annotation types it
 ```
 
 ## set<T>

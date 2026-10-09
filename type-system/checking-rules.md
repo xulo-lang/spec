@@ -59,6 +59,13 @@ Each literal has a default type, which an expected type may adapt exactly as
 A negative number is not part of a literal — it is unary `-` applied to one.
 No literal has type `unknown`: `unknown` is written, never inferred.
 
+The typed map literal `map<K, V>{ … }` supplies its own type, so where an
+expected type `map<K, V>` is in scope — after alias expansion — and every key
+is an identifier or the literal is empty, it repeats the context's type and is
+`E0221`; the brace form is written instead. A key that is not an identifier
+can only be written in the typed form, which stays well-formed next to an
+annotation.
+
 ## Expression rules
 
 ### Identifiers and member access

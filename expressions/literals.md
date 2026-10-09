@@ -168,6 +168,25 @@ type User = map<string, string | int>
 let u: User = { name: "lyy", age: 30 }
 ```
 
+A type is written exactly once. When an expected type `map<K, V>` is in
+scope — a `let` annotation, a declared return type, a parameter, an
+assignment target, any other checking position, after alias expansion — and
+every key of the literal is an identifier (or the literal is empty), the
+literal MUST use the brace form: the typed form repeats the type the context
+already gives and is a compile-time error (`E0221`). The typed form is written in
+exactly two situations: no expected map type is in effect, or at least one key
+is not an identifier — which only the typed form can write, and which keeps it
+legal next to an annotation.
+
+```xulo
+fn counts(): map<string, int> {
+  return { "a": 1 }                    // the signature already gives the type
+}
+
+let bad: map<string, int> = map<string, int>{ "a": 1 }  // error[E0221]: repeats the annotation
+let ages: map<int, string> = map<int, string>{ 30: "thirty" }  // OK: a key that is not an identifier
+```
+
 A trailing comma is allowed, and the prefix spread `...expr` MAY appear as an
 entry; its operand MUST be a `map`, and when the same key occurs more than
 once, the later occurrence wins — except that a key written twice directly in
