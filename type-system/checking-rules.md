@@ -313,7 +313,9 @@ not exist.
 - **`impl` completeness.** A trait `impl` MUST declare every method of the
   trait (`E0802`) and no others (`E0804`), each signature — parameters, return
   type, receiver form — being mutually assignable with the declared one
-  (`E0803`). Two implementations of one trait for one type are `E0805`.
+  (`E0803`). Two implementations of one trait for one type in one module are
+  `E0805`; one in each of two modules is legal, since an `impl` is module-scoped
+  ([`../types/traits.md`](../types/traits.md)).
 - **Type aliases.** Expanding aliases MUST terminate: an alias that expands,
   directly or through a chain, to itself is `E0105`; recursion through a type
   constructor is not a cycle.

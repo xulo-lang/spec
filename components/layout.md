@@ -153,7 +153,7 @@ ones:
 
 - **`bg` and `bgImage` are strictly separate.** `bg` accepts colors only and
   `bgImage` accepts image URLs only; an image URL written as `bg`, or a color
-  written as `bgImage`, is a compile-time error when the argument is a string
+  written as `bgImage`, is a compile-time error (`E0202`) when the argument is a string
   literal, and the two are never interchangeable.
 - `size`, `weight`, and `color` apply to text; `bg`, `border`, `radius`, and
   `opacity` apply to the node itself.

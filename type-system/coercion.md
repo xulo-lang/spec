@@ -93,7 +93,7 @@ let s: Status = "active" // Status = "active" | "inactive"
 Promotion is a rule about **operators**, not about assignment. In `+`, `-`,
 `*`, `/`, `%`, `**`, and in the relational operators, operands of the
 user-facing numeric layer combine as follows; the table is exhaustive, and a
-combination it does not give is a compile-time error
+combination it does not give is a compile-time error (`E0201`)
 ([`../types/primitive-types.md`](../types/primitive-types.md)):
 
 | Operands | Result |

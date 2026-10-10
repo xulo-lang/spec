@@ -96,8 +96,8 @@ identity: `==` is `true` exactly when both operands denote the same value.
   compares the contents. Comparison of cyclic structures terminates: a pair of
   values already being compared is treated as equal rather than recursed into
   again, so `==` always halts.
-- A comparison whose operands have unrelated types is a compile-time error,
-  not an identity question.
+- A comparison whose operands have unrelated types is a compile-time error
+  (`E0211`), not an identity question.
 
 ## Ownership with `move`
 
@@ -105,9 +105,9 @@ identity: `==` is `true` exactly when both operands denote the same value.
 invalidates the binding it came from. From that point on the binding has been
 **moved out**, and any use of it is a compile-time error (`E0403`).
 
-```text
-move Expression
-```
+`move` and `copy` are prefix operators at the `unary` precedence level, exactly
+as [`expressions/operators.md`](expressions/operators.md) states, so `move a +
+b` groups as `(move a) + b` and the second restriction below then rejects it.
 
 - The operand of `move` MUST be a path naming a binding. `move p.x`,
   `move xs[0]`, and `move compute()` are errors: a transfer moves a whole

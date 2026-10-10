@@ -131,6 +131,12 @@ the source line, a caret line, and optional notes.
 | `E0220` | a positional access has a non-tuple receiver, or the position is at or past the arity | `p.2` for `p: (Int, Int)` | `` `(Int, Int)` has no element `.2` `` |
 | `E0221` | a typed map literal repeats a type an expected `Map<K, V>` already gives, with identifier keys or no entries | `let m: Map<String, Int> = Map<String, Int>{}` | ``literal `Map<String, Int>{ … }` repeats the expected type`` |
 | `E0222` | the right operand of `is` is not a testable type, or is not assignable to the left operand's type | `data is List<Int>` | ``type `List<Int>` is not testable`` |
+| `E0223` | one map literal writes the same key twice directly | `{ a: 1, a: 2 }` | ``duplicate key `a` in map literal`` |
+| `E0224` | a `Map` key type is not hashable — it is not one of `String`, `Int`, `Float`, `Boolean`, or a payload-free `enum` | `Map<List<Int>, Int>{}` | ``key type `List<Int>` is not hashable`` |
+| `E0225` | a `Set` element type is not hashable — the same set of types admitted as map keys | `Set<List<Int>>` | ``element type `List<Int>` is not hashable`` |
+| `E0226` | an intersection `&` has an operand that is not a trait type | `User & Area` | ``intersection operand `User` is not a trait`` |
+| `E0227` | an operand of `+` is a `String` and the other is not | `"count=" + 1` | ``cannot add `Int` to `String` `` |
+| `E0228` | a parameter's default value does not fit the parameter's declared type | `fn f(name: String = 42)` | ``expected `String`, found `Int` `` |
 
 ### Pattern errors
 
@@ -193,7 +199,10 @@ the source line, a caret line, and optional notes.
 | `E0706` | `await` in a component body or an `@Effect` body | `await load()` inside a component | `` `await` is not allowed in a component body `` |
 | `E0707` | a component invocation has neither an argument list nor a block | `Counter` used where a call is required | ``component invocation requires an argument list or a block`` |
 | `E0708` | the dependency list of an `@Effect` is not a list literal | `@Effect fn() { … }, count` | ``the dependency list of `@Effect` must be a list literal`` |
-| `E0709` | the value of an `@Effect` declaration is not a `fn(): Unit` | `@Effect 42` | `` `@Effect` requires a function of type `fn(): Unit` `` |
+| `E0709` | the value of an `@Effect` declaration is not a `fn(): Unit` | `@Effect fn(): Int { … }` | `` `@Effect` requires a function of type `fn(): Unit` `` |
+| `E0710` | an `@Environment` declaration omits its type annotation | `@Environment let router` | `` `@Environment` requires a type annotation `` |
+| `E0711` | `$` is written in an argument to something that is not a component | `print($count)` | `` `$count` may only be passed to a component `` |
+| `E0712` | a `$` place is a field path or otherwise not a single state cell | `Input(value: $user.name)` | `` `$user.name` is not a single state binding `` |
 
 Argument failures inside a component invocation — an unknown label, too many
 or too few arguments, an argument of the wrong type, an undeclared callee — are

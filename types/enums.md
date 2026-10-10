@@ -150,7 +150,7 @@ Rules:
 - A `match` whose scrutinee has an enum type MUST be exhaustive: every variant
   must be covered, either by an arm naming it or by a covering arm — a
   wildcard, a binding, or a type pattern of the enum type itself. A
-  `match` that leaves a variant uncovered is a compile-time error; see
+  `match` that leaves a variant uncovered is a compile-time error (`E0301`); see
   [`../type-system/errors.md`](../type-system/errors.md).
 
   ```xulo

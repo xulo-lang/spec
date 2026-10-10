@@ -61,11 +61,11 @@ async fn main() {
 `await expr` waits for a task and produces its result.
 
 - The operand MUST have type `Task<T>`; `await expr` then has type `T`. An
-  `await` on a value that is not a `Task<T>` is a compile-time error
+  `await` on a value that is not a `Task<T>` is a compile-time error (`E0502`)
   ([`errors.md`](../type-system/errors.md)).
 - The operand is evaluated exactly once, before the suspension it causes.
 - `await` is legal only inside the body of an `async` function or an `async`
-  closure. Elsewhere it is a compile-time error
+  closure. Elsewhere it is a compile-time error (`E0501`)
   ([`errors.md`](../type-system/errors.md)).
 - `await` is a prefix operator at the unary level of the precedence table
   ([`operators.md`](operators.md)): it binds tighter than any binary operator
@@ -208,7 +208,7 @@ resource — is done with `spawn`, which is specified in
 
 ## Where `await` is forbidden
 
-`await` requires an `async` context. It is a compile-time error
+`await` requires an `async` context. It is a compile-time error (`E0501`)
 ([`errors.md`](../type-system/errors.md)) to write `await`:
 
 - in the body of a function or closure that is not declared `async`, including

@@ -190,8 +190,8 @@ let ages: Map<Int, String> = Map<Int, String>{ 30: "thirty" }  // OK: a key that
 A trailing comma is allowed, and the prefix spread `...expr` MAY appear as an
 entry; its operand MUST be a `Map`, and when the same key occurs more than
 once, the later occurrence wins — except that a key written twice directly in
-one literal is a compile-time error. An empty `{}` determines its type from
-the expected type, exactly like `[]`, and is a compile-time error when nothing
+one literal is a compile-time error (`E0223`). An empty `{}` determines its type from
+the expected type, exactly like `[]`, and is a compile-time error (`E0216`) when nothing
 determines it:
 
 ```xulo

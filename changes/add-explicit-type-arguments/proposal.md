@@ -164,8 +164,14 @@ downstream diagnostics disappear with it.
       [design.md](design.md#typing-rule)
 - [x] Replacement text for `types/generics.md` —
       [specs/generics.md](specs/generics.md)
-- [ ] Deltas for the remaining affected chapters — `expressions/calls.md`,
-      `type-system/checking-rules.md`, `functions.md`, `types/README.md`, and
-      `grammar.md` — are added to `specs/` before this change leaves `draft`,
-      together with the registration of the two new diagnostic codes in
-      [`../../type-system/errors.md`](../../type-system/errors.md).
+- [x] Deltas for the remaining affected chapters —
+      [specs/calls.md](specs/calls.md),
+      [specs/checking-rules.md](specs/checking-rules.md),
+      [specs/functions.md](specs/functions.md),
+      [specs/types-README.md](specs/types-README.md), and
+      [specs/grammar.md](specs/grammar.md)
+- [ ] Registration of the two new diagnostic codes `E0807` and `E0808` in
+      [`../../type-system/errors.md`](../../type-system/errors.md), which
+      [design.md](design.md#diagnostics) makes part of acceptance — the codes
+      are named by the deltas but belong to no main chapter until the change
+      is folded in.

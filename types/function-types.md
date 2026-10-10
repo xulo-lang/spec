@@ -44,7 +44,7 @@ let fs = peek                   // fs: fn(shared Counter): Int
 
 - Every function declaration introduces a binding of its own signature type: `add` above has type `fn(Int, Int): Int`. Its declared parameters — types and modes — and its result type are exactly its type as a value.
 - Function values are assigned, passed as arguments, returned, stored in fields and collections, and called like any other value. A call of a function-typed expression is written `f(x, y)` and has the result type of the function type.
-- **`null` is not a member of a function type.** Assigning `null` to a value of type `fn(A): B` is a compile-time error. A nullable function value must say so: `(fn(A): B)?` is the optional type over a function type, and reading it follows the optional rules in [`composite-types.md`](composite-types.md).
+- **`null` is not a member of a function type.** Assigning `null` to a value of type `fn(A): B` is a compile-time error (`E0201`). A nullable function value must say so: `(fn(A): B)?` is the optional type over a function type, and reading it follows the optional rules in [`composite-types.md`](composite-types.md).
 
 ## Parameters
 
@@ -150,7 +150,7 @@ Here `Int` is assignable to `Int?`, so `fn(Int?): Int` is a subtype of
 `fn(Int): Int` by parameter contravariance: `count_any` — which accepts more
 than `run` requires — satisfies the required type `fn(Int): Int`.
 
-Function types may appear in any position, including as the parameter or result of another function type, so higher-order functions are written directly (`fn(fn(Int): Int): Int`); the language has no separate notation for higher-rank polymorphism. A generic function used where a function type is expected MUST have its type parameters determined by the expected type or the arguments at that point; otherwise a compile-time error is reported. The complete compatibility and subtyping rules are in [`type-relations.md`](type-relations.md).
+Function types may appear in any position, including as the parameter or result of another function type, so higher-order functions are written directly (`fn(fn(Int): Int): Int`); the language has no separate notation for higher-rank polymorphism. A generic function used where a function type is expected MUST have its type parameters determined by the expected type or the arguments at that point; otherwise a compile-time error is reported (`E0216`). The complete compatibility and subtyping rules are in [`type-relations.md`](type-relations.md).
 
 ## Method types
 
@@ -183,6 +183,6 @@ fn main() {
 }
 ```
 
-  An `Area.area` expression whose receiver type cannot be determined from context is a compile-time error.
-- Member access without a call — `r.area` — denotes a field access; referring to a method that way is a compile-time error. Inherent methods are reached through a call (`r.area()`), trait methods through `Trait.method`.
+  An `Area.area` expression whose receiver type cannot be determined from context is a compile-time error (`E0216`).
+- Member access without a call — `r.area` — denotes a field access; referring to a method that way is a compile-time error (`E0206`). Inherent methods are reached through a call (`r.area()`), trait methods through `Trait.method`.
 - Trait declarations, `impl` blocks, and dispatch are specified in [`traits.md`](traits.md); method declarations and parameter modes in [`../functions.md`](../functions.md).

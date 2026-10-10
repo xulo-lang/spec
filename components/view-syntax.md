@@ -54,10 +54,10 @@ fn Counter(): View {
   follow the ordinary rules ([`../functions.md`](../functions.md),
   [`../expressions/calls.md`](../expressions/calls.md)).
 - The value of a component's body is its trailing expression, which MUST have
-  type `View`; that value is the component's result. Statements may precede it
-  in the body as in any other function body.
+  type `View` (`E0704` otherwise); that value is the component's result.
+  Statements may precede it in the body as in any other function body.
 - A component body is not an `async` context: `await` in a component body, or
-  in an `@Effect` body, is a compile-time error
+  in an `@Effect` body, is a compile-time error (`E0706`)
   ([`../expressions/async-expressions.md`](../expressions/async-expressions.md)).
 - Components are called from component blocks, from the bodies of other
   components, and from the render entry point.
@@ -87,7 +87,10 @@ The signature of `main` decides how a program runs:
 
 A component invocation is a call expression: an identifier, an optional
 parenthesized argument list, and an optional trailing block of children. At
-least one of the argument list and the block MUST be present.
+least one of the argument list and the block MUST be present: a component name
+written with neither, where an invocation is required — as a child, or as the
+`View` a component body returns — is `E0707`, and the repair is to invoke it
+(`Counter()`) rather than to mention it.
 
 ```xulo
 Text("Hi")
@@ -113,17 +116,33 @@ Card { Text("no arguments") }
   type `View`.
 - Calling an undeclared component, calling one outside the visibility of its
   module, or supplying arguments that do not match its declared parameters is a
-  compile-time error ([`../type-system/errors.md`](../type-system/errors.md)).
+  compile-time error (`E0101`, `E0602`, `E0202`, `E0207`, `E0208`)
+  ([`../type-system/errors.md`](../type-system/errors.md)).
 
 ```text
-ComponentCall   = Identifier ( '(' [ ArgumentList ] ')' [ ComponentBlock ]
+ComponentCall   = Identifier ( '(' [ ArgumentList ] ')' ComponentBlock
                              | ComponentBlock ) ;
 ComponentBlock  = '{' { ChildItem } '}' ;
-ChildItem       = ComponentCall
-                | 'if' Expression Block [ 'else' Block ]
-                | 'for' Identifier 'in' Expression Block
-                | Expression ;
+ChildItem       = Expression | ForStmt ;
 ```
+
+These are the productions of [`../grammar.md`](../grammar.md) restated for
+this chapter; the two MUST stay identical. `ComponentCall` recognizes the forms
+that carry a children block — a trailing block attaches to the invocation and
+cannot be written any other way — so an invocation written with an argument
+list and no block, such as `Text("Hi")` above, is parsed as an ordinary call
+through `PostfixOperand` and reads the same: it is a call whose result is a
+`View`, with no children. Either form is an invocation, and at least one of the
+argument list and the block MUST be present.
+
+Through the productions, an invocation reaches `ChildItem` as an ordinary
+expression; `for` is written through `ForStmt` because a loop is a statement.
+An `if` likewise reaches `ChildItem` through `Expression`, so its `else` MAY be
+followed by a block or by another `if`, chaining exactly as it does in ordinary
+control flow
+([`../expressions/control-flow.md`](../expressions/control-flow.md)). What a
+child item may be *typed* as, and what each one contributes, are stated in the
+table below.
 
 ## Children and nesting
 
@@ -142,7 +161,7 @@ A component block may contain:
 | Expression of type `View` | `makeRow(item)` | one child |
 | Expression of type `List<View>` | `rows` | one child per element, in list order |
 
-Anything else in a component block is a compile-time error
+Anything else in a component block is a compile-time error (`E0702`)
 ([`../type-system/errors.md`](../type-system/errors.md)). In particular, a
 binding declaration, an assignment, a `return`, or an expression of any other
 type — `Int`, `Boolean`, `List<Int>`, `Map<K, V>` — MUST NOT appear as a child

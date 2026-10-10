@@ -35,6 +35,11 @@ The following are deliberately **not** specified here:
 | Tutorials, guides, and getting-started material | [xulo-website](https://xulo.org), `learn/book` in the implementation repository |
 | The compiler/interpreter implementation, CLI, LSP, and rendering back ends | implementation repository (`xulo`) |
 | Package registry protocol and tooling | xulo-website ecosystem documentation |
+| The machine-readable grammar files themselves (`xulo.ebnf`, `xulo.pest`, the tree-sitter grammar) — [`machine-readable.md`](machine-readable.md) links to them and is informative | implementation repository (`xulo`), xulo.org |
+
+Constructs that are absent from the language rather than merely outside this
+document's coverage — the language-level non-goals — are listed in
+[`introduction.md`](introduction.md).
 
 Anything not covered by this specification is, by definition, outside the
 language as specified.
@@ -114,7 +119,7 @@ and the xulo-website documents named in § 6.
 | [`error-handling.md`](error-handling.md) | Fallible operations: `Result`, `?` propagation, `panic`, runtime failures |
 | [`grammar.md`](grammar.md) | Complete EBNF grammar |
 | [`ast.md`](ast.md) | Abstract syntax tree node definitions and data structures |
-| [`machine-readable.md`](machine-readable.md) | Downloadable grammar files for parser generators (EBNF, Pest, tree-sitter) |
+| [`machine-readable.md`](machine-readable.md) | Links to downloadable grammar files for parser generators (EBNF, Pest, tree-sitter) — informative; the files live in the implementation repository |
 | [`changes/`](changes/README.md) | Incremental change proposals (OpenSpec style) |
 
 ## 5. Terminology
@@ -125,22 +130,35 @@ normative for the whole specification.
 | Term | Definition |
 |------|------------|
 | **binding** | An association between a name and a value or type introduced by `let`, `let mut`, `const`, a parameter, or a declaration. |
+| **borrowing** | The grant by which a parameter or receiver accesses an argument's storage for the duration of a call instead of receiving it: `p: T` borrows immutably, `p: mut T` mutably, under aliasing XOR mutability. See [`memory-and-runtime.md`](memory-and-runtime.md). |
+| **bound** | A constraint on a type parameter, written inline `<T: Area>` or in a `where` clause; a type argument MUST satisfy every bound of its parameter. See [`types/generics.md`](types/generics.md). |
+| **closure** | A function value written in expression position — `fn(…) { … }` or `params => …` — which captures the bindings of the scope in which it was written. See [`expressions/closures.md`](expressions/closures.md). |
+| **coercion** | An implicit conversion from the closed list of [`type-system/coercion.md`](type-system/coercion.md), written `A ⇝ B`; nothing outside that list converts implicitly, and no coercion discards information. |
 | **component** | A function whose declared return type is `View`; constructs a fragment of the UI tree. See [`components/`](components/README.md). |
+| **copy** | `copy e`: an explicit deep copy of `e`'s value, leaving the original binding untouched; accepted only in a `let` initializer, a call argument, or a `return` operand. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **declaration** | A top-level or member-level construct that introduces a name: `fn`, `struct`, `enum`, `trait`, `impl`, `type`, `let`, `const`. |
 | **diagnostic** | A message emitted for a program the checker rejects or warns about, identified by an `E` or `W` code; a compile-time event, not a runtime one. See [`type-system/errors.md`](type-system/errors.md). |
+| **enum** | A nominal type declaring a fixed set of variants, each optionally carrying a payload; written `enum Name { … }`, constructed through a variant path and deconstructed with `match`. See [`types/enums.md`](types/enums.md). |
 | **evaluation order** | The order in which subexpressions are evaluated; left-to-right unless stated otherwise. |
-| **immutable binding** | A binding introduced by `let` or `const`; reassignment is a compile-time error. |
+| **immutable binding** | A binding introduced by `let` or `const`; reassignment is a compile-time error (`E0401`). |
+| **impl** | A block that attaches methods to a type — `impl Trait for Type` implements a trait, `impl Type` declares inherent methods — which applies only within the module that contains it. See [`types/traits.md`](types/traits.md). |
 | **intrinsic** | A function or namespace provided directly by the compiler, available without import. See [`builtins/`](builtins/README.md). |
 | **is** | The type test `e is T` and its negation `e is not T`: yields `Boolean` and narrows the branches of an `if`. See [`expressions/control-flow.md`](expressions/control-flow.md). |
 | **map** | An insertion-ordered collection of key–value pairs `Map<K, V>`, written with a brace literal `{ k: v }` or the typed form `Map<K, V>{ … }`. See [`types/composite-types.md`](types/composite-types.md). |
 | **module** | A single source file together with its exported names. |
-| **optional type** | `T?`, shorthand for `T | Null`; absence, which is not an error. |
+| **move** | `move b`: a transfer that severs `b` from its value, after which any use of `b` is a compile-time error (`E0403`); its operand MUST be a path naming a binding, and it is accepted only in a `let` initializer, a call argument, or a `return` operand. See [`memory-and-runtime.md`](memory-and-runtime.md). |
+| **narrowing** | The refinement of a binding's type within one branch — by `is` in an `if` condition, by a `match` arm's pattern, or by matching a union — so that a member-specific operation type-checks there. See [`expressions/control-flow.md`](expressions/control-flow.md). |
+| **optional type** | `T?`, shorthand for `T \| Null`; absence, which is not an error. |
+| **ownership** | The rules deciding which binding denotes a value: `move` severs a binding from its value, and `copy` produces an independent deep copy while leaving the original binding intact. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **panic** | An unrecoverable stop: a call to `panic(...)` or a runtime failure; it stops the program where it occurs and has no handler. See [`error-handling.md`](error-handling.md). |
 | **pattern** | The left-hand side of a `match` arm; deconstructs a value or tests its type. |
+| **pub** | The visibility marker: a declaration is module-private unless it is marked `pub`, which exports the one name the declaration introduces. See [`modules/visibility.md`](modules/visibility.md). |
 | **Result** | The built-in `Result<T, E>`: either `Result::Ok(T)` or `Result::Err(E)`; the value a fallible operation returns. See [`error-handling.md`](error-handling.md). |
 | **runtime failure** | A condition that stops a running program — an out-of-bounds index, division by zero — as a panic; there is no handler. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **scrutinee** | The expression evaluated by `match` and tested against patterns. |
+| **struct** | A nominal record type with named, individually typed fields; two `struct` declarations with identical fields are still different types. See [`types/composite-types.md`](types/composite-types.md). |
 | **task** | A unit of asynchronous computation with type `Task<T>`. See [`concurrency.md`](concurrency.md). |
+| **trait** | A nominal declaration of a named set of method signatures with no default bodies; a type opts into it with an `impl`. See [`types/traits.md`](types/traits.md). |
 | **tuple** | An ordered, fixed-length sequence of at least two values with one type per position; written `(T, U)`, read with `p.0`, deconstructed with `let (a, b) = e`. See [`types/composite-types.md`](types/composite-types.md). |
 | **type pattern** | A `match` pattern of the form `Type binder` that tests a value's type and binds it; `match`'s type test, the other form being the **is** operator. See [`expressions/control-flow.md`](expressions/control-flow.md). |
 | **unit** | The type of expressions that produce no meaningful value; written `Unit`. |
@@ -172,3 +190,10 @@ Chapters are edited as plain Markdown. When changing syntax, update
 [`grammar.md`](grammar.md) in the same change; when changing terminology,
 update §5 above. Proposed language changes must land under
 [`changes/`](changes/README.md) before they are folded into the main chapters.
+
+## 8. License
+
+Everything in this repository — the specification prose, the Xulo source
+examples, and the EBNF grammar — is covered by a single license, the MIT
+License, whose full text is in [`LICENSE`](LICENSE). There is no separate
+license for documentation and for code examples.

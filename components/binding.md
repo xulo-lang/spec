@@ -49,14 +49,15 @@ Exactly one class of names may be bound:
 - **MUST NOT** be bound: any other name — a parameter of the enclosing
   component, an ordinary `let`, `let mut`, or `const` binding, a loop variable,
   a nested `fn`, a name from another module, or a field such as `user.name`.
-  A `$` on any of these is a **compile-time error**. There is no inert binding:
-  a `$` that cannot carry a write-back is rejected at compile time rather than
-  accepted with writes that do nothing.
+  A `$` on any of these is a compile-time error (`E0703`, `E0712`). There is
+  no inert binding: a `$` that cannot carry a write-back is rejected at
+  compile time rather than accepted with writes that do nothing.
 
 `$` is also restricted by position: it is legal only in an argument position of
 a **component** invocation. Writing it in a child block, in an ordinary
-expression, in a binding initializer, or in an argument to a function that is
-not a component is a compile-time error.
+expression, or in a binding initializer is `E0703`; writing it in an argument
+to a function that is not a component is `E0711`
+([`../type-system/errors.md`](../type-system/errors.md)).
 
 ```xulo
 fn Settings(): View {
@@ -169,4 +170,18 @@ in scope.
 | Handler argument | Parameter list incompatible with the declared function type | error |
 
 Errors of this kind are ordinary compile-time diagnostics
-([`../type-system/errors.md`](../type-system/errors.md)).
+([`../type-system/errors.md`](../type-system/errors.md)). Each row is
+reported by a named code:
+
+- A `$` on a name that is not a bindable state place of the enclosing
+  component, or written outside an argument position, is `E0703`.
+- A `$` written in an argument to something that is not a component —
+  `print($count)` — is `E0711`.
+- A `$` whose place is a field path or otherwise not a single state cell —
+  `Input(value: $user.name)` — is `E0712`. The place is accepted by the
+  grammar precisely so that the shape is diagnosed here rather than failing
+  the parse ([`../grammar.md`](../grammar.md)).
+- A binding argument or a handler argument whose value does not fit the
+  receiving parameter's declared type is the ordinary argument error `E0202`,
+  with `E0207` and `E0208` for a wrong argument count or a bad label
+  ([`../expressions/calls.md`](../expressions/calls.md)).

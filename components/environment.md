@@ -23,7 +23,8 @@ fn Nav(): View {
   is provided by an enclosing context, never computed in the component.
 - The type annotation is **REQUIRED**. Nothing in the declaration supplies the
   type, and no inference can recover it, so `@Environment let router` without
-  `: Router` is a compile-time error.
+  `: Router` is `E0710`
+  ([`../type-system/errors.md`](../type-system/errors.md)).
 - The declared name binds like an ordinary binding: it reads like a variable in
   the rest of the body, it is captured by closures normally, and it draws from
   the component body's single name pool with `@State` and `@Store`
@@ -93,9 +94,18 @@ session, and any component anywhere in the tree that declares
 `@Environment` is valid **only** at the top level of a component body — as a
 direct item of the body of a function whose declared return type is `View`.
 Writing it in an ordinary function, in an `async` function, in a closure, or
-inside a nested block is a compile-time error
+inside a nested block is a compile-time error (`E0701`)
 ([`../type-system/errors.md`](../type-system/errors.md)). This rule is
 normative and has no exceptions.
+
+Each row of the table is reported by a named diagnostic: placement is
+`E0701`, a missing type annotation is `E0710`, and a name already bound by
+another declaration in the same body is a duplicate declaration (`E0103`,
+[`../names.md`](../names.md)). The one remaining row — an initializer — never
+reaches the checker: `EnvironmentDecl` takes no `=`, so the declaration fails
+to parse, and the `syntax` phase carries no `E` code of its own
+([`../type-system/errors.md`](../type-system/errors.md),
+[`../grammar.md`](../grammar.md)).
 
 | Construct | Condition | Result |
 |-----------|-----------|--------|

@@ -13,7 +13,7 @@ let names: List<String> = []
 ```
 
 - A list literal `[e1, e2, …]` has type `List<T>`, where `T` is the union of the element types: `[1, "two"]` is `List<Int | String>`.
-- The element type of an empty literal `[]` is determined by its context — an annotation, or the uses of the binding elsewhere in the enclosing function body. If nothing determines it, a compile-time error is reported.
+- The element type of an empty literal `[]` is determined by its context — an annotation, or the uses of the binding elsewhere in the enclosing function body. If nothing determines it, a compile-time error is reported (`E0216`).
 - The prefix spread `...` MAY appear only inside a list literal or the brace form of a map literal. In a list literal its operand MUST be a `List<U>` and its elements are spliced in place; in a map literal its operand MUST be a `Map<K, V>` and its entries are merged, with the later occurrence of a duplicate key winning.
 - `+` concatenates two lists into a new list of type `List<T | U>` — exactly `List<T>` when both operands are `List<T>` — and leaves the operands unchanged.
 - `xs[i]` requires `i` to have type `Int`. Reading yields the element at that index; writing (`xs[i] = v`) stores a value of the element type into it, subject to the mutable-place rules. An index that is negative or at or past the end of the list is a runtime error for both.
@@ -43,9 +43,9 @@ A map literal has two forms:
   the union of the value types: `{ name: "lyy", age: 30 }` is
   `Map<String, String | Int>`. With an expected type `Map<K, V>` in scope,
   every value checks against `V` and `K` MUST admit `String`. A duplicate key
-  in one literal is a compile-time error. The empty literal `{}` determines
-  its type from context and is a compile-time error when nothing determines
-  it, exactly like `[]`.
+  in one literal is a compile-time error (`E0223`). The empty literal `{}` determines
+  its type from context and is a compile-time error (`E0216`) when nothing
+  determines it, exactly like `[]`.
 - **The typed form** `Map<K, V>{ key: value, … }` — keys are expressions of
   the hashable type `K` — constructs a value whose static type is exactly
   `Map<K, V>`; with no entries it constructs an empty map. It is written only
@@ -65,7 +65,7 @@ let ages = Map<Int, String>{ 30: "thirty" }     // typed form: keys are not iden
 
 - The key type `K` MUST be hashable. The hashable types are `String`, `Int`,
   `Float`, `Boolean`, and enum types whose variants carry no payload. Any
-  other key type is a compile-time error.
+  other key type is a compile-time error (`E0224`).
 - **Key identity.** Two keys that are `==` name the same entry. `Float` is
   the exception: IEEE-754 `NaN` never equals itself, yet every `NaN` key
   names one and the same entry — a write under one `NaN` key overwrites the
@@ -98,7 +98,7 @@ let table: Map<String, String> = { name: "x" }      // the annotation types it
 
 A `Set<T>` is an unordered collection of unique values: it contains each distinct value at most once.
 
-- The element type `T` MUST be hashable — the same set of types admitted as map keys: `String`, `Int`, `Float`, `Boolean`, and payload-free enums. Any other element type is a compile-time error. Element identity follows the key identity rule above: every `NaN` is one element of a `Set<Float>`.
+- The element type `T` MUST be hashable — the same set of types admitted as map keys: `String`, `Int`, `Float`, `Boolean`, and payload-free enums. Any other element type is a compile-time error (`E0225`). Element identity follows the key identity rule above: every `NaN` is one element of a `Set<Float>`.
 - The language defines no set literal: the brace syntax belongs to `Map` — `{}` is its empty literal — so sets are constructed with the prelude constructor and manipulated with the prelude set operations (see [`../builtins/prelude.md`](../builtins/prelude.md)).
 - A set has no order: the language specifies no iteration order for `Set<T>`, and programs MUST NOT depend on one.
 
@@ -119,10 +119,10 @@ bob.age = 26
 ```
 
 - Fields are declared as `name: type`. Construction uses named arguments: `User(name: "Alice", age: 30)`.
-- Every field whose type is not optional MUST be supplied at construction. A field of an optional type (`T?`) MAY be omitted, in which case its value is `null`.
+- Every field whose type is not optional MUST be supplied at construction (`E0205` otherwise). A field of an optional type (`T?`) MAY be omitted, in which case its value is `null`.
 - Structs are nominal. Two `struct` declarations with identical fields are still different types, and neither is assignable to the other. A `struct` type and a `Map` are likewise distinct: there is no implicit conversion in either direction.
-- Field access is written `u.name`. Assigning to a field requires the binding to be a mutable place (a `let mut` binding or a `mut` parameter); assigning through an immutable binding is a compile-time error.
-- Fields are private by default. A field marked `pub` is readable and writable from outside the module that declares the struct; reading, writing, or constructing a private field from another module is a compile-time error. A `pub struct` declaration is exported from its module (see [`../modules/README.md`](../modules/README.md)).
+- Field access is written `u.name`. Assigning to a field requires the binding to be a mutable place (a `let mut` binding or a `mut` parameter); assigning through an immutable binding is a compile-time error (`E0401`).
+- Fields are private by default. A field marked `pub` is readable and writable from outside the module that declares the struct; reading, writing, or constructing a private field from another module is a compile-time error (`E0602`). A `pub struct` declaration is exported from its module (see [`../modules/README.md`](../modules/README.md)).
 - Structs do not inherit: there is no base struct, no struct-to-struct subtyping, and no overriding. Shared behavior is attached with `impl` blocks and `trait` implementations (see [`../functions.md`](../functions.md) and [`traits.md`](traits.md)).
 - A struct MAY be generic: `struct Pair<A, B> { first: A, second: B }` declares `Pair<Int, String>` and friends (see [`generics.md`](generics.md)).
 
@@ -144,7 +144,7 @@ print(user?.email ?? "unknown")
 print(missing?.email ?? "unknown")
 ```
 
-- **Reading an optional.** A value of type `T?` MUST be checked or propagated before it is used where `T` is required. Using an optional where a non-optional type is expected — as a `String` operand of `+`, as a field of type `T`, as an argument of type `T` — is a compile-time error.
+- **Reading an optional.** A value of type `T?` MUST be checked or propagated before it is used where `T` is required. Using an optional where a non-optional type is expected — as a `String` operand of `+`, as a field of type `T`, as an argument of type `T` — is a compile-time error (`E0201`).
 - A comparison against `null` narrows a `T?` binding: in a branch guarded by `x != null`, the binding `x` has type `T`, and in the opposite branch it has type `Null`. The rule does not apply to `Unknown` — only a `match` type pattern narrows a value of that type (see [`primitive-types.md`](primitive-types.md)). The nullish operator `a ?? b` (operands of type `T?` and `U`) has type `T | U`.
 
 ```xulo
@@ -202,7 +202,7 @@ fn measure(x: Area & Scalable): Int { x.scale(2).area() }
 
 - An intersection of trait types — `Area & Scalable` — denotes a value that implements both traits. It is an intersection *type*, written wherever a type is expected; a generic *bound* is a different thing and is written with `+` (`<T: Area + Scalable>`), never with `&` (see [`generics.md`](generics.md) and [`traits.md`](traits.md)).
 - Intersections are insensitive to order and grouping: `T & U` and `U & T` are the same type, and `T & (U & V)` is the same type as `(T & U) & V`.
-- Any other combination — two nominal types, a nominal type and a trait, a `Map` or `List` and anything — is a compile-time error.
+- Any other combination — two nominal types, a nominal type and a trait, a `Map` or `List` and anything — is a compile-time error (`E0226`).
 - `&` binds tighter than `|`: `A & B | C` denotes `(A & B) | C`.
 
 ## Type aliases
@@ -218,7 +218,7 @@ type Wrapper<T> = List<T>
 
 - An alias is transparent: it denotes exactly the type on its right-hand side and introduces no new type. `User` and `Map<String, String | Int>` are the same type everywhere, and no `impl` block, method, or trait implementation may be declared *for an alias* — implementations attach to the underlying type (see [`traits.md`](traits.md)).
 - An alias MAY be generic: `Wrapper<T>` is used by application, `Wrapper<User>`, with the type argument inferred or written where types are written (see [`generics.md`](generics.md)).
-- An alias declaration that expands, through a chain of aliases, back to itself is a compile-time error (`type A = B` together with `type B = A`). Recursion that passes through a type constructor — `List<T>`, `Map<K, V>`, `Set<T>`, or `T?` — is not an alias cycle and is permitted: `type Json = Null | Boolean | Int | String | List<Json> | Map<String, Json>` is well-formed.
+- An alias declaration that expands, through a chain of aliases, back to itself is a compile-time error (`E0105`; `type A = B` together with `type B = A`). Recursion that passes through a type constructor — `List<T>`, `Map<K, V>`, `Set<T>`, or `T?` — is not an alias cycle and is permitted: `type Json = Null | Boolean | Int | String | List<Json> | Map<String, Json>` is well-formed.
 - An alias is a module-level declaration and MAY be exported with `pub` and imported with `import type` (see [`../modules/README.md`](../modules/README.md)).
 
 ## Tuples

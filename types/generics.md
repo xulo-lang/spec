@@ -81,7 +81,8 @@ Rules:
   equivalently `where T: Area + Scalable`. The parameter is admissible only if
   its type argument satisfies **every** bound.
 - A bound MUST name a `trait` visible at the declaration site; naming anything
-  else is a compile-time error (see [`../type-system/errors.md`](../type-system/errors.md)).
+  else is a compile-time error (`E0806`)
+  (see [`../type-system/errors.md`](../type-system/errors.md)).
 - A bound is a *constraint*, not a subtyping relation: `T` with bound `Area` does
   not thereby become a subtype of `Area`. Inside the body, values of type `T`
   expose the members declared by `Area`, and explicit dispatch through the bound

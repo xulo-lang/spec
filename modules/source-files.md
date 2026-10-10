@@ -120,9 +120,10 @@ async fn main() { … }       // asynchronous program: returns Task<Unit>
   denotes `Task<Unit>` or `Task<View>` as usual
   ([`../expressions/async-expressions.md`](../expressions/async-expressions.md)).
 - `main` MAY be marked `pub`.
-- A program whose entry module declares no `main` is rejected, and a `main`
-  with parameters or with any other return type is rejected; both are
-  diagnostics of the modules family ([`../type-system/errors.md`](../type-system/errors.md)).
+- A program whose entry module declares no `main` is `E0608`, and a `main`
+  with parameters or with any return type other than the two above is `E0609`;
+  both are modules-family diagnostics
+  ([`../type-system/errors.md`](../type-system/errors.md)).
 
 ## File scope vs block scope
 

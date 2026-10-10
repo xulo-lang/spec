@@ -5,7 +5,9 @@ description: Abstract syntax tree node definitions and data structures.
 
 ## Overview
 
-This document defines the abstract syntax tree (AST) representation for XULO programs. The schema is specified in TypeScript-style notation for clarity, but is language-agnostic.
+This document defines the abstract syntax tree (AST) representation for Xulo programs. The schema is specified in TypeScript-style notation for clarity, but is language-agnostic.
+
+Every construct named by [`grammar.md`](grammar.md) has a node here, and a node's shape mirrors the production it comes from: a field is `null` or an empty array exactly where the production makes its piece optional. Where the grammar names a construct but the AST has no node for it, the section says why.
 
 ## Node Base
 
@@ -18,24 +20,41 @@ interface BaseNode {
 }
 ```
 
+`type` is the discriminant: two nodes are the same kind of node exactly when their `type` strings are equal.
+
 ## Program
 
 ```typescript
 interface Program extends BaseNode {
   type: 'Program';
-  body: Declaration[];
+  imports: ImportDeclarationNode[];
+  body: DeclarationNode[];
 }
 ```
+
+This mirrors `Program = { ImportDecl } { Declaration } [ Entry ]`: imports first, then declarations. The grammar's `Entry` is not a separate node — the module's `main` is an ordinary `FnDeclaration` in `body`, and the entry-point signature rule is a checking rule ([`modules/source-files.md`](modules/source-files.md)).
 
 ## Declarations
 
 ```typescript
+type DeclarationNode =
+  | FnDeclaration
+  | StructDeclaration
+  | EnumDeclaration
+  | TraitDeclaration
+  | ImplDeclaration
+  | TypeAlias
+  | LetDeclaration
+  | ConstDeclaration
+  | PubUseDeclaration;
+
 interface FnDeclaration extends BaseNode {
   type: 'FnDeclaration';
-  isExport: boolean;
+  isPub: boolean;
   isAsync: boolean;
   name: IdentifierNode;
-  genericParams: IdentifierNode[];
+  genericParams: GenericParamNode[];
+  where: WhereItemNode[] | null;
   params: ParameterNode[];
   returnType: TypeNode | null;
   body: BlockNode;
@@ -43,25 +62,25 @@ interface FnDeclaration extends BaseNode {
 
 interface StructDeclaration extends BaseNode {
   type: 'StructDeclaration';
-  isExport: boolean;
   isPub: boolean;
   name: IdentifierNode;
-  genericParams: IdentifierNode[];
+  genericParams: GenericParamNode[];
   fields: FieldNode[];
 }
 
 interface EnumDeclaration extends BaseNode {
   type: 'EnumDeclaration';
-  isExport: boolean;
+  isPub: boolean;
   name: IdentifierNode;
-  genericParams: IdentifierNode[];
+  genericParams: GenericParamNode[];
   variants: EnumVariantNode[];
 }
 
 interface TraitDeclaration extends BaseNode {
   type: 'TraitDeclaration';
-  isExport: boolean;
+  isPub: boolean;
   name: IdentifierNode;
+  genericParams: GenericParamNode[];
   methods: TraitMethodNode[];
 }
 
@@ -75,8 +94,7 @@ interface TraitMethodNode extends BaseNode {
 
 interface ImplDeclaration extends BaseNode {
   type: 'ImplDeclaration';
-  isExport: boolean;
-  genericParams: IdentifierNode[];
+  genericParams: GenericParamNode[];
   traitName: IdentifierNode | null;
   targetType: TypeNode;
   methods: FnDeclaration[];
@@ -84,22 +102,166 @@ interface ImplDeclaration extends BaseNode {
 
 interface TypeAlias extends BaseNode {
   type: 'TypeAlias';
-  isExport: boolean;
+  isPub: boolean;
   name: IdentifierNode;
-  genericParams: IdentifierNode[];
+  genericParams: GenericParamNode[];
   initType: TypeNode;
 }
+
+interface LetDeclaration extends BaseNode {
+  type: 'LetDeclaration';
+  isPub: boolean;
+  isMutable: boolean;
+  isShared: boolean;
+  target: BindingTargetNode;
+  varType: TypeNode | null;
+  init: ExpressionNode;
+}
+
+interface ConstDeclaration extends BaseNode {
+  type: 'ConstDeclaration';
+  isPub: boolean;
+  name: IdentifierNode;
+  varType: TypeNode | null;
+  value: ExpressionNode;
+}
 ```
+
+- Visibility is written `pub` on every declaration that has it. There is no `export` keyword, so there is no `isExport` field and no export node ([`grammar.md`](grammar.md), [`modules/visibility.md`](modules/visibility.md)).
+- `impl` is never `pub` — it is never part of an interface — so `ImplDeclaration` carries no visibility flag at all.
+- `FnDeclaration.where` is the `where` clause as the list of items it holds, `null` when the clause is absent; only `FnDecl` takes one.
+- `LetDeclaration.isMutable` is `true` for `let mut x = e` and for `let x := e`, which means exactly the same thing. `isShared` is `true` only for the `shared` marker written before the initializer; it is never `true` on a `:=` binding or on a destructuring binding. `target` is a name or a destructuring target, and a destructuring target carries no type annotation, so `varType` is `null` for it.
+
+```typescript
+type BindingTargetNode = IdentifierNode | DestructuringTargetNode;
+
+interface DestructuringTargetNode extends BaseNode {
+  type: 'DestructuringTarget';
+  kind: 'struct' | 'tuple';
+  names: IdentifierNode[];
+}
+```
+
+### Component declarations
+
+`ComponentDecl = StateDecl | StoreDecl | EffectDecl | EnvironmentDecl` is a closed set of four `@` forms, not a general attribute syntax: `grammar.md` admits no other `@` declaration, so the AST has four dedicated nodes rather than an `Attribute` wrapper carrying a name and arguments.
+
+```typescript
+type ComponentDeclaration =
+  | StateDeclaration
+  | StoreDeclaration
+  | EffectDeclaration
+  | EnvironmentDeclaration;
+
+interface StateDeclaration extends BaseNode {
+  type: 'StateDeclaration';
+  name: IdentifierNode;
+  varType: TypeNode | null;
+  init: ExpressionNode;
+}
+
+interface StoreDeclaration extends BaseNode {
+  type: 'StoreDeclaration';
+  names: IdentifierNode[];
+  init: ExpressionNode;
+}
+
+interface EffectDeclaration extends BaseNode {
+  type: 'EffectDeclaration';
+  value: ExpressionNode;
+  dependencies: ExpressionNode | null;
+}
+
+interface EnvironmentDeclaration extends BaseNode {
+  type: 'EnvironmentDeclaration';
+  name: IdentifierNode;
+  varType: TypeNode;
+}
+```
+
+`EffectDeclaration.dependencies` is the optional expression written after the `,` — a list literal when the declaration is well-formed, and anything else when it is not, which is the shape `E0708` diagnoses. `EnvironmentDeclaration.varType` is required: the production takes no optional annotation, and a declaration written without one is `E0710`.
+
+### Imports and re-exports
+
+```typescript
+type ImportDeclarationNode =
+  | TypeImportDeclaration
+  | NamedImportDeclaration
+  | NamespaceImportDeclaration
+  | SideEffectImportDeclaration;
+
+interface TypeImportDeclaration extends BaseNode {
+  type: 'TypeImportDeclaration';
+  items: ImportItemNode[];
+  source: string;
+}
+
+interface NamedImportDeclaration extends BaseNode {
+  type: 'NamedImportDeclaration';
+  items: ImportItemNode[];
+  source: string;
+}
+
+interface NamespaceImportDeclaration extends BaseNode {
+  type: 'NamespaceImportDeclaration';
+  alias: IdentifierNode;
+  source: string;
+}
+
+interface SideEffectImportDeclaration extends BaseNode {
+  type: 'SideEffectImportDeclaration';
+  source: string;
+}
+
+interface ImportItemNode extends BaseNode {
+  type: 'ImportItem';
+  name: IdentifierNode;
+  alias: IdentifierNode | null;
+}
+
+interface PubUseDeclaration extends BaseNode {
+  type: 'PubUseDeclaration';
+  items: IdentifierNode[];
+  source: string | null;
+}
+```
+
+`ImportDecl` has four alternatives that differ in what they bind, so the AST gives each one a node instead of folding them into a single record with optional fields: a namespace import binds one name and no entries, a side-effect import binds nothing at all, and `type` marks the entries as type-only. `ImportItemNode.alias` is the local name written after `as`; it renames the local binding only. `PubUseDeclaration` is the re-export — `pub use { … } [from "…"]` — and there is no bare `use` form, so there is no `UseDeclaration` node.
 
 ## Parameters and Fields
 
 ```typescript
-interface ParameterNode extends BaseNode {
+type ParameterNode = ValueParameter | Receiver;
+
+interface ValueParameter extends BaseNode {
   type: 'Parameter';
   name: IdentifierNode;
+  mode: 'mut' | 'shared' | null;
   paramType: TypeNode;
-  isOptional: boolean;
   default: ExpressionNode | null;
+}
+
+interface Receiver extends BaseNode {
+  type: 'Receiver';
+  isMutable: boolean;
+}
+
+interface ClosureParamNode extends BaseNode {
+  type: 'ClosureParam';
+  name: IdentifierNode;
+  paramType: TypeNode | null;
+}
+
+interface GenericParamNode extends BaseNode {
+  type: 'GenericParam';
+  name: IdentifierNode;
+  bound: TypeNode | null;
+}
+
+interface WhereItemNode extends BaseNode {
+  type: 'WhereItem';
+  name: IdentifierNode;
+  bounds: TypeNode[];
 }
 
 interface FieldNode extends BaseNode {
@@ -112,9 +274,25 @@ interface FieldNode extends BaseNode {
 interface EnumVariantNode extends BaseNode {
   type: 'EnumVariant';
   name: IdentifierNode;
-  payload: TypeNode[];
+  payload: EnumPayloadSlotNode[];
+}
+
+interface EnumPayloadSlotNode extends BaseNode {
+  type: 'EnumPayloadSlot';
+  name: IdentifierNode | null;
+  slotType: TypeNode;
 }
 ```
+
+- A declared function's parameter is always annotated — `Parameter = Receiver | Identifier ":" [ "mut" | "shared" ] Type [ "=" Expression ]` — so `ValueParameter.paramType` is never `null`, and a parameter is optional exactly when it has a `default`. `mode` is `null` unless the type wrote `mut` or `shared`; the mode is part of the parameter, not of its type.
+- `Receiver` is the `self` / `mut self` alternative of `Parameter`; a parameter list that begins with one carries `Receiver` rather than a name and a type.
+- A closure's parameter is written `ClosureParam = Identifier [ ":" Type ]`, so its annotation may be omitted and `ClosureParamNode.paramType` is `null` in that case; the two parameter nodes are separate because the grammar gives the two forms separately.
+- `GenericParamNode.bound` is the `TraitBound` written after `:`, `null` when the parameter is unbounded. A bound joined with `+` is a list of types, as in `WhereItemNode.bounds`.
+- A variant with no payload has an empty `payload`. Each slot's `name` is `null`
+  for a positional payload and non-`null` for a named one, and a variant never
+  mixes the two forms: either every slot is named or none is
+  (`VariantPayload = "(" ( TypeList | NameTypeList ) ")"` in
+  [`grammar.md`](grammar.md), [`types/enums.md`](types/enums.md)).
 
 ## Types
 
@@ -125,6 +303,8 @@ type TypeNode =
   | OptionalType
   | UnionType
   | IntersectionType
+  | TupleType
+  | LiteralType
   | FnType;
 
 interface IdentifierType extends BaseNode {
@@ -155,13 +335,43 @@ interface IntersectionType extends BaseNode {
   right: TypeNode;
 }
 
+interface TupleType extends BaseNode {
+  type: 'TupleType';
+  elements: TypeNode[];
+}
+
+interface LiteralType extends BaseNode {
+  type: 'LiteralType';
+  value: NumberLiteral | StringLiteral | BooleanLiteral;
+}
+
 interface FnType extends BaseNode {
   type: 'FnType';
   isAsync: boolean;
-  params: TypeNode[];
+  params: FnTypeParamNode[];
   returnType: TypeNode | null;
 }
+
+interface FnTypeParamNode extends BaseNode {
+  type: 'FnTypeParam';
+  name: IdentifierNode | null;
+  mode: 'mut' | 'shared' | null;
+  paramType: TypeNode;
+}
 ```
+
+`UnionType` and `IntersectionType` are binary because the productions are
+left-nesting lists: `A | B | C` is `UnionType(UnionType(A, B), C)`. A tuple
+type needs at least two elements (`TupleType`), and `LiteralType` carries the
+literal it names — a string, integer, float, or boolean used as a type.
+
+A function-type parameter is written `FnTypeParam = [ Identifier ":" ] [
+"mut" | "shared" ] Type`. Both trailing fields are carried: `name` is `null`
+unless the type wrote one, and `mode` is `null` unless the type wrote `mut` or
+`shared`. The name is documentation — two function types that differ only in
+parameter names are the same type — but the mode is part of the type, so
+`fn(T): R`, `fn(mut T): R`, and `fn(shared T): R` are three distinct types
+([`types/function-types.md`](types/function-types.md)).
 
 ## Expressions
 
@@ -172,29 +382,62 @@ type ExpressionNode =
   | StringLiteral
   | BooleanLiteral
   | NullLiteral
+  | TemplateLiteralNode
   | BinaryExpr
+  | RangeExpr
   | IsExpr
   | UnaryExpr
+  | AwaitExpr
   | CallExpr
   | MemberExpr
   | IndexExpr
+  | PropagateExpr
   | TernaryExpr
   | IfExpr
   | MatchExpr
   | ClosureExpr
-  | AwaitExpr
   | PanicExpr
-  | PropagateExpr
   | ListExpr
   | MapExpr
-  | ComponentExpr
-  | TemplateLiteralNode;
+  | TupleExpr
+  | VariantPathExpr
+  | SpawnExpr
+  | LockExpr
+  | ComponentExpr;
+
+interface NumberLiteral extends BaseNode {
+  type: 'NumberLiteral';
+  kind: 'integer' | 'float';
+  raw: string;
+}
+
+interface StringLiteral extends BaseNode {
+  type: 'StringLiteral';
+  raw: string;
+  cooked: string;
+}
+
+interface BooleanLiteral extends BaseNode {
+  type: 'BooleanLiteral';
+  value: boolean;
+}
+
+interface NullLiteral extends BaseNode {
+  type: 'NullLiteral';
+}
 
 interface BinaryExpr extends BaseNode {
   type: 'BinaryExpr';
   op: string;
   left: ExpressionNode;
   right: ExpressionNode;
+}
+
+interface RangeExpr extends BaseNode {
+  type: 'RangeExpr';
+  op: '..' | '..<';
+  start: ExpressionNode;
+  end: ExpressionNode;
 }
 
 interface IsExpr extends BaseNode {
@@ -204,17 +447,53 @@ interface IsExpr extends BaseNode {
   negated: boolean;
 }
 
+interface UnaryExpr extends BaseNode {
+  type: 'UnaryExpr';
+  op: '!' | '-' | '~' | 'move' | 'copy';
+  argument: ExpressionNode;
+}
+
+interface AwaitExpr extends BaseNode {
+  type: 'AwaitExpr';
+  argument: ExpressionNode;
+}
+
 interface CallExpr extends BaseNode {
   type: 'CallExpr';
   callee: ExpressionNode;
-  args: ExpressionNode[];
+  args: ArgNode[];
 }
 
-interface ComponentExpr extends BaseNode {
-  type: 'ComponentExpr';
-  name: IdentifierNode;
-  args: ArgNode[];
-  body: BlockNode | null;
+interface MemberExpr extends BaseNode {
+  type: 'MemberExpr';
+  object: ExpressionNode;
+  property: IdentifierNode | NumberLiteral;
+  optional: boolean;
+}
+
+interface IndexExpr extends BaseNode {
+  type: 'IndexExpr';
+  object: ExpressionNode;
+  index: ExpressionNode;
+}
+
+interface PropagateExpr extends BaseNode {
+  type: 'PropagateExpr';
+  argument: ExpressionNode;
+}
+
+interface TernaryExpr extends BaseNode {
+  type: 'TernaryExpr';
+  test: ExpressionNode;
+  consequent: ExpressionNode;
+  alternate: ExpressionNode;
+}
+
+interface IfExpr extends BaseNode {
+  type: 'IfExpr';
+  condition: ExpressionNode;
+  consequent: BlockNode;
+  alternate: IfExpr | BlockNode | null;
 }
 
 interface MatchExpr extends BaseNode {
@@ -223,17 +502,18 @@ interface MatchExpr extends BaseNode {
   arms: MatchArmNode[];
 }
 
-interface ClosureExpr extends BaseNode {
-  type: 'ClosureExpr';
-  isAsync: boolean;
-  params: ParameterNode[];
-  returnType: TypeNode | null;
+interface MatchArmNode extends BaseNode {
+  type: 'MatchArm';
+  pattern: PatternNode;
   body: ExpressionNode | BlockNode;
 }
 
-interface AwaitExpr extends BaseNode {
-  type: 'AwaitExpr';
-  argument: ExpressionNode;
+interface ClosureExpr extends BaseNode {
+  type: 'ClosureExpr';
+  isAsync: boolean;
+  params: ClosureParamNode[];
+  returnType: TypeNode | null;
+  body: ExpressionNode | BlockNode;
 }
 
 interface PanicExpr extends BaseNode {
@@ -241,16 +521,75 @@ interface PanicExpr extends BaseNode {
   argument: ExpressionNode;
 }
 
-interface PropagateExpr extends BaseNode {
-  type: 'PropagateExpr';
-  argument: ExpressionNode;
+interface ListExpr extends BaseNode {
+  type: 'ListExpr';
+  elements: (ExpressionNode | SpreadNode)[];
 }
 
-interface IfExpr extends BaseNode {
-  type: 'IfExpr';
-  condition: ExpressionNode;
-  consequent: BlockNode;
-  alternate: IfExpr | BlockNode | null;
+type MapExpr = TypedMapExpr | BraceMapExpr;
+
+interface TypedMapExpr extends BaseNode {
+  type: 'TypedMapExpr';
+  keyType: TypeNode;
+  valueType: TypeNode;
+  entries: MapEntryNode[];
+}
+
+interface BraceMapExpr extends BaseNode {
+  type: 'BraceMapExpr';
+  entries: (MapEntryNode | MapFieldNode | SpreadNode)[];
+}
+
+interface MapEntryNode extends BaseNode {
+  type: 'MapEntry';
+  key: ExpressionNode;
+  value: ExpressionNode;
+}
+
+interface MapFieldNode extends BaseNode {
+  type: 'MapField';
+  name: IdentifierNode;
+  value: ExpressionNode;
+}
+
+interface TupleExpr extends BaseNode {
+  type: 'TupleExpr';
+  elements: ExpressionNode[];
+}
+
+interface VariantPathExpr extends BaseNode {
+  type: 'VariantPathExpr';
+  enumName: IdentifierNode;
+  variantName: IdentifierNode;
+  args: ArgNode[] | null;
+}
+
+type SpawnExpr = BlockSpawnExpr | ServiceSpawnExpr;
+
+interface BlockSpawnExpr extends BaseNode {
+  type: 'BlockSpawnExpr';
+  mode: 'default' | 'thread' | 'process' | 'on';
+  on: ExpressionNode | null;
+  body: BlockNode;
+}
+
+interface ServiceSpawnExpr extends BaseNode {
+  type: 'ServiceSpawnExpr';
+  service: TypeNode;
+  fields: FieldInitNode[];
+}
+
+interface LockExpr extends BaseNode {
+  type: 'LockExpr';
+  target: IdentifierNode;
+  body: BlockNode;
+}
+
+interface ComponentExpr extends BaseNode {
+  type: 'ComponentExpr';
+  name: IdentifierNode;
+  args: ArgNode[];
+  children: ComponentBlockNode | null;
 }
 
 interface TemplateLiteralNode extends BaseNode {
@@ -269,22 +608,116 @@ interface TemplateElementNode extends BaseNode {
 }
 ```
 
+- `BinaryExpr.op` is the operator as written, and the node covers every level of the precedence table that takes two expressions: arithmetic, the word operators `and` / `or`, bitwise and shift, `==` / `!=`, the relational operators, and the nullish `??`. `is` is not one of them — it takes a type on the right, which is why it is `IsExpr` — and neither is a range, which is `RangeExpr` with `op` naming which end is open.
+- `UnaryExpr.op` covers the prefix operators that are not `await`: `await` has its own node because it is the only one whose operand must be a `Task`.
+- `MemberExpr.optional` distinguishes `.` from `?.`. The property is a name or an integer literal, since the production admits both.
+- `MapExpr` is a union because `Map<K, V>{ … }` and a brace map take different pieces: a typed map has type arguments and entries only, while a brace map has fields, entries written as `key: value`, and spreads.
+- `SpawnExpr` is a union because `SpawnExpression` has two unrelated forms: `spawn [mode] async Block` runs a block, and `spawn .process Type { … }` starts a service. `BlockSpawnExpr.mode` is `default` when the target is written bare, and `on` is the only mode that carries an expression.
+- `LockExpr.target` is a bare identifier, matching `LockExpression = "lock" Identifier Block`.
+- A component invocation that carries a children block is a `ComponentExpr`; one written with an argument list and no block parses as an ordinary call through `PostfixOperand` and is therefore a `CallExpr`. The two read the same ([`grammar.md`](grammar.md), [`components/view-syntax.md`](components/view-syntax.md)).
+- The union has no node for `AssignmentExpression`: an assignment is written only through the `Assignment` statement, and `ExpressionStatement = TernaryExpression` stops below it ([`grammar.md`](grammar.md)).
+
+## Patterns
+
+```typescript
+type PatternNode =
+  | WildcardPattern
+  | IdentifierPattern
+  | LiteralPattern
+  | RangePattern
+  | VariantPattern
+  | StructPattern
+  | TypePattern;
+
+interface WildcardPattern extends BaseNode {
+  type: 'WildcardPattern';
+}
+
+interface IdentifierPattern extends BaseNode {
+  type: 'IdentifierPattern';
+  name: IdentifierNode;
+}
+
+interface LiteralPattern extends BaseNode {
+  type: 'LiteralPattern';
+  value: NumberLiteral | StringLiteral | BooleanLiteral | NullLiteral;
+}
+
+interface RangePattern extends BaseNode {
+  type: 'RangePattern';
+  start: NumberLiteral;
+  end: NumberLiteral;
+  endInclusive: boolean;
+}
+
+interface VariantPattern extends BaseNode {
+  type: 'VariantPattern';
+  enumName: IdentifierNode;
+  variantName: IdentifierNode;
+  bindings: PatternNode[] | null;
+}
+
+interface StructPattern extends BaseNode {
+  type: 'StructPattern';
+  name: IdentifierNode;
+  bindings: PatternNode[] | null;
+}
+
+interface TypePattern extends BaseNode {
+  type: 'TypePattern';
+  designators: PatternDesignatorNode[];
+  binder: IdentifierNode | WildcardPattern;
+}
+
+interface PatternDesignatorNode extends BaseNode {
+  type: 'PatternDesignator';
+  name: IdentifierNode;
+  optional: boolean;
+}
+```
+
+`Pattern = "_" | LiteralPattern | RangePattern | VariantPattern | StructPattern | TypePattern | Identifier` gives seven alternatives, and the wildcard is one of them even though it lexes as an identifier: `_` is `WildcardPattern`, any other bare identifier is `IdentifierPattern`, which binds. `RangePattern.endInclusive` records `...` versus `..<`, and both operands are numeric literals, matching the production. `bindings` is `null` when the pattern writes no parentheses and an array otherwise; there are no OR-patterns and no guards, so a pattern never holds a list of alternatives.
+
+`TypePattern.binder` is the name or `_` that follows the designators, and `designators` is the possibly unioned list of type names, each with the `optional` flag its `?` carries.
+
 ## Statements
 
 ```typescript
 type StatementNode =
-  | VariableDecl
+  | FnDeclaration
+  | LetDeclaration
+  | ConstDeclaration
+  | ComponentDeclaration
   | ReturnStatement
+  | BreakStatement
+  | ContinueStatement
+  | AssignmentNode
   | ExpressionStatement
   | ForStatement
   | WhileStatement;
 
-interface VariableDecl extends BaseNode {
-  type: 'VariableDecl';
-  isMutable: boolean;
-  name: IdentifierNode;
-  varType: TypeNode | null;
-  init: ExpressionNode;
+interface ReturnStatement extends BaseNode {
+  type: 'ReturnStatement';
+  argument: ExpressionNode | null;
+}
+
+interface BreakStatement extends BaseNode {
+  type: 'BreakStatement';
+}
+
+interface ContinueStatement extends BaseNode {
+  type: 'ContinueStatement';
+}
+
+interface AssignmentNode extends BaseNode {
+  type: 'Assignment';
+  target: PlaceNode;
+  value: ExpressionNode;
+}
+
+interface ExpressionStatement extends BaseNode {
+  type: 'ExpressionStatement';
+  expression: ExpressionNode;
 }
 
 interface ForStatement extends BaseNode {
@@ -301,6 +734,8 @@ interface WhileStatement extends BaseNode {
 }
 ```
 
+`Statement = ( FnDecl | LetDecl | ConstDecl | ComponentDecl | ReturnStmt | BreakStmt | ContinueStmt | Assignment | ExpressionStatement | ForStmt | WhileStmt ) StatementEnd`. A `Block` is not one of them — a block is the body of a construct, never a statement — and the trailing `;` is an optional terminator the AST does not store, since `span` already covers it. `AssignmentNode.target` is a `PlaceNode`, not a general expression, which is what makes an assignment a statement rather than an expression.
+
 ## Common Nodes
 
 ```typescript
@@ -314,54 +749,61 @@ interface BlockNode extends BaseNode {
   body: StatementNode[];
 }
 
-interface NamedArgNode extends BaseNode {
-  type: 'NamedArg';
-  name: IdentifierNode;
-  value: ExpressionNode;
+interface ComponentBlockNode extends BaseNode {
+  type: 'ComponentBlock';
+  children: ChildItemNode[];
 }
+
+type ChildItemNode = ExpressionNode | ForStatement;
 
 interface ArgNode extends BaseNode {
   type: 'Arg';
   name: IdentifierNode | null;
+  value: ExpressionNode | BindingExprNode;
+}
+
+interface BindingExprNode extends BaseNode {
+  type: 'BindingExpr';
+  place: PlaceNode;
+}
+
+type PlaceNode = IdentifierNode | MemberPlaceNode;
+
+interface MemberPlaceNode extends BaseNode {
+  type: 'MemberPlace';
+  object: PlaceNode;
+  property: IdentifierNode | NumberLiteral;
+}
+
+interface SpreadNode extends BaseNode {
+  type: 'Spread';
+  argument: ExpressionNode;
+}
+
+interface FieldInitNode extends BaseNode {
+  type: 'FieldInit';
+  name: IdentifierNode;
   value: ExpressionNode;
-}
-
-interface AttributeNode extends BaseNode {
-  type: 'Attribute';
-  name: IdentifierNode;
-  args: ArgNode[];
-}
-
-interface ExportDeclaration extends BaseNode {
-  type: 'ExportDeclaration';
-  items: ExportItemNode[];
-  source: string | null;
-}
-
-interface ExportItemNode extends BaseNode {
-  type: 'ExportItem';
-  name: IdentifierNode;
-  alias: IdentifierNode | null;
-}
-
-interface ImportDeclaration extends BaseNode {
-  type: 'ImportDeclaration';
-  items: ImportItemNode[];
-  source: string;
-}
-
-interface ImportItemNode extends BaseNode {
-  type: 'ImportItem';
-  name: IdentifierNode;
-  alias: IdentifierNode | null;
-}
-
-interface UseDeclaration extends BaseNode {
-  type: 'UseDeclaration';
-  path: IdentifierNode[];
 }
 ```
 
+`BlockNode` holds statements and is the body of a function, an `if`, a `for`,
+or a `while`. A component's children block is a different node:
+`ComponentBlock = "{" { ChildItem } "}"` with `ChildItem = Expression |
+ForStmt`, so its `children` are child items and never statements, bindings, or
+assignments ([`grammar.md`](grammar.md),
+[`components/view-syntax.md`](components/view-syntax.md)).
+
+`ArgNode.name` is the argument label, `null` when the argument is positional.
+Its `value` is an expression, or — when the argument is written `$place` — a
+`BindingExprNode`, which is not an expression: a `$` argument does not evaluate
+to something a program may bind, store, index, or pass on, and its `place` is
+the `Place` the grammar accepts there, so a dotted place such as `user.name`
+is representable and is rejected by the checker as `E0712`
+([`components/binding.md`](components/binding.md)).
+
+`PlaceNode` mirrors `Place = Identifier | Place "." Identifier | Place "." IntegerLiteral`, so it is never a general expression; it is what an assignment target and a `$` place are made of.
+
 ## Serialization Format
 
-AST nodes **SHALL** be serializable to JSON. The `span` field records zero-based character offsets `(start, end)` in the source file.
+AST nodes **SHALL** be serializable to JSON. The `span` field records zero-based character offsets `(start, end)` in the source file. A union is serialized as the value of its `type` field together with the fields that node declares; a `null` field means the production left the piece out, and an empty array means it repeated zero times.

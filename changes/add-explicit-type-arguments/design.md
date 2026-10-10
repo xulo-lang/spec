@@ -5,7 +5,7 @@ arguments, the design chosen, and the consequences that choice carries: how
 `<` is told apart from the relational operator, how written type arguments are
 checked, how they interact with inference, and what the grammar and the
 diagnostics become. The prose that replaces the chapter text is in
-[specs/generics.md](specs/generics.md); the motivation and the scope are in
+[specs/](specs/); the motivation and the scope are in
 [proposal.md](proposal.md).
 
 ## Syntax alternatives considered
@@ -157,22 +157,31 @@ let b = describe<Square>(s)        // error[E0801]: `Square` has no `Area` impl
 
 ## Grammar delta
 
-The call production gains an optional type-argument list between the callee
-and the argument list:
+`grammar.md` has no `Call` nonterminal: a call is the `PostfixOperand`
+alternative that begins with `(`. It also already uses `TypeArgs` for the
+argument list of a named type, and that production requires at least one
+element, so the change introduces a separate `CallTypeArgs` that admits the
+empty list, and attaches it to both places a call is written:
 
 ```text
-Call         = Callee [ TypeArgs ] '(' [ ArgumentList ] ')' ;
-TypeArgs     = '<' [ TypeList ] '>' ;
-TypeList     = Type ( ',' Type )* ','? ;
+PostfixOperand = [ CallTypeArgs ] "(" [ ArgumentList ] ")"
+               | "[" Expression "]"
+               | "." ( Identifier | IntegerLiteral )
+               | "?." ( Identifier | IntegerLiteral )
+               | "?" ;
+CallTypeArgs   = "<" [ TypeList ] ">" ;
+
+ComponentCall  = Identifier [ CallTypeArgs ] "(" [ ArgumentList ] ")" ComponentBlock
+               | Identifier ComponentBlock ;
 ```
 
-**Ambiguity note.** `TypeArgs` is recognized only when `<` immediately
+**Ambiguity note.** `CallTypeArgs` is recognized only when `<` immediately
 follows an identifier in call position and the disambiguation rule above
 holds; everywhere else `<` is the relational operator. The spacing rule for
-adjacent closing angle brackets applies to `TypeArgs` as it applies to every
-other generic argument list, so `first<Map<string, int> >(m)` is well-formed
-and `first<Map<string, int>>(m)` is not. Component calls, method calls, and
-calls through a generic namespace member share the production.
+adjacent closing angle brackets applies to `CallTypeArgs` as it applies to
+every other generic argument list, so `first<Map<string, int> >(m)` is
+well-formed and `first<Map<string, int>>(m)` is not. Component calls, method
+calls, and calls through a generic namespace member share the production.
 
 ## Diagnostics
 
@@ -219,9 +228,11 @@ The chapters named in [proposal.md](proposal.md), and what each gains:
 | Chapter | Change |
 |---------|--------|
 | [`../../types/generics.md`](../../types/generics.md) | the inference rules gain the optional written list; see [specs/generics.md](specs/generics.md) |
-| [`../../expressions/calls.md`](../../expressions/calls.md) | the `Call` production and the generic-call paragraph |
-| [`../../type-system/checking-rules.md`](../../type-system/checking-rules.md) | the call and bounds rules gain arity, substitution, and the two new codes |
-| `grammar.md` | the `Call` production and the ambiguity note |
+| [`../../expressions/calls.md`](../../expressions/calls.md) | the generic-call paragraph: the written list and the rule that decides what `<` starts; see [specs/calls.md](specs/calls.md) |
+| [`../../type-system/checking-rules.md`](../../type-system/checking-rules.md) | a declaration rule for the written list, and the propagation step; see [specs/checking-rules.md](specs/checking-rules.md) |
+| [`../../functions.md`](../../functions.md) | the **Call-site inference** bullet becomes **Call-site type arguments**; see [specs/functions.md](specs/functions.md) |
+| [`../../types/README.md`](../../types/README.md) | the inference-at-a-glance bullet; see [specs/types-README.md](specs/types-README.md) |
+| `grammar.md` | `PostfixOperand`, `ComponentCall`, the `CallTypeArgs` rule, and the index; see [specs/grammar.md](specs/grammar.md) |
 
 The change touches no part of `modules/`, `components/`, or the async
 expression layer: imports and visibility, component invocation and `$`

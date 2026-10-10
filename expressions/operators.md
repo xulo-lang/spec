@@ -27,7 +27,7 @@ Levels are listed from loosest to tightest binding.
 | additive | `+` `-` | left |
 | multiplicative | `*` `/` `%` | left |
 | power | `**` | right |
-| unary | `!` `-` `~` `await` | prefix |
+| unary | `!` `-` `~` `await` `move` `copy` | prefix |
 | postfix | `f(x)` `x[i]` `x.y` `x.0` `x?.y` `x?.0` `x?` | left |
 
 Prefix spread `...expr` exists only inside list and map literals; it is not
@@ -50,7 +50,7 @@ x = x + 1
 The target MUST be a place expression, and that place MUST be backed by a
 `mut` binding or by a mutable field or borrow (see
 [`../memory-and-runtime.md`](../memory-and-runtime.md)). Assigning to anything
-else is a compile-time error. The right-hand side is evaluated before the
+else is a compile-time error (`E0401`). The right-hand side is evaluated before the
 place is written, and the result of an assignment expression is `Unit`.
 Assignment is right-associative, so `a = b = c` groups as `a = (b = c)`; since
 each assignment yields `Unit`, chaining is well-formed only where `Unit` is an
@@ -105,7 +105,7 @@ its left operand is `true`. Both operands MUST have type `Boolean`, and the
 result is `Boolean`. `!` takes a `Boolean` and yields its negation.
 
 Truthiness does not exist. No value of any other type is accepted where a
-`Boolean` is required, so `x and y` with `x: Int` is a compile-time error;
+`Boolean` is required, so `x and y` with `x: Int` is a compile-time error (`E0201`);
 write an explicit comparison instead, such as `x != 0 and y`.
 
 ## Nullish coalescing
@@ -142,8 +142,8 @@ Equality is structural for all value types: primitives (`Boolean`, `String`,
 named `struct`s, and `enum`s — for an `enum`, the variant
 and every payload value are compared; for a tuple, the arities must be equal
 and every pair of elements is compared, so different arities are a
-compile-time error rather than `false`. Both operands MUST have a common
-type; comparing unrelated types is a compile-time error, so Xulo has no
+  compile-time error (`E0211`) rather than `false`. Both operands MUST have a common
+  type; comparing unrelated types is a compile-time error (`E0211`), so Xulo has no
 cross-type equality. `null == null` is `true`, and comparing `null` with a
 value requires that value's type to be optional. Values that carry identity —
 rather than structural content — are compared by identity, as defined in
@@ -228,7 +228,7 @@ let half = -x
 ```
 
 - Integer division truncates toward zero: `-7 / 2` is `-3`.
-- Division or remainder by zero is a compile-time error when the operands are
+- Division or remainder by zero is a compile-time error (`E0210`) when the operands are
   constants, and a runtime trap otherwise.
 - `%` takes the sign of the dividend: `-7 % 2` is `-1` and `7 % -2` is `1`.
 - `**` is right-associative and binds tighter than `*`: `2 ** 3 ** 2` is
@@ -255,7 +255,7 @@ let all = head + tail
 
 `String + String` yields `String`. `List<T> + List<U>` yields a list whose
 element type is the common type of `T` and `U` — for equal element types, that
-type. Mixing a `String` with any non-string is a compile-time error: convert
+type. Mixing a `String` with any non-string is a compile-time error (`E0227`): convert
 explicitly with the intrinsic `str(x)` first (see
 [`../builtins/intrinsic-functions.md`](../builtins/intrinsic-functions.md)).
 There is no implicit conversion anywhere in the language.
@@ -328,10 +328,17 @@ later occurrence wins. See [`literals.md`](literals.md).
 | `-` | numeric (`Int`, `Float`, fixed-bit) | the operand's type |
 | `~` | integer (`Int` or fixed-bit) | the operand's type |
 | `await` | `Task<T>` | `T` |
+| `move` | a path naming a binding | the operand's type |
+| `copy` | any expression | the operand's type |
 
-All four are prefix operators at the `unary` precedence level, below every
+All six are prefix operators at the `unary` precedence level, below every
 postfix operator: `!x.y` is `!(x.y)`. `await` is legal only inside an `async`
 body and is specified in [`async-expressions.md`](async-expressions.md).
+`move` and `copy` are accepted in exactly three positions — the initializer of
+a `let`, an argument of a call, and the operand of `return` — and anywhere else,
+or applied to anything that is not a binding path, is a compile-time error
+(`E0403`); their ownership semantics are specified in
+[`../memory-and-runtime.md`](../memory-and-runtime.md).
 
 ## Parenthesized expressions
 

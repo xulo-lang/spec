@@ -71,7 +71,7 @@ the return rule:
   unless a `return` statement executes first;
 - a body whose final expression has type `Unit` returns `Unit`;
 - when the function declares a return type, the final expression MUST have
-  that type; a mismatch is a compile-time error
+  that type; a mismatch is a compile-time error (`E0203`)
   ([`../type-system/errors.md`](../type-system/errors.md)).
 
 ## `return`
@@ -89,11 +89,11 @@ fn log(message: String) {
 
 - The form is `return expr` or `return`.
 - The type of `expr` MUST match the declared return type of the enclosing
-  function; a mismatch is a compile-time error.
+  function; a mismatch is a compile-time error (`E0203`).
 - `return` without an expression is valid **only** when the declared return
   type is `Unit`. Writing a bare `return` in a function that declares any
   other return type is an error.
-- `return` outside a function or closure body is a compile-time error.
+- `return` outside a function or closure body is a compile-time error (`E0214`).
 - `return` MAY appear inside a final expression. When the executed branch
   runs it, the function returns immediately; the rest of the enclosing
   expression is not evaluated:

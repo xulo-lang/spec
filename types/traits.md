@@ -97,6 +97,13 @@ Rules:
   trait does not import any `impl`; a module that needs an implementation
   declares it locally. Two implementations of the same trait for the same type
   MUST NOT be declared in the same module.
+- That single-module rule is the whole of the uniqueness rule. A program MAY
+  contain several implementations of one trait for one type, one in each module
+  that declared one, and `E0805` is raised only when the two live in the same
+  module ([`../type-system/errors.md`](../type-system/errors.md)). A call site
+  sees the implementations of its own module alone, so no concrete call ever
+  has two candidates drawn from two modules, and "exactly one implementation"
+  below is always a statement about one module's view.
 
 ## Dispatch
 
@@ -167,6 +174,19 @@ The language rule for calls that depend on a type parameter is:
   type arguments.
 - Consequently, a bound is checked once per instantiation, at the call site
   that selects the type argument, and every call inside the body is then fixed.
+- **Which implementation a bound uses.** The implementation that satisfies a
+  bound is the one visible at the point that selects the type argument, and it
+  travels with the bound into the generic body: every bound-resolved call
+  there — `Area.area(value)` or `value.area()` alike — uses that same
+  implementation for that instantiation. The module in which the generic was
+  declared takes no part in the choice, so a generic written in a module that
+  declares no implementation for the trait is usable wherever an instantiation
+  point supplies one. Two instantiations of the same generic with the same type
+  argument at call sites in different modules MAY therefore use two different
+  implementations; that is the direct consequence of module-scoped `impl`s and
+  is specified behavior, not an ambiguity. An explicit `Trait.method(x)` on a
+  value whose type is already concrete, written outside a generic body,
+  continues to use the implementation visible at that call site.
 
 ## Structural vs nominal
 
@@ -184,7 +204,8 @@ The language rule for calls that depend on a type parameter is:
   [`composite-types.md`](composite-types.md)).
 - `ToString` is a built-in trait. A value interpolated in a template literal
   `` `…${expr}…` `` must be a base type (`Int`, `Float`, `Boolean`, `String`) or
-  implement `ToString`; other types are a compile-time error in that position.
+  implement `ToString`; other types are a compile-time error in that position
+  (`E0212`).
 
   ```xulo
   struct User { name: String, age: Int }

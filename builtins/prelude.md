@@ -72,7 +72,7 @@ Members are selected with `.`, exactly like fields and methods:
 
 A module-scope declaration — `fn`, `struct`, `enum`, `trait`, `type`, `let`,
 `let mut`, or `const` — MUST NOT bear any of the names below. Declaring one is
-a compile-time error reported under the diagnostic category for reserved names
+a compile-time error (`E0106`) reported under the diagnostic category for reserved names
 in [`../type-system/errors.md`](../type-system/errors.md).
 
 | Category | Names |
@@ -126,7 +126,7 @@ print(user["name"])                  // lyy
   ([`../types/composite-types.md`](../types/composite-types.md)).
 - `map_remove` mutates its first argument, so that argument MUST be a mutable
   place — a `let mut` binding or a `mut` parameter; passing anything else is a
-  compile-time error.
+  compile-time error (`E0401`).
 
 ### Set operations
 
@@ -165,8 +165,8 @@ iteration are core syntax
 ## Shadowing
 
 - **Module scope.** A module-scope declaration MUST NOT bear a reserved name
-  ([Reserved names](#reserved-names)); redeclaring one is a compile-time error,
-  not a shadowing.
+  ([Reserved names](#reserved-names)); redeclaring one is a compile-time error
+  (`E0106`), not a shadowing.
 - **Inner scopes.** An inner-scope `let`, `let mut`, `const`, or parameter MAY
   shadow a prelude operation or an intrinsic name. From its declaration to the
   end of the enclosing scope the name denotes that binding alone, so a call
@@ -185,7 +185,7 @@ iteration are core syntax
   type from its declaration to the end of the enclosing scope. Within that
   scope the name in a type position — an annotation, a type argument, a bound —
   resolves to the binding, which does not denote a type, so the use is a
-  compile-time error ([`../names.md`](../names.md)). Shadowing therefore never
+  compile-time error (`E0101`) ([`../names.md`](../names.md)). Shadowing therefore never
   redefines a built-in type and never changes what a type position denotes: it
   only makes the built-in type unavailable there, which is why a scope that
   needs `List<T>` in type position MUST NOT shadow `List`.

@@ -38,7 +38,7 @@ if condition {
 ```
 
 - The condition MUST have type `Boolean`. There is no truthiness: any other
-  condition type is a compile-time error
+  condition type is a compile-time error (`E0201`)
   ([`checking-rules.md`](../type-system/checking-rules.md)).
 - `else if` is not a separate construct: it is an `if` used as the `else`
   branch and may be chained without limit.
@@ -66,7 +66,7 @@ if condition {
 - `if` is an expression. Its type is determined as follows:
   - with an `else` branch: both branches MUST have a common type
     ([`checking-rules.md`](../type-system/checking-rules.md)) and the `if` has
-    that common type; branches with no common type are a compile-time error
+    that common type; branches with no common type are a compile-time error (`E0211`)
     ([`errors.md`](../type-system/errors.md));
   - without an `else` branch: the type is `Unit`, and the value of the then
     branch, if any, is discarded. In particular, such an `if` cannot supply a
@@ -126,7 +126,7 @@ let label = match x {
   separated by newlines or optional commas.
 - `match` is an expression. In expression position all arm bodies MUST have a
   common type ([`checking-rules.md`](../type-system/checking-rules.md)); arms
-  with no common type are a compile-time error
+  with no common type are a compile-time error (`E0211`)
   ([`errors.md`](../type-system/errors.md)). In statement position the rule
   quoted in the introduction applies and the arm values are discarded.
 
@@ -175,7 +175,7 @@ match score {          // statement position: the arm values are discarded
   argument list (`List<Int>`, `Map<String, Int>`) and a type parameter may
   never appear in a pattern, and any other type — a `List`, a `Map`, a
   function type, a generic instantiation — is not testable; a pattern naming
-  one is a compile-time error
+  one is a compile-time error (`E0303`)
   ([`../type-system/errors.md`](../type-system/errors.md)).
 - The written type MUST be assignable to the scrutinee's type after alias
   expansion: `Int i` fits a scrutinee of type `Int` or `String | Int`, but not
@@ -186,7 +186,7 @@ match score {          // statement position: the arm values are discarded
   with `let (a, b) = p` first, and `match` on those
   ([`../types/composite-types.md`](../types/composite-types.md)).
 - Every pattern MUST be compatible with the type of the scrutinee; otherwise the
-  `match` is a compile-time error.
+  `match` is a compile-time error (`E0303`).
 
 ```xulo
 struct Point { x: Int, y: Int }
@@ -236,7 +236,7 @@ fn name(v: Unknown): String {
   pattern can cover only a testable type exactly — in particular `List<Int>`,
   a `Map`, and `Unknown` need one, and `Unknown` is exhausted only by an exact
   `Unknown` pattern or a covering arm, never by enumerating concrete types.
-- A `match` that fails these requirements is a compile-time error
+- A `match` that fails these requirements is a compile-time error (`E0301`)
   ([`errors.md`](../type-system/errors.md)).
 - An arm that can never be selected is an error. In particular, every arm
   after a wildcard or binding arm is unreachable, a literal that repeats an
@@ -278,7 +278,7 @@ for item in items {
   begun do not affect the iteration in progress: the elements to be visited are
   fixed when the loop begins.
 - The iterable type MUST be one of the following; any other type is a
-  compile-time error ([`errors.md`](../type-system/errors.md)).
+  compile-time error (`E0213`) ([`errors.md`](../type-system/errors.md)).
 
 | Iterable type | Loop binding | Iteration order |
 |---------------|--------------|-----------------|
@@ -361,7 +361,7 @@ while count < 10 {
 - `break` MUST NOT carry a value. There is no `loop` expression and no loop
   labels, so both statements always target the innermost enclosing loop.
 - `break` or `continue` outside a loop, or inside a function or closure body
-  nested within a loop, is a compile-time error
+  nested within a loop, is a compile-time error (`E0214`)
   ([`errors.md`](../type-system/errors.md)).
 
 ```xulo

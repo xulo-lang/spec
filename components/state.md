@@ -40,7 +40,7 @@ fn Counter(): View {
 - `@State` bindings are **implicitly mutable**: unlike an ordinary `let`, they
   MAY be assigned, and they are assigned in exactly the same way — `count =
   count + 1` in the body or in a handler created there. The ordinary rule that
-  assigning to a non-`mut` binding is a compile-time error
+  assigning to a non-`mut` binding is a compile-time error (`E0401`)
   ([`../statements/let-and-assignment.md`](../statements/let-and-assignment.md))
   applies to every binding except one introduced by `@State`, whose purpose is
   to be written. No `mut` is written, and there is no form `@State let mut`.
@@ -104,6 +104,19 @@ declarations addresses one cell of that instance. A run of the component
 re-associates the declarations with the cells of the instance being run; a run
 of a different instance addresses that instance's cells.
 
+- **Inside a `for`, the position is the loop index.** A component produced by a
+  `for` is identified by its index among the children that pass produced, not
+  by the element the iteration variable was bound from. Inserting, removing, or
+  reordering list elements therefore moves instances across state: after an
+  insertion at the head, the element that was at index `i` is rendered at index
+  `i + 1` and takes the cell that belonged to index `i`, and an element removed
+  from the middle hands its cell to its successor. The language has no keyed
+  form of child identity, so a program that must keep state with an element
+  rather than with a position holds that state where identity is the element's
+  own — in the `@State` of an ancestor, or in a `@Store` — and passes it down
+  as an ordinary argument
+  ([`binding.md`](binding.md)).
+
 ## `@Store`
 
 `@Store` declares bindings that read a program-wide store. Its form is a
@@ -146,7 +159,7 @@ fn Home(): View {
 `@State`, `@Store`, `@Effect`, and `@Environment` are valid **only** at the top
 level of a component body — as a direct item of the body of a function whose
 declared return type is `View`. This rule is normative and has no exceptions;
-violating it is a compile-time error
+violating it is a compile-time error (`E0701`)
 ([`../type-system/errors.md`](../type-system/errors.md)).
 
 ```xulo

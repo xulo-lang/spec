@@ -175,14 +175,14 @@ asks, and two different specifiers MAY name the same module — they are then
 two ways of reaching one module, which is checked once.
 
 Resolution failures — a specifier that resolves to nothing, to a path that is
-not a file, or to more than one candidate — are compile-time errors.
+not a file, or to more than one candidate — are compile-time errors (`E0607`).
 
 ## Cycles
 
 The dependency graph has one edge for each `import` and each
 `pub use { … } from "…"`. A cycle in this graph — direct (`a` imports `a`),
 of length two (`a` imports `b`, `b` imports `a`), or longer — is a
-compile-time error, and the error MUST name the cycle path in order, for
+compile-time error (`E0603`), and the error MUST name the cycle path in order, for
 example `a.xulo → b.xulo → a.xulo`. Detection is specified in
 [visibility.md](visibility.md); the reason is the same: a cycle has no
 topological initialization order.
@@ -204,8 +204,8 @@ binding exists for the checker and is erased everywhere else.
   failure, because no binding exists to be read.
 
 An ordinary (non-`type`) import of a name that is used only in type positions
-is legal as well; it simply creates a value binding that the program happens
-not to read.
+is legal as well; it simply creates a value binding even though the program
+needs only the name, never the value.
 
 ## Name collisions
 
@@ -236,6 +236,33 @@ own importers cannot reach `add` through it. Only `pub` declarations and
 exported may be re-exported. The full rules, including how a private name is
 protected through every route, are in [visibility.md](visibility.md).
 
+## Unused imports
+
+An imported name that this module never uses is reported as `W0102`, at the
+import that binds it. A warning never rejects a program
+([`../type-system/errors.md`](../type-system/errors.md)).
+
+- An import is **used** when its local binding is read anywhere in the module
+  — in a value position (called, passed, read through `.`) or in a type
+  position (an annotation, a type argument, a bound, a return type, or the
+  base of an enum-variant path). A type-only import used only in annotations
+  is used.
+- An import re-exported by `pub use` is used: the re-export puts the name in
+  this module's interface, for the same reason a `pub` declaration and a
+  `const` are never reported as unused.
+- `import "m"` binds no name, so there is nothing to report for it.
+- Shadowing the import in an inner scope does not use the import: if only the
+  shadowing declaration is read, the import binding is the one that goes
+  unused.
+
+```xulo
+import { add, sqrt } from "math"   // `add` is never used: W0102
+
+fn norm(x: Float, y: Float): Float {
+  sqrt(x * x + y * y)
+}
+```
+
 ## Well-formedness table
 
 | Violation | Code | Example |
@@ -252,6 +279,7 @@ protected through every route, are in [visibility.md](visibility.md).
 | Specifier unresolvable or ambiguous | `E0607` | `import "nope"` |
 | `import` outside the file header | `E0605` | an `import` after a top-level `fn` |
 | `pub use { x }` where `x` is not bound here | `E0101` | `pub use { x }` with no declaration or import of `x` |
+| `import { x }` where `x` is never used in this module | `W0102` | `import { add } from "math"` with `add` never referenced |
 
 Codes are stable identifiers; the full scheme is in
 [`../type-system/errors.md`](../type-system/errors.md).

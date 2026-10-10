@@ -57,9 +57,10 @@ Rules:
   well-formed and `first<Map<string, int>>(m)` is not.
 
 Whether a `<` after a callee begins such a list is decided by the
-disambiguation rule of [design.md](../design.md), and the production itself is
-given in the grammar delta there; this chapter is concerned only with what a
-written list means once it is parsed.
+disambiguation rule of
+[`../expressions/calls.md`](../expressions/calls.md), and the production itself
+is in [`../grammar.md`](../grammar.md); this chapter is concerned only with
+what a written list means once it is parsed.
 
 **Omission is unchanged.** A call that writes no type arguments is checked
 exactly as specified before this change: type arguments are determined by

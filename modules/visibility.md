@@ -122,7 +122,7 @@ this specification ([README §1.1](../README.md)).
 The import graph has one edge for each `import` declaration and one for each
 `pub use { … } from "…"` re-export. A direct cycle (a module that imports
 itself) or a transitive cycle (a module reachable from itself through any chain
-of edges) is a **compile-time error**:
+of edges) is a **compile-time error** (`E0603`):
 
 ```xulo
 // a.xulo

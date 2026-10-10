@@ -13,8 +13,8 @@ let ok = yes and !no
 ```
 
 - The literals `true` and `false` have type `Boolean`.
-- There is **no implicit conversion** between `Boolean` and any other type. In particular, numbers are not booleans: `0` and `1` are values of `Int`, and `if 0 { … }` is a compile-time error. There is no truthiness of any kind.
-- The operands of `and`, `or`, and unary `!` MUST have type `Boolean`; otherwise a compile-time error is reported (see [`../expressions/operators.md`](../expressions/operators.md)). The same requirement applies to the condition of `if`, `while`, and the `?:` ternary.
+- There is **no implicit conversion** between `Boolean` and any other type. In particular, numbers are not booleans: `0` and `1` are values of `Int`, and `if 0 { … }` is a compile-time error (`E0201`). There is no truthiness of any kind.
+- The operands of `and`, `or`, and unary `!` MUST have type `Boolean`; otherwise a compile-time error is reported (`E0201`; see [`../expressions/operators.md`](../expressions/operators.md)). The same requirement applies to the condition of `if`, `while`, and the `?:` ternary.
 - `==` and `!=` are defined for two `Boolean` operands. Arithmetic, ordering, and bitwise operators are not defined on `Boolean`.
 
 ## String
@@ -29,8 +29,8 @@ let greeting = `Hello, ${a}!`
 ```
 
 - String literals are written with `"` or `'`. Neither form interpolates; the backtick template form interpolates `${expr}`. Literal and template syntax is specified in [`../expressions/literals.md`](../expressions/literals.md).
-- The `+` operator concatenates two strings: both operands MUST have type `String`, and the result is `String`. Mixed operands are a compile-time error — `"count=" + 1` MUST NOT be written; render the value with a template — `` `count=${n}` `` — or a conversion function such as `str` (see [`../builtins/prelude.md`](../builtins/prelude.md)).
-- **Strings are not indexable.** `s[i]` is NOT a defined operation for a value of type `String` and is a compile-time error. The language defines no indexing, slicing, or character access on `String`; operations that inspect or derive strings are library-level and out of scope for this specification (see [`../README.md`](../README.md)).
+- The `+` operator concatenates two strings: both operands MUST have type `String`, and the result is `String`. Mixed operands are a compile-time error (`E0227`) — `"count=" + 1` MUST NOT be written; render the value with a template — `` `count=${n}` `` — or a conversion function such as `str` (see [`../builtins/prelude.md`](../builtins/prelude.md)).
+- **Strings are not indexable.** `s[i]` is NOT a defined operation for a value of type `String` and is a compile-time error (`E0215`). The language defines no indexing, slicing, or character access on `String`; operations that inspect or derive strings are library-level and out of scope for this specification (see [`../README.md`](../README.md)).
 - `==` and `!=` are defined for two `String` operands and compare by content. The quote form is irrelevant to both type and equality: `"hello" == 'hello'` is `true`.
 
 ## Numeric Types
@@ -96,7 +96,7 @@ Fixed-bit types map directly to C, Rust, and WASM ABI types:
 - An integer literal defaults to `Int` and a float literal to `Float`, even when no context requires it: `let x = 42` infers `Int`.
 - When an integer or float literal is used where a fixed-bit type is required — a binding annotation, a call argument, a return value — and its value is within the range of that type, the literal is coerced to the fixed-bit type: `let w: U32 = 800` has type `U32`, and `let o: F32 = 0.8` has type `F32`.
 - Coercion of non-literal values, and all other numeric conversions, are specified in [`../type-system/coercion.md`](../type-system/coercion.md). Outside of literal coercion and the arithmetic promotion rules below, numeric types do not convert implicitly: a value of type `Int` is not assignable to `Float`, and no value of type `Int` or `Float` is assignable to a fixed-bit type.
-- **Overflow.** An integer operation (`Int` or any fixed-bit integer type) that exceeds the range of its result type is a compile-time error when every operand of the operation is a constant expression, and a runtime trap otherwise. A runtime trap is a panic: the program stops where the condition occurs, and there is no handler (see [`../memory-and-runtime.md`](../memory-and-runtime.md)). A literal that does not fit a fixed-bit type it is coerced into is likewise a compile-time error.
+- **Overflow.** An integer operation (`Int` or any fixed-bit integer type) that exceeds the range of its result type is a compile-time error (`E0210`) when every operand of the operation is a constant expression, and a runtime trap otherwise. A runtime trap is a panic: the program stops where the condition occurs, and there is no handler (see [`../memory-and-runtime.md`](../memory-and-runtime.md)). A literal that does not fit a fixed-bit type it is coerced into is likewise a compile-time error (`E0209`).
 - Operations on `Float`, `F32`, and `F64` follow IEEE-754 semantics for their format.
 
 ### Arithmetic result types
@@ -116,7 +116,7 @@ All arithmetic operators (`+`, `-`, `*`, `/`, `%`, `**`) are typed by their oper
 | `Int` | `Number` | `Number` |
 | fixed-bit `T` | `T`, or an in-range literal of `T`'s default type | `T` |
 
-- Fixed-bit arithmetic stays in its own type: `U32 + U32` is `U32`, `F32 * F32` is `F32`. Mixing a fixed-bit type with any different numeric type — `U8 + U16`, `Int + U32`, `I32 + Float`, `Number + U32` — is a compile-time error; there is no implicit conversion between fixed-bit types or between a fixed-bit type and the user-facing layer (except the literal coercion described above). In the user-facing layer the table is exhaustive: a numeric combination it does not give is a compile-time error.
+- Fixed-bit arithmetic stays in its own type: `U32 + U32` is `U32`, `F32 * F32` is `F32`. Mixing a fixed-bit type with any different numeric type — `U8 + U16`, `Int + U32`, `I32 + Float`, `Number + U32` — is a compile-time error (`E0201`); there is no implicit conversion between fixed-bit types or between a fixed-bit type and the user-facing layer (except the literal coercion described above). In the user-facing layer the table is exhaustive: a numeric combination it does not give is a compile-time error (`E0201`).
 - Comparison operators (`<`, `>`, `<=`, `>=`) follow the same operand rules and produce `Boolean`.
 
 ## Null
@@ -130,7 +130,7 @@ let name = present ?? "stranger"
 ```
 
 - `null` is a member of every optional type: for every type `T`, `null` is assignable to `T?`, and `T?` is exactly `T | Null` (see [`composite-types.md`](composite-types.md)).
-- Assigning `null` to a type that is not optional — `String`, `Int`, `List<Int>` — is a compile-time error. There is no implicit nullability.
+- Assigning `null` to a type that is not optional — `String`, `Int`, `List<Int>` — is a compile-time error (`E0201`). There is no implicit nullability.
 - Null checking is strict. `null` is not a `Boolean` and is not interchangeable with `false`; a value of type `T?` MUST be tested against `null` or propagated with `??` and `?.` before it is used where `T` is required (see [`composite-types.md`](composite-types.md)).
 
 ## Unit
@@ -209,4 +209,4 @@ The names of the built-in types are reserved for the language. A module-scope `s
 
 `Boolean`, `String`, `Int`, `Float`, `Number`, `I8`, `I16`, `I32`, `I64`, `U8`, `U16`, `U32`, `U64`, `F32`, `F64`, `Null`, `Unit`, `Unknown`, `List`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error`
 
-Declaring a type with one of these names at module scope is a compile-time error. `List`, `Map`, and `Set` are specified in [`composite-types.md`](composite-types.md), `Task<T>` in [`function-types.md`](function-types.md), `Result` and `Error` in [`../error-handling.md`](../error-handling.md), and `View` in [`../components/view-syntax.md`](../components/view-syntax.md); every other name above is specified in this file. Elsewhere — as a type parameter name or an ordinary value binding — a built-in type name is an ordinary identifier, though using one conflicts with the naming conventions in [`../names.md`](../names.md).
+Declaring a type with one of these names at module scope is a compile-time error (`E0106`). `List`, `Map`, and `Set` are specified in [`composite-types.md`](composite-types.md), `Task<T>` in [`function-types.md`](function-types.md), `Result` and `Error` in [`../error-handling.md`](../error-handling.md), and `View` in [`../components/view-syntax.md`](../components/view-syntax.md); every other name above is specified in this file. Elsewhere — as a type parameter name or an ordinary value binding — a built-in type name is an ordinary identifier, though using one conflicts with the naming conventions in [`../names.md`](../names.md).

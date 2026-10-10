@@ -78,12 +78,15 @@ each level; [`../grammar.md`](../grammar.md) encodes the same structure.
 | additive | `+` `-` | left |
 | multiplicative | `*` `/` `%` | left |
 | power | `**` | right |
-| unary | `!` `-` `~` `await` | prefix |
+| unary | `!` `-` `~` `await` `move` `copy` | prefix |
 | postfix | `f(x)` `x[i]` `x.y` `x.0` `x?.y` `x?.0` `x?` | left |
 
 Prefix spread `...expr` exists only inside list and map literals; it is not
 part of the precedence chain. An element that begins with `...` is a spread,
 otherwise `...` is the closed-range operator (see [`operators.md`](operators.md)).
+`move` and `copy` occupy the `unary` level with the other prefix operators but
+are accepted only in three positions, which [`operators.md`](operators.md)
+states.
 
 ## Place Expressions and Value Expressions
 
@@ -97,7 +100,7 @@ be backed by a mutable binding or a mutable field or borrow (see
 [`../memory-and-runtime.md`](../memory-and-runtime.md)). Reading a place
 expression — in any context other than as the target of an assignment — yields
 its value, so a place can be used wherever a value of its type is expected.
-Assigning to an identifier that is not backed by `mut` is a compile-time error.
+Assigning to an identifier that is not backed by `mut` is a compile-time error (`E0401`).
 
 ## Index
 

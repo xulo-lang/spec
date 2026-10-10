@@ -93,7 +93,7 @@ fn greet(name: String = "stranger"): String {
 A default value is evaluated at each call that omits the argument, not once at
 declaration, so a default may depend on values computed at call time. The
 parameter's type MUST admit the default value: `name: String = 42` is a
-compile-time error.
+compile-time error (`E0228`).
 
 Any parameter MAY have a default. An omitted argument MUST be supplied by name
 or MUST be trailing in the positional list: a positional call MAY omit only a
@@ -205,16 +205,16 @@ function may call itself. Module-level functions may also forward-reference
 one another, so mutual recursion between functions in the same module is
 well-formed without any ordering constraint (see
 [`../names.md`](../names.md)). A call to an undeclared or private callee
-outside its module is a compile-time error.
+outside its module is a compile-time error (`E0101`, `E0602`).
 
 ## Evaluation errors
 
-Calling a value that is not of function type is a compile-time error; there
+Calling a value that is not of function type is a compile-time error (`E0204`); there
 is no dynamic dispatch to an arbitrary value and no truthiness that would make
 a non-function callable. Arguments MUST match the declared parameter types,
 and a mismatch — including a missing required argument, an unknown named
 argument, a duplicate argument, or an argument of an unrelated type — is
-reported as a compile-time error (see
-[`../type-system/errors.md`](../type-system/errors.md)). Failures that cannot
+reported as a compile-time error (`E0202`, `E0207`, `E0208`)
+(see [`../type-system/errors.md`](../type-system/errors.md)). Failures that cannot
 be detected statically, such as indexing past the end of a list inside the
 call, are runtime errors (see [`../memory-and-runtime.md`](../memory-and-runtime.md)).

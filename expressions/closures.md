@@ -87,13 +87,13 @@ binding's storage instead of copying the value.
   unrestricted for as long as the closure value exists.
 - A closure MAY assign to a captured binding only when that binding was
   declared `let mut`. Assigning to a captured non-`mut` binding is a
-  compile-time error, exactly as it is anywhere else (see
+  compile-time error (`E0401`), exactly as it is anywhere else (see
   [`let-and-assignment.md`](../statements/let-and-assignment.md)).
 - While a binding and a closure that captures it are both alive, a mutation
   made through the closure is visible through the binding, and a mutation made
   through the binding is visible through the closure.
 - A closure MUST NOT capture a binding whose value has been transferred with
-  `move`; referring to such a binding in a closure body is a compile-time error
+  `move`; referring to such a binding in a closure body is a compile-time error (`E0403`)
   (see [`memory-and-runtime.md`](../memory-and-runtime.md)).
 - The loop variable of a `for` loop is a fresh binding for each iteration, so a
   closure created during an iteration captures that iteration's binding and no

@@ -19,8 +19,8 @@ total
 
 The type of the expression is the type of the name it resolves to. An
 identifier that resolves to nothing, or that names a type where a value is
-required, is a compile-time error (see
-[`../type-system/errors.md`](../type-system/errors.md)).
+required, is a compile-time error (`E0101`)
+(see [`../type-system/errors.md`](../type-system/errors.md)).
 
 ## Member access `.`
 
@@ -51,7 +51,7 @@ is the same runtime error as the subscript read of that key. On a map whose
 key type is not `String` no member form exists
 ([`../types/composite-types.md`](../types/composite-types.md)).
 
-A member that does not exist on the receiver's type is a compile-time error
+A member that does not exist on the receiver's type is a compile-time error (`E0102`)
 (see [`../type-system/errors.md`](../type-system/errors.md)). Members are
 private by default, so a member that is not `pub` is accessible only inside
 the module that declares it (see [`../modules/README.md`](../modules/README.md)).

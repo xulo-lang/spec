@@ -26,7 +26,7 @@ prelude and whose signature is that of an intrinsic.
   name of both layers, from its first line to its last.
 - **A module-level declaration MUST NOT bear a prelude or intrinsic name.**
   Declaring `fn print(...)`, `struct Task { … }`, `type Map<K, V> = …`, or
-  `let str = …` at file scope is a compile-time error. The complete list of
+  `let str = …` at file scope is a compile-time error (`E0106`). The complete list of
   reserved names is given in
   [prelude.md](prelude.md#reserved-names), and the diagnostic category for a
   violation is defined in [`../type-system/errors.md`](../type-system/errors.md).

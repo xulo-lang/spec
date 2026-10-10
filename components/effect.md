@@ -26,7 +26,9 @@ fn Counter(): View {
 ```
 
 - The form is `@Effect fn() { … }`: a closure written in expression position,
-  with no name — an effect binds nothing, so it draws from no name pool.
+  with no name — an effect binds nothing, so it draws from no name pool. The
+  value of the declaration MUST be a function of type `fn(): Unit`; a closure
+  that declares any other return type — `@Effect fn(): Int { … }` — is `E0709`.
 - An effect runs **after the run completes**: after the component's body has
   produced the `View` for that pass and that tree has been committed. Effects
   never contribute children and never change what the run produced.
@@ -35,7 +37,7 @@ fn Counter(): View {
 - An effect may run on **every** re-run of the component — that is the default,
   and the next section shows how to narrow it.
 - An `@Effect` body is not an `async` context: `await` in an effect body is a
-  compile-time error
+  compile-time error (`E0706`)
   ([`../expressions/async-expressions.md`](../expressions/async-expressions.md)).
 - An assignment to an `@State` binding inside an effect body schedules a
   further re-run of the component, exactly as an assignment anywhere else does
@@ -59,6 +61,10 @@ fn UserProfile(id: String): View {
 - The form is `@Effect fn() { … }, [expr, …]`. The list is evaluated once per
   pass, after the run completes, in the component's scope — it therefore sees
   the values that the run produced.
+- The dependency list MUST be a list literal. The grammar accepts any
+  expression in that position so that a wrong shape parses and is rejected by
+  the checker: `@Effect fn() { … }, count` is `E0708`, not a parse error
+  ([`../type-system/errors.md`](../type-system/errors.md)).
 - With a dependency list, the effect runs **on mount and whenever any listed
   value changes**, and it does **not** run on re-runs in which none of the
   listed values changed.
@@ -162,7 +168,8 @@ survives the instance that declared it.
 item of the body of a function whose declared return type is `View`. Writing it
 in an ordinary function, in an `async` function, in a closure, or inside a
 nested block — an `if`, a `for`, a `match`, or a component block — is a
-compile-time error ([`../type-system/errors.md`](../type-system/errors.md)).
+compile-time error (`E0701`)
+([`../type-system/errors.md`](../type-system/errors.md)).
 This rule is normative and has no exceptions.
 
 | Construct | Condition | Result |

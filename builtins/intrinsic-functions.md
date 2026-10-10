@@ -88,7 +88,7 @@ println("done")                 // done, then a line terminator
 - A base type is rendered exactly as in the table under [Output](#output); for
   a `ToString` implementor the result is the value of `to_string` on the
   operand.
-- Any other operand is a compile-time error — a `List`, a `Map`, a `Set`, an
+- Any other operand is a compile-time error (`E0212`) — a `List`, a `Map`, a `Set`, an
   `enum` with no `impl ToString`, or `null`
   ([`../type-system/errors.md`](../type-system/errors.md)).
 

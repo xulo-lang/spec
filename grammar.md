@@ -178,7 +178,11 @@ EntryPoint = [ "pub" ] [ "async" ] "fn" "main" "(" ")" [ ":" Type ] Block ;
 
 ## Declarations
 
-Every declaration MAY carry `pub`; `async` follows `pub` and precedes `fn`.
+Every alternative of `Declaration` MAY carry `pub`, except `impl`, which
+introduces no name and is never part of an interface
+([visibility.md](modules/visibility.md)); the four component declarations
+carry no visibility marker either
+([state.md](components/state.md)). `async` follows `pub` and precedes `fn`.
 Generic parameters are declared once, directly after the name
 ([generics.md](types/generics.md)).
 
@@ -254,14 +258,16 @@ forms are fixed by [state.md](components/state.md),
 ComponentDecl   = StateDecl | StoreDecl | EffectDecl | EnvironmentDecl ;
 StateDecl       = "@" "State" "let" Identifier [ ":" Type ] "=" Expression ;
 StoreDecl       = "@" "Store" "let" "{" IdentifierList "}" "=" Expression ;
-EffectDecl      = "@" "Effect" ClosureExpression [ "," ListLiteral ] ;
+EffectDecl      = "@" "Effect" Expression [ "," Expression ] ;
 EnvironmentDecl = "@" "Environment" "let" Identifier ":" Type ;
 ```
 
 `@State` and `@Store` take an initializer; `@Environment` takes a REQUIRED
-type annotation and none; `@Effect` takes a closure plus an optional
-dependency list (a list literal after a `,`). None accepts `mut`, `pub`, or
-`:=`.
+type annotation and none; `@Effect` takes a value plus an optional dependency
+list after a `,`. The two `@Effect` operands are written as plain expressions
+so that a wrong shape — `@Effect fn(): Int { … }`, `@Effect fn() { … }, count`
+— parses and is rejected by the checker (`E0709`, `E0708`) rather than
+failing the parse. None of the four accepts `mut`, `pub`, or `:=`.
 
 ## Types
 
@@ -308,7 +314,7 @@ mirrored below level by level, loosest binding first; the productions encode
 each level exactly as that table orders it.
 
 ```text
-Expression           = AssignmentExpression ;
+Expression           = TernaryExpression ;
 AssignmentExpression = TernaryExpression [ "=" AssignmentExpression ] ;
 TernaryExpression    = LogicalOrExpression [ "?" Expression ":"
                                              TernaryExpression ] ;
@@ -369,7 +375,7 @@ Place             = Identifier | Place "." Identifier | Place "." IntegerLiteral
                   | Place "[" Expression "]" | "(" Place ")" ;
 
 ArgumentList = Argument { "," Argument } [ "," ] ;
-Argument     = [ Identifier ":" ] ( "$" Identifier | Expression ) ;
+Argument     = [ Identifier ":" ] ( "$" Place | Expression ) ;
 
 ListLiteral   = "[" [ ListElement { "," ListElement } [ "," ] ] "]" ;
 ListElement   = Spread | Expression ;
@@ -391,8 +397,11 @@ ClosureParamList   = ClosureParam { "," ClosureParam } [ "," ] ;
 ClosureParam       = Identifier [ ":" Type ] ;
 ```
 
-`$` prefixes a name in an argument position and binds a state variable of the
-enclosing component; it is an argument form and nothing else
+`$` prefixes a place in an argument position and binds a state variable of the
+enclosing component; it is an argument form and nothing else. The place is
+written as a `Place` so that a dotted name — `$user.name` — parses and is
+rejected by the checker rather than failing the parse, since only a single
+state cell may be bound
 ([binding.md](components/binding.md)). Brace-map keys are identifiers only;
 a map keyed by other expressions uses the typed form `Map<K, V>{ … }`.
 
@@ -450,14 +459,17 @@ StatementEnd      = [ ";" ] ;
 ReturnStmt        = "return" [ Expression ] ;
 BreakStmt         = "break" ;
 ContinueStmt      = "continue" ;
-Assignment        = Place "=" Expression ;
+Assignment        = Place "=" AssignmentExpression ;
 ExpressionStatement = TernaryExpression ;
 Block             = "{" { Statement } "}" ;
 ```
 
 An assignment appears only through `Assignment`, so `ExpressionStatement` is
 every level below assignment, and its target MUST be a place
-([expressions/README.md](expressions/README.md)). A block's value is its final
+([expressions/README.md](expressions/README.md)). `Expression` itself stops at
+`TernaryExpression`, so no production other than `Assignment` introduces `=`;
+`Assignment`'s right-hand side is `AssignmentExpression`, which recurses so that
+`a = b = c` groups as `a = (b = c)`. A block's value is its final
 expression, kept only if not followed by `;`
 ([return-and-block.md](statements/return-and-block.md)).
 
@@ -488,7 +500,11 @@ specified in [error-handling.md](error-handling.md).
 A component invocation is an identifier followed by an argument list, a block
 of children, or both; at least one of the two MUST be present. The children
 block holds child items, which are not statements
-([view-syntax.md](components/view-syntax.md)).
+([view-syntax.md](components/view-syntax.md)). `ComponentCall` recognizes the
+forms that carry a block, since a trailing block attaches to the invocation and
+cannot be written any other way; an invocation written with an argument list
+and no block — `Text("Hi")` — is parsed as an ordinary call through
+`PostfixOperand`, and the two read the same.
 
 ```text
 ComponentCall  = Identifier "(" [ ArgumentList ] ")" ComponentBlock

@@ -61,7 +61,7 @@ Name { children }       // invocation with children, no arguments
 
 The items of a block are component invocations, `if` and `for` control flow,
 bare strings (text nodes), and expressions of type `View`, `String`, or
-`List<View>` — anything else in a block is a compile-time error. Arguments in
+`List<View>` — anything else in a block is a compile-time error (`E0702`). Arguments in
 `( )` configure the component; children in `{ }` are the `View`s it embeds.
 Blocks, nesting, flattening, and expression children are specified in
 [`view-syntax.md`](view-syntax.md).
@@ -85,7 +85,7 @@ fn Counter(): View {
 - `@State`, `@Store`, `@Effect`, and `@Environment` are valid **only** at the
   top level of a component body. Writing any of them in an ordinary function,
   in an `async` function, or inside a nested block — an `if`, a `for`, or a
-  component block — is a compile-time error
+  component block — is a compile-time error (`E0701`)
   ([`../type-system/errors.md`](../type-system/errors.md)). This rule is
   normative and has no exceptions.
 - Attributes written in `( )` are ordinary named arguments. Which attributes a

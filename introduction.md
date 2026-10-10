@@ -75,6 +75,23 @@ statement terminator — so formatting never changes the meaning of a file.
 - **No macro system in v1.** The language as specified has no macro
   mechanism, no syntax extension, and no compile-time code generation. `#` is
   reserved for a possible future use and is not part of the language.
+- **No test syntax.** The language declares no `test` construct, no assertion
+  form, and no test-runner convention: tests are ordinary code in ordinary
+  files, and whatever runs them is a library and tooling concern.
+- **No operator overloading.** Every operator has fixed operand rules, a fixed
+  result type, and a fixed precedence
+  ([`expressions/operators.md`](expressions/operators.md)); no `trait` or
+  `impl` may redefine `+`, `==`, or any other operator for a user type.
+  Structural equality is therefore the only equality a user type has.
+- **No foreign-function interface contract.** The language defines no `extern`
+  form, no linkage or ABI annotation, and no calling convention for code
+  written outside it. The fixed-bit types exist so that a value can be laid out
+  compatibly with a C ABI; binding Xulo to another language's code is a library
+  and host concern.
+- **No documentation comments.** A comment carries no meaning to the language:
+  [`lexical-structure.md`](lexical-structure.md) defines only `//` and
+  `/* … */` and states that there is no documentation-comment syntax.
+  Documentation tooling may read them, but the language does not.
 - **The standard library is out of scope.** As stated in
   [README §1.1](README.md), the standard library (`std/*`) and library-level
   APIs (JSON, regular expressions, I/O) are documented outside this

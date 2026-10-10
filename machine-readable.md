@@ -5,7 +5,16 @@ description: Formal grammar definitions for parser generators, IDE plugins, and 
 
 ## Overview
 
-This page provides machine-readable grammar source files (Machine-Readable Grammar) for the XULO language. These files are intended for compiler authors, parser generator tooling, linter/static analyzer developers, and IDE plugin authors to reference and compile directly.
+This page points to machine-readable grammar files for the Xulo language. They
+are intended for compiler authors, parser generator tooling, linter and static
+analyzer developers, and IDE plugin authors who want to compile a grammar
+directly.
+
+**The files themselves are not part of this specification.** They are not
+stored in this repository, and this page is **informative, not normative**.
+The normative grammar is [`grammar.md`](grammar.md); where a downloaded file
+and `grammar.md` disagree, `grammar.md` governs and the difference is a defect
+in the file rather than a defect in the language.
 
 ---
 
@@ -83,9 +92,17 @@ ebnf-validate ./xulo.ebnf
 
 ---
 
-## Single Source of Truth
+## Relationship to the implementation
 
-All grammar files listed on this page are automatically generated and synced from the **XULO compiler main repository** during CI/CD builds, ensuring 100% semantic consistency with the latest compiler engine.
+The files listed above are maintained in the **implementation repository**,
+not in this one:
 
-- **Main compiler repository**: [`github.com/xulo-lang/xulo`](https://github.com/xulo-lang/xulo)
+- **Implementation repository**: [`github.com/xulo-lang/xulo`](https://github.com/xulo-lang/xulo)
 - **Grammar maintenance directory**: `crates/xulo-parser/grammar/`
+
+They are produced from that repository's parser and released alongside it.
+This specification neither ships them nor verifies them: a change to the
+syntax of the language is made in [`grammar.md`](grammar.md) and, once
+accepted through [`changes/`](changes/README.md), is carried to those files
+by the implementation repository. Treat a downloaded file as a snapshot —
+check it against `grammar.md` before relying on it.

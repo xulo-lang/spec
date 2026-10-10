@@ -17,7 +17,7 @@ let maybe: String? = null
 - The form is `let x = expr` or `let x: T = expr`. A type annotation, when
   present, is written after the name and separated by `:`.
 - A binding introduced by `let` is **immutable**: assigning to it is a
-  compile-time error (see [Assignment](#assignment)).
+  compile-time error (`E0401`; see [Assignment](#assignment)).
 - **Initialization is required.** Every `let` binding is initialized by an
   expression in the same statement; there is no uninitialized binding form.
 - When no annotation is written, the binding's type is inferred from the
@@ -53,7 +53,7 @@ q.x = 1              // error: q is not mut
 
 - Assigning to a place that is not backed by a `mut` binding — an ordinary
   `let`, a `const`, or a place read through an immutable borrow — is a
-  compile-time error ([`../type-system/errors.md`](../type-system/errors.md)).
+  compile-time error (`E0401`; [`../type-system/errors.md`](../type-system/errors.md)).
 - `mut` is part of the binding form, not of the type: `let mut x = 1` binds
   `x` as `Int`.
 
@@ -152,7 +152,7 @@ grid[getIndex()] = 1
 
 - The result of an assignment is `Unit`. Assignment is a statement: it
   produces no meaningful value.
-- Assigning to a non-`mut` binding is a compile-time error
+- Assigning to a non-`mut` binding is a compile-time error (`E0401`)
   ([`../type-system/errors.md`](../type-system/errors.md)).
 - **Compound assignment does not exist.** There is no compound-assignment
   operator and no increment or decrement operator. Write the full form:
@@ -182,7 +182,7 @@ print(age)         // 30
   form: `let { name: n } = person` is not part of the syntax.
 - The initializer MUST have a `struct` type that declares every listed
   field. Destructuring a struct that is missing a listed field is a
-  compile-time error
+  compile-time error (`E0206`)
   ([`../type-system/errors.md`](../type-system/errors.md)).
 - Destructuring binds one level of fields. Deeper structure is obtained with
   field access, or with `match` when the value is an enum or a list.
@@ -261,7 +261,7 @@ fn demo3(): Int {
 
 - Inside a block, a binding is in scope from the end of its declaration to
   the end of the block. Reading a binding before its declaration in the same
-  block is a compile-time error; bindings are not hoisted
+  block is a compile-time error (`E0101`); bindings are not hoisted
   ([`../names.md`](../names.md)).
 - Initializers run in declaration order, so a `let` MAY use an earlier
   binding of the same block but MUST NOT use a later one:
@@ -277,6 +277,40 @@ let c = b + 1     // legal
   `trait`, `type`, and `impl` MAY reference each other regardless of order,
   while module-level `let`, `let mut`, and `const` MUST be declared before
   use.
+
+## Unused bindings
+
+A binding is reported as `W0101` when the program never reads it. The warning
+is issued at the declaration and never rejects a program
+([`../type-system/errors.md`](../type-system/errors.md)).
+
+- The rule covers every binding introduced by `let` or `let mut`, wherever it
+  is declared: a block, a function body, file scope, or a component body
+  (`@State`, `@Store`).
+- The binding is **read** when its name is evaluated — as an operand, a
+  callee, a condition, a member or index base, an argument, an initializer, a
+  `for` source, an interpolation, a `move` or `copy` operand, or a capture
+  closed over by a function expression. A `$name` argument in a component
+  block reads the binding of the same name
+  ([`../components/binding.md`](../components/binding.md)).
+- **Writing is not reading**: assigning to a `let mut`, re-declaring a name in
+  an inner block, or appearing only in the initializer of another binding that
+  itself is never read does not count.
+- Any read anywhere in the binding's scope counts, even one the run never
+  reaches. A binding shadowed by a later declaration of the same name is
+  judged on its own: the shadowing declaration cannot make an earlier binding
+  read.
+- Never reported: a `pub` declaration, a `const`, and a parameter — they are
+  part of an interface or of a signature — and `_`, which is not a binding at
+  all ([`../names.md`](../names.md)).
+
+```xulo
+fn demo(): Int {
+  let scratch = 1        // W0101: never read
+  let total = 2
+  total
+}
+```
 
 ## Component bindings
 
@@ -294,7 +328,7 @@ fn Counter(): View {
 - Each declaration introduces a binding, and each is valid only at the top
   level of a component body — a function whose declared return type is
   `View`. Writing any of them in an ordinary function, in an `async`
-  function, or inside a nested block is a compile-time error.
+  function, or inside a nested block is a compile-time error (`E0701`).
 - `@State` bindings are implicitly mutable: assignment is allowed without
   `mut`, and each assignment schedules a re-render. `@Store` destructures
   values from a shared store; `@Environment` injects a value supplied by the
