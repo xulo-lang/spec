@@ -10,8 +10,8 @@ expression of a block are specified in [`return-and-block.md`](return-and-block.
 
 ## The statement-value rule
 
-> An expression statement that is not `Unit` is an error, EXCEPT when it is a
-> control-flow construct (`if`, `match`, `for`, `while`) whose value is
+> An expression statement that is not `Unit` is an error (`E0218`), EXCEPT when
+> it is a control-flow construct (`if`, `match`, `for`, `while`) whose value is
 > discarded.
 
 The rule exists because a computed value that nobody reads is almost always a

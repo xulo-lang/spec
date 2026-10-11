@@ -137,7 +137,7 @@ normative for the whole specification.
 | **component** | A function whose declared return type is `View`; constructs a fragment of the UI tree. See [`components/`](components/README.md). |
 | **copy** | `copy e`: an explicit deep copy of `e`'s value, leaving the original binding untouched; accepted only in a `let` initializer, a call argument, or a `return` operand. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **declaration** | A top-level or member-level construct that introduces a name: `fn`, `struct`, `enum`, `trait`, `impl`, `type`, `let`, `const`. |
-| **diagnostic** | A message emitted for a program the checker rejects or warns about, identified by an `E` or `W` code; a compile-time event, not a runtime one. See [`type-system/errors.md`](type-system/errors.md). |
+| **diagnostic** | A message emitted for a program the checker rejects or warns about, identified by an `E` or `W` code; a compile-time event, not a runtime one. Lexical and syntax failures are raised before the checker runs and carry no code. See [`type-system/errors.md`](type-system/errors.md). |
 | **enum** | A nominal type declaring a fixed set of variants, each optionally carrying a payload; written `enum Name { … }`, constructed through a variant path and deconstructed with `match`. See [`types/enums.md`](types/enums.md). |
 | **evaluation order** | The order in which subexpressions are evaluated; left-to-right unless stated otherwise. |
 | **immutable binding** | A binding introduced by `let` or `const`; reassignment is a compile-time error (`E0401`). |

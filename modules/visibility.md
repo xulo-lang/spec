@@ -97,7 +97,7 @@ chain may see:
   types, constants, and members refer to each other regardless of `pub`, order,
   or scope kind.
 - **Across modules**, only `pub` names cross. An import that names a private
-  member is an error, and a member access on an imported value reaches only the
+  member is an error (`E0602`), and a member access on an imported value reaches only the
   `pub` members of its type.
 - **An imported `pub` name is visible to the importing module** for the rest of
   that file, exactly as if it had been declared there — but it is part of the
@@ -153,7 +153,7 @@ declaration of a name* a use refers to inside one file; visibility decides
 - An imported name MAY be shadowed by a binding in an inner scope: a function
   body or block may declare `let math = …` and hide the imported namespace for
   the rest of that block. At file scope this is not shadowing but a duplicate
-  binding, which is an error.
+  binding, which is an error (`E0104`).
 - Shadowing never grants visibility. Hiding a name locally says nothing about
   the declaring module's private names, and importing one name never makes the
   rest of the target module's declarations reachable.

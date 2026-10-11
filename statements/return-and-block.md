@@ -92,7 +92,7 @@ fn log(message: String) {
   function; a mismatch is a compile-time error (`E0203`).
 - `return` without an expression is valid **only** when the declared return
   type is `Unit`. Writing a bare `return` in a function that declares any
-  other return type is an error.
+  other return type is an error (`E0203`).
 - `return` outside a function or closure body is a compile-time error (`E0214`).
 - `return` MAY appear inside a final expression. When the executed branch
   runs it, the function returns immediately; the rest of the enclosing

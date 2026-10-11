@@ -249,7 +249,8 @@ sugar for `let mut`; see
 
 At each position the lexer MUST produce the longest token in the inventory
 that matches; a shorter one is taken only when nothing longer matches, and a
-position where no token matches is a lexical error.
+position where no token matches is a lexical error, which carries no
+diagnostic code ([type-system/errors.md](type-system/errors.md)).
 
 | Source | Tokens | Reading |
 |--------|--------|---------|

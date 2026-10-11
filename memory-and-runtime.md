@@ -110,7 +110,7 @@ as [`expressions/operators.md`](expressions/operators.md) states, so `move a +
 b` groups as `(move a) + b` and the second restriction below then rejects it.
 
 - The operand of `move` MUST be a path naming a binding. `move p.x`,
-  `move xs[0]`, and `move compute()` are errors: a transfer moves a whole
+  `move xs[0]`, and `move compute()` are errors (`E0403`): a transfer moves a whole
   binding, never a part of one.
 - `move` and `copy` are accepted in exactly three positions: the initializer
   of a `let`, an argument of a call, and the operand of `return`. In any other

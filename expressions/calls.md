@@ -52,7 +52,7 @@ Button(variant: "outline", label: "Submit")
 
 Named arguments MAY be reordered relative to the parameter list. Each named
 argument MUST name a parameter declared by the callee, and naming the same
-parameter twice is an error. Positional arguments come first: once a named
+parameter twice is an error (`E0208`). Positional arguments come first: once a named
 argument appears, every following argument MUST be named as well. Mixing is
 therefore one-directional:
 

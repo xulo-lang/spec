@@ -71,7 +71,10 @@ code MUST NOT be reused for a different failure.
 
 Every diagnostic of the families below is reported with the category
 `semantic`; the categories `lexical` and `syntax` name earlier phases of the
-same pipeline.
+same pipeline. A failure of those earlier phases — a BOM where a token is
+expected, a position where the lexer matches no token — is raised before the
+checker runs and carries no `E` or `W` code: it is reported by position and
+message alone. Every code in the tables below is therefore `semantic`.
 
 ## Message style guide
 
@@ -218,6 +221,12 @@ reported with the call codes `E0202`, `E0204`, `E0207`, and `E0208`.
 | `E0804` | an impl declares a method the trait does not declare | an extra `extra` in `impl Area for Rect` | `` `impl Area for Rect` declares `extra`, which `Area` does not `` |
 | `E0805` | two impls of one trait for one type in one module | a second `impl Area for Rect` | `` `Area` is already implemented for `Rect` `` |
 | `E0806` | a bound does not name a visible trait | `<T: Int>` | ``bound `Int` is not a trait`` |
+| `E0809` | a member call `value.method(…)` finds more than one trait method candidate in scope for the receiver's type | `r.grow()` with two traits in scope that both implement `grow` for `Rect` | ``multiple applicable implementations of `grow` for `Rect` `` |
+
+`E0807` and `E0808` are reserved by the pending change
+[`add-explicit-type-arguments`](../changes/add-explicit-type-arguments/proposal.md).
+They are registered only if that change is accepted, so this family skips them
+until then and the numbering here is not contiguous.
 
 ## Warnings
 

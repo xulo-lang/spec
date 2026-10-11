@@ -199,7 +199,7 @@ An expression written as a child item MUST have type `String`, `View`, or
   elsewhere ([`../statements/README.md`](../statements/README.md)); a map
   literal is in any case not of an admissible child type.
 - The child type is checked statically. An expression whose type is not one of
-  the three admissible types is an error; in particular an optional such as
+  the three admissible types is an error (`E0702`); in particular an optional such as
   `View?` MUST be converted to `View` first — by `??`, by `?.`, or by choosing
   a definite value with `if` or `match` (see
   [`../type-system/checking-rules.md`](../type-system/checking-rules.md)).

@@ -82,7 +82,7 @@ an ordinary binding whose spelling is the built-in type name, in a scope where
 that type was visible, and from that declaration to the end of the enclosing
 scope the name denotes only the new binding. The built-in type is hidden: a
 use of the name in type position inside that scope — an annotation, a type
-argument, a bound — no longer resolves to a type and is an error. Likewise,
+argument, a bound — no longer resolves to a type and is an error (`E0101`). Likewise,
 shadowing an intrinsic hides it: calls to the intrinsic inside that scope no
 longer reach the intrinsic. Shadowing is what makes `let print = 0` legal and
 `print("x")` afterwards an error — which is why both groups SHOULD be left
@@ -106,7 +106,7 @@ Declaration order decides visibility:
 
 - **Inside a function body**, a name is in scope from the end of its
   declaration to the end of the innermost block that encloses it. Using a
-  local before its declaration in the same block is an error; locals are not
+  local before its declaration in the same block is an error (`E0101`); locals are not
   hoisted.
 - **At module level**, `fn`, `struct`, `enum`, `trait`, `type`, and `impl`
   declarations are in scope throughout the whole file, whichever order they
@@ -114,7 +114,7 @@ Declaration order decides visibility:
   later in the file, so mutual recursion and forward references are legal.
 - **At module level**, `let`, `let mut`, and `const` are in scope only from
   the end of their declaration to the end of the file. A forward reference to
-  a variable or constant MUST be an error: initializers run in declaration
+  a variable or constant MUST be an error (`E0101`): initializers run in declaration
   order, and there is nothing to read yet.
 - Parameters are in scope from the start of the function body; a type
   parameter is in scope over the whole signature and body it belongs to.
@@ -152,7 +152,7 @@ scope.
 
 Component state declarations follow the same rules with one extra
 restriction: two state declarations with the same name in one component body
-are an error. `@State`, `@Store`, and `@Environment` each bind a name and all
+are an error (`E0103`). `@State`, `@Store`, and `@Environment` each bind a name and all
 three draw from one pool per component, so a body that binds `count` with
 `@State` and binds `count` again with `@Environment` MUST be rejected. A state
 declaration MAY shadow a module-level name or a parameter — that is ordinary

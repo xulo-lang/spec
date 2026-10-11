@@ -110,7 +110,7 @@ const ZERO = 1 / 0         // error: constant division by zero
   at module level it MUST be declared before use
   ([Initialization order](#initialization-order)).
 - Shadowing a `const` in a nested block is ordinary shadowing; two `const`
-  declarations of the same name in the *same* block are an error.
+  declarations of the same name in the *same* block are an error (`E0103`).
 
 ```xulo
 const SCALE = 2

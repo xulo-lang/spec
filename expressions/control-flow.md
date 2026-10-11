@@ -15,8 +15,8 @@ written as an expression statement (see
 [`expression-statements.md`](../statements/expression-statements.md)). One rule
 covers statement position everywhere in this specification:
 
-> An expression statement that is not `Unit` is an error, EXCEPT when it is a
-> control-flow construct (`if`, `match`, `for`, `while`) whose value is
+> An expression statement that is not `Unit` is an error (`E0218`), EXCEPT when
+> it is a control-flow construct (`if`, `match`, `for`, `while`) whose value is
 > discarded.
 
 Accordingly, an `if` or `match` written as a statement MAY have branches or
@@ -238,7 +238,7 @@ fn name(v: Unknown): String {
   `Unknown` pattern or a covering arm, never by enumerating concrete types.
 - A `match` that fails these requirements is a compile-time error (`E0301`)
   ([`errors.md`](../type-system/errors.md)).
-- An arm that can never be selected is an error. In particular, every arm
+- An arm that can never be selected is an error (`E0302`). In particular, every arm
   after a wildcard or binding arm is unreachable, a literal that repeats an
   earlier literal arm is unreachable, and a type pattern whose type is already
   covered by an earlier arm is unreachable.

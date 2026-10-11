@@ -121,8 +121,8 @@ let p = Area.perimeter(r)
 - `Trait.method(receiver, …)` resolves directly to the method of the `impl`
   that implements `Trait` for the static type of the receiver. The receiver
   MUST resolve to a concrete named type with a matching `impl` visible at the
-  call site; otherwise the call is an error ("does not implement trait"), see
-  [`../type-system/errors.md`](../type-system/errors.md).
+  call site; otherwise the call is an error (`E0801`), reported as "does not
+  implement trait" (see [`../type-system/errors.md`](../type-system/errors.md)).
 - No runtime type information is consulted: the target is fixed before the
   program runs.
 
@@ -136,12 +136,12 @@ A call written `value.method(…)` is resolved in a fixed order:
    receiver's type, and visible in the current module.
 
 Exactly one candidate MUST result. If step 1 finds no method and step 2 finds
-none, the call is an error; if step 2 finds more than one candidate, the call is
-an ambiguity error and MUST be disambiguated with explicit dispatch
-`Trait.method(receiver)`.
+none, the call is an error (`E0102`); if step 2 finds more than one candidate,
+the call is an ambiguity error (`E0809`) and MUST be disambiguated with
+explicit dispatch `Trait.method(receiver)`.
 
 There is no implicit method resolution through an unbounded generic parameter:
-for `fn f<T>(x: T)`, `x.method()` is an error, because a type parameter has no
+for `fn f<T>(x: T)`, `x.method()` is an error (`E0102`), because a type parameter has no
 members unless a bound grants them. See [`generics.md`](generics.md).
 
 ## Bounds and generic code

@@ -137,8 +137,8 @@ fn main() {
 - **Method resolution order:** `value.method(…)` resolves first to an
   inherent method declared in an `impl` block for the receiver's type, and
   otherwise to a trait method provided by an implementation in scope at the
-  call site. Exactly one candidate MUST result; ambiguity is an error and
-  MUST be disambiguated with explicit dispatch `Trait.method(receiver)`.
+  call site. Exactly one candidate MUST result; ambiguity is an error (`E0809`)
+  and MUST be disambiguated with explicit dispatch `Trait.method(receiver)`.
   Explicit dispatch is always available.
 - Inside a body bounded by `T: Trait`, both `x.method(args)` and
   `Trait.method(x)` are permitted.

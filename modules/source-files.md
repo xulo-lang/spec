@@ -73,7 +73,7 @@ Declarations fall into two classes with different ordering rules:
   all well-formed, and a type may be used before the `struct` that declares it.
 - Module-level `let`, `let mut`, and `const` MUST be declared before they are
   used. Their initializers run in declaration order, so a use that precedes the
-  declaration has nothing to read and MUST be an error.
+  declaration has nothing to read and MUST be an error (`E0101`).
 
 ```xulo
 // forward references: fine, whichever order these appear in

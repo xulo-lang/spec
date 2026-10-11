@@ -209,7 +209,7 @@ Both operators are non-associative and yield the built-in generic type
 `Range<T>`. The operands MUST have the same numeric type, and `T` is that type:
 `0..<n` with `n: Int` is `Range<Int>` and `0.0..<x` with `x: Float` is
 `Range<Float>`. Mixed operand types are not promoted, so `0..<x` with
-`x: Float` is an error and MUST be written `0.0..<x`.
+`x: Float` is an error (`E0201`) and MUST be written `0.0..<x`.
 
 A `Range<T>` is the operand of `for … in` iteration and is usable as a range
 pattern in `match`; both are specified in
@@ -238,7 +238,7 @@ let half = -x
 Numeric promotion applies to mixed operands: `Int + Float` yields `Float`, and
 any combination of `Int` and `Float` in one expression yields `Float`. Two
 operands of the same fixed-bit type yield that same fixed-bit type; other
-mixtures of distinct numeric types are errors unless one side is a literal
+mixtures of distinct numeric types are errors (`E0201`) unless one side is a literal
 that adapts to the other side's type. Overflow of a literal is a compile-time
 error and of a computed fixed-bit value is a runtime trap. See
 [`../types/primitive-types.md`](../types/primitive-types.md).

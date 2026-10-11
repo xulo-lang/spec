@@ -21,7 +21,7 @@ let perms = 0o77
 Digit separators and type suffixes do not exist: `1_000` and `42u32` are not
 well-formed, and a fixed-bit type is obtained by contextual coercion instead
 (`let w: U32 = 800`). An integer literal defaults to type `Int`, and a literal
-whose value does not fit in its default or coerced type is an error:
+whose value does not fit in its default or coerced type is an error (`E0209`):
 
 ```xulo
 let big = 99999999999999999999   // error: out of range for Int
@@ -116,7 +116,7 @@ let maybe: String? = null
 ```
 
 `true` and `false` have type `Boolean`. `null` has type `Null` and inhabits
-every optional type `T?`; assigning `null` to a non-optional type is an error.
+every optional type `T?`; assigning `null` to a non-optional type is an error (`E0201`).
 See [`../types/primitive-types.md`](../types/primitive-types.md).
 
 ## List literals

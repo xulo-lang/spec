@@ -51,8 +51,8 @@ let c = 3; let d = 4; print(c + d)   // semicolons separate one-line statements
 
 ## The Statement-Value Rule
 
-> An expression statement that is not `Unit` is an error, EXCEPT when it is a
-> control-flow construct (`if`, `match`, `for`, `while`) whose value is
+> An expression statement that is not `Unit` is an error (`E0218`), EXCEPT when
+> it is a control-flow construct (`if`, `match`, `for`, `while`) whose value is
 > discarded.
 
 The exception covers control-flow constructs in statement position: their

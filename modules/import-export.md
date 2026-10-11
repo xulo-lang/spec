@@ -72,7 +72,7 @@ below).
 
 The `type` modifier follows the `import` keyword; it is not written inside the
 braces. `import { type User } from "types"` is not a form, and using a
-type-only binding where a value is expected is an error.
+type-only binding where a value is expected is an error (`E0606`).
 
 ### Side-effect import
 
@@ -113,7 +113,7 @@ pub use { User, Status } from "types"   // names read from another module
   be part of the interface: either a declaration here that is marked `pub`, or
   a name brought in by an `import` (which was necessarily exported by its
   source). Re-exporting a private local declaration, or naming a binding that
-  does not exist, is an error.
+  does not exist, is an error (`E0602`, `E0601`).
 - `pub use { x } from "m"` reads `x` from module `m`. It MUST be an export of
   `m`, exactly as if it had been imported by name. This form does **not** bind
   `x` locally: it is a pure forwarding edge, and `x` is usable in this file
@@ -156,7 +156,7 @@ import { fmt } from "../lib/util"      // ../lib/util.xulo
   the file `shapes.xulo`.
 - A specifier resolves to a **file**. There are no directory modules: `./lib`
   resolves to `lib.xulo`, never to `lib/mod.xulo` or `lib/index.xulo`.
-- A relative specifier that does not resolve to an existing file is an error.
+- A relative specifier that does not resolve to an existing file is an error (`E0607`).
 
 **Package specifiers** are everything else — a specifier with no `./` or
 `../` prefix:
@@ -200,7 +200,7 @@ binding exists for the checker and is erased everywhere else.
   `Kind::Admin`, `Kind` resolves as a type name, not as a value, so a
   type-only import of an enum still admits its variant paths.
 - The name MUST NOT be used where a value is expected — as an expression, a
-  callee, an initializer, or an argument. That is an error, not a runtime
+  callee, an initializer, or an argument. That is an error (`E0606`), not a runtime
   failure, because no binding exists to be read.
 
 An ordinary (non-`type`) import of a name that is used only in type positions
@@ -209,7 +209,7 @@ needs only the name, never the value.
 
 ## Name collisions
 
-- Two imports that bind the same local name are an error, whether they come
+- Two imports that bind the same local name are an error (`E0104`), whether they come
   from one specifier or from two:
 
   ```xulo
