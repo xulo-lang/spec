@@ -4,5 +4,5 @@
 
 - Generic type arguments are inferred at each call site; a call MAY instead
   write them explicitly, in a list between the callee and the argument list —
-  `first<int>(…)`, `map<string, int>(…)` — which takes the place of inference
+  `first<Int>(…)`, `Map<String, Int>(…)` — which takes the place of inference
   for that call (see [`generics.md`](generics.md)).

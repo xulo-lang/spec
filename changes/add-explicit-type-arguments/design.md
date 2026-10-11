@@ -10,7 +10,7 @@ diagnostics become. The prose that replaces the chapter text is in
 
 ## Syntax alternatives considered
 
-### Angle brackets after the callee — `first<int>(…)` — RECOMMENDED
+### Angle brackets after the callee — `first<Int>(…)` — RECOMMENDED
 
 - **Pro:** reads exactly like the type-parameter list of the declaration and
   like every other angle-bracket type in the language; no new token, no new
@@ -54,7 +54,7 @@ consequences of the token inventory:
 
 - `>>` and `>=` are single tokens and never match, so a nested type argument
   keeps the spacing the nested-bracket rule already requires:
-  `first<Map<string, int> >(m)`. Written without the space, the scan finds no
+  `first<Map<String, Int> >(m)`. Written without the space, the scan finds no
   matching `>` and the `<` is read relationally, which fails to parse and is
   diagnosed with a note to insert the space.
 - The rule is scoped to an identifier in call position. `<` in a type
@@ -62,7 +62,7 @@ consequences of the token inventory:
   unambiguous, and every generic callee ends in an identifier — a call through
   a value of function type has no type parameters and accepts no list.
 
-### Turbofish — `first::<int>(…)`
+### Turbofish — `first::<Int>(…)`
 
 - **Pro:** unambiguous with no lookahead: the `<` follows `::` rather than an
   identifier, so it cannot be mistaken for the relational operator.
@@ -72,7 +72,7 @@ consequences of the token inventory:
   ordinary value identifier would give a marker reserved for paths a second,
   unrelated meaning. Rejected.
 
-### Keyword form — `first explicit <int>(…)`
+### Keyword form — `first explicit <Int>(…)`
 
 - **Pro:** the marker is impossible to confuse with a comparison.
 - **Con:** verbose at every use; the marker would have to be reserved as a
@@ -80,11 +80,11 @@ consequences of the token inventory:
   appears nowhere else in the expression grammar has to be learned for this
   one construct. Rejected.
 
-### Bracket form — `first[int](…)`
+### Bracket form — `first[Int](…)`
 
 - **Pro:** `[` is unambiguous in call position.
 - **Con:** collides with the subscript, which is a postfix operator: `first`
-  is a value, `first[int]` is a subscript of it, and the reading would be an
+  is a value, `first[Int]` is a subscript of it, and the reading would be an
   index followed by a call. The brackets are taken. Rejected.
 
 ## Typing rule
@@ -112,15 +112,15 @@ rules, in order:
    `Tᵢ := Aᵢ` substituted.
 6. **Callee that accepts no list.** Explicit type arguments on a non-generic
    callee are `E0807`; the code is free for the same reason as `E0808`. The
-   rule covers a value of function type as well: `f<int>(…)` where
-   `f: fn(int): int` is `E0807`, not an empty instantiation. A `struct` or
+   rule covers a value of function type as well: `f<Int>(…)` where
+   `f: fn(Int): Int` is `E0807`, not an empty instantiation. A `struct` or
    `enum` constructor accepts no list either — its type arguments are always
    determined by its field initializers — and is reported with `E0807`, so
    that the token shape is diagnosed rather than read as a comparison.
 
 Rules 1, 2, and 6 apply wherever the callee ends in an identifier — a method
-(`r.first<int>(xs)`), a trait static (`Trait.method<int>(x)`), or a namespace
-member (`Task.all<int>(…)`) — exactly as they apply to an ordinary function
+(`r.first<Int>(xs)`), a trait static (`Trait.method<Int>(x)`), or a namespace
+member (`Task.all<Int>(…)`) — exactly as they apply to an ordinary function
 name.
 
 ## Inference interaction
@@ -135,12 +135,12 @@ type as soon as its type arguments are written, and an enclosing expected type
 checks that type rather than feeding anything back into the arguments:
 
 ```xulo
-fn first<T>(xs: list<T>): T { xs[0] }
+fn first<T>(xs: List<T>): T { xs[0] }
 
-let n: int = first([1, 2, 3])              // inferred, unchanged
-let m = first<int>([1, 2, 3])              // T = int, written
-let k = first<int>(["a", "b"])             // error[E0202]: expected `list<int>`, found `list<string>`
-let bad: string = first<int>([1, 2, 3])    // error[E0201]: expected `string`, found `int`
+let n: Int = first([1, 2, 3])              // inferred, unchanged
+let m = first<Int>([1, 2, 3])              // T = Int, written
+let k = first<Int>(["a", "b"])             // error[E0202]: expected `List<Int>`, found `List<String>`
+let bad: String = first<Int>([1, 2, 3])    // error[E0201]: expected `String`, found `Int`
 ```
 
 The expected type may still supply what the *value arguments* leave open when
@@ -148,7 +148,7 @@ the list is omitted, and it still checks the result when the list is written;
 in either case it acts on types, and never overwrites a written argument.
 
 ```xulo
-fn describe<T: Area>(shape: T): float { Area.area(shape) + Area.perimeter(shape) }
+fn describe<T: Area>(shape: T): Float { Area.area(shape) + Area.perimeter(shape) }
 
 // `Rectangle` implements `Area`; `Square` does not
 let a = describe<Rectangle>(r)     // T = Rectangle, checked against `T: Area`
@@ -179,19 +179,19 @@ ComponentCall  = Identifier [ CallTypeArgs ] "(" [ ArgumentList ] ")" ComponentB
 follows an identifier in call position and the disambiguation rule above
 holds; everywhere else `<` is the relational operator. The spacing rule for
 adjacent closing angle brackets applies to `CallTypeArgs` as it applies to
-every other generic argument list, so `first<Map<string, int> >(m)` is
-well-formed and `first<Map<string, int>>(m)` is not. Component calls, method
+every other generic argument list, so `first<Map<String, Int> >(m)` is
+well-formed and `first<Map<String, Int>>(m)` is not. Component calls, method
 calls, and calls through a generic namespace member share the production.
 
 ## Diagnostics
 
 | Code | Trigger | Example | Message shape |
 |------|---------|---------|---------------|
-| `E0807` | a type-argument list on a callee that accepts none — a non-generic function, a value of function type, a constructor call | `greet<int>("x")` for a non-generic `greet` | `` `greet` takes no type arguments `` |
-| `E0808` | the list length differs from the declared type-parameter count | `first<int, string>(xs)` for `fn first<T>` | ``expected 1 type argument, found 2`` |
+| `E0807` | a type-argument list on a callee that accepts none — a non-generic function, a value of function type, a constructor call | `greet<Int>("x")` for a non-generic `greet` | `` `greet` takes no type arguments `` |
+| `E0808` | the list length differs from the declared type-parameter count | `first<Int, String>(xs)` for `fn first<T>` | ``expected 1 type argument, found 2`` |
 | `E0801` | an explicit type argument satisfies no bound | `describe<Square>(s)` | `` `Square` does not implement `Area` `` |
-| `E0202` | an argument does not fit the substituted parameter type | `first<int>(["a"])` | ``expected `list<int>`, found `list<string>` `` |
-| `E0201` | the call's instantiated result type disagrees with its context | `let bad: string = first<int>(…)` | ``expected `string`, found `int` `` |
+| `E0202` | an argument does not fit the substituted parameter type | `first<Int>(["a"])` | ``expected `List<Int>`, found `List<String>` `` |
+| `E0201` | the call's instantiated result type disagrees with its context | `let bad: String = first<Int>(…)` | ``expected `String`, found `Int` `` |
 
 Two failures belong to the parse, which carries no code of its own in the
 diagnostic model:
@@ -201,10 +201,10 @@ diagnostic model:
   when the callee is a declared non-generic function, `E0204` when the callee
   has no function type at all — and attaches
   `= note: parenthesize the comparison: (a < b) > (c)`.
-- **Material that is not a type list.** `first<Map<string, int>>(m)` closes
+- **Material that is not a type list.** `first<Map<String, Int>>(m)` closes
   with a `>>` token, so no matching `>` is found, the `<` is read relationally,
   and the expression fails to parse in the `syntax` category, with
-  `= note: separate the closing brackets: first<Map<string, int> >(m)`.
+  `= note: separate the closing brackets: first<Map<String, Int> >(m)`.
 
 Registration: on acceptance, `E0807` and `E0808` are added to the trait and
 generic errors table of [`../../type-system/errors.md`](../../type-system/errors.md),

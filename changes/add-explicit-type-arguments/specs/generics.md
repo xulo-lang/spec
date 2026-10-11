@@ -1,14 +1,16 @@
 # Generics — Delta: Explicit Type Arguments
 
-> **Delta** — replaces the “Explicit type arguments” paragraph in `types/generics.md`.
+> **Delta** — replaces the **Inference** section of `types/generics.md`.
+
+## Inference
 
 A call MAY write the type arguments of a generic callee explicitly, in a list
 between the callee and the argument list. The written arguments take the place
 of inference for that call:
 
 ```xulo
-let n = first<int>([1, 2, 3])      // T = int, written at the call
-let s = first(["a", "b"])          // T = string, inferred as before
+let n = first<Int>([1, 2, 3])      // T = Int, written at the call
+let s = first(["a", "b"])          // T = String, inferred as before
 ```
 
 Rules:
@@ -28,18 +30,16 @@ Rules:
   ordinary argument error `E0202`:
 
   ```xulo
-  let a = first<int>([1, 2, 3])      // OK: `list<int>` for `list<T>`
-  let b = first<int>(["a", "b"])     // error[E0202]: expected `list<int>`, found `list<string>`
+  let a = first<Int>([1, 2, 3])      // OK: `List<Int>` for `List<T>`
+  let b = first<Int>(["a", "b"])     // error[E0202]: expected `List<Int>`, found `List<String>`
   ```
 
 - The type of the call is the declared return type with the written
   arguments substituted, and an expected type still checks that result:
 
   ```xulo
-  fn empty<T>(): list<T> { [] }
-
-  let xs: list<int> = empty<int>()      // OK
-  let ys: string = empty<int>()         // error[E0201]: expected `string`, found `list<int>`
+  let xs: Int = first<Int>([1, 2, 3])      // OK: the call has type Int
+  let ys: String = first<Int>([1, 2, 3])   // error[E0201]: expected `String`, found `Int`
   ```
 
 - A list written before a callee that declares no type parameters is `E0807`.
@@ -49,12 +49,12 @@ Rules:
 
   ```xulo
   let a = describe<Rectangle>(r)      // T = Rectangle, checked against `T: Area`
-  let b = Task.all<int>([t1, t2])     // T = int for the built-in namespace member
+  let b = Task.all<Int>([t1, t2])     // T = Int for the built-in namespace member
   ```
 
 - `>>` is a single token, so the nested-bracket spacing rule of this chapter
-  applies to a written list as well: `first<Map<string, int> >(m)` is
-  well-formed and `first<Map<string, int>>(m)` is not.
+  applies to a written list as well: `first<Map<String, Int> >(m)` is
+  well-formed and `first<Map<String, Int>>(m)` is not.
 
 Whether a `<` after a callee begins such a list is decided by the
 disambiguation rule of
@@ -62,10 +62,44 @@ disambiguation rule of
 is in [`../grammar.md`](../grammar.md); this chapter is concerned only with
 what a written list means once it is parsed.
 
-**Omission is unchanged.** A call that writes no type arguments is checked
-exactly as specified before this change: type arguments are determined by
-unification between the declared parameter types and the argument types, an
-expected type MAY determine what the arguments leave undetermined, and a
-parameter that remains under-constrained MUST be reported with a diagnostic.
+**Inference for an omitted list is unchanged.** A call that writes no type
+arguments is checked exactly as follows.
+
+- Type arguments are determined by *unification* between the declared parameter
+  types and the argument types. Unification decomposes type constructors
+  structurally:
+
+  | Constraint | Result |
+  |------------|--------|
+  | `List<T>` ≟ `List<Int>` | `T = Int` |
+  | `Map<K, V>` ≟ `Map<String, Int>` | `K = String`, `V = Int` |
+  | `T` ≟ `fn(Int): Boolean` | `T = fn(Int): Boolean` |
+  | `T?` ≟ `String?` | `T = String` |
+  | `List<T>` ≟ `Map<String, Int>` | fails (different heads) |
+
+- A parameter occurring twice in a signature receives one solution; if two
+  constraints demand different types for it, inference fails with a diagnostic.
+- An *expected type* MAY determine what the arguments leave undetermined — an
+  empty list literal, a numeric literal, a closure with unannotated parameters.
+  It MUST NOT override a type already fixed by the arguments: in
+  `let bad: String = first([1, 2])`, `T` is `Int`, so the declaration is an
+  error rather than an invitation to choose `T = String`. When the list is
+  written, the expected type checks the substituted result instead of feeding
+  anything back into the arguments.
+- Inference MUST fail with a diagnostic when a parameter remains
+  under-constrained:
+
+  ```xulo
+  fn empty<T>(): List<T> { [] }
+  let xs = empty()             // error: T is not determined
+  let ys: List<Int> = empty()  // OK: T = Int from the expected type
+  ```
+
+  Such a call is repaired by writing the list — `empty<Int>()` — or by
+  annotating its context. Constraint generation and solving are specified in
+  [`../type-system/checking-rules.md`](../type-system/checking-rules.md), and
+  the diagnostics raised on failure are listed in
+  [`../type-system/errors.md`](../type-system/errors.md).
+
 The written list is an additional way to supply what inference would
 otherwise have to find; it adds no new freedom to a call that omits it.

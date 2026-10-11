@@ -43,8 +43,8 @@ and is unchanged; `CallTypeArgs` is a separate production that admits the
 empty list, because a zero-length list at a call must reach the arity
 diagnostic rather than fall back to a comparison. `>>` and `>=` are single
 tokens and never match, so a nested type argument keeps the spacing the
-nested-bracket rule already requires: `first<Map<string, int> >(m)` is
-well-formed and `first<Map<string, int>>(m)` is not, the latter failing to
+nested-bracket rule already requires: `first<Map<String, Int> >(m)` is
+well-formed and `first<Map<String, Int>>(m)` is not, the latter failing to
 parse with a note to insert the space. Typing and diagnostics are in
 [expressions/calls.md](expressions/calls.md).
 
@@ -56,7 +56,7 @@ ComponentCall  = Identifier [ CallTypeArgs ] "(" [ ArgumentList ] ")" ComponentB
 ```
 
 `ComponentBlock` and `ChildItem` are unchanged. An invocation written with an
-argument list and no block — `Text("Hi")`, `first<int>([1, 2, 3])` — parses as
+argument list and no block — `Text("Hi")`, `first<Int>([1, 2, 3])` — parses as
 an ordinary call through `PostfixOperand`, and the two read the same.
 
 ## Nonterminals index

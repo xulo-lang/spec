@@ -26,11 +26,11 @@
     nothing back into the written arguments.
 
   A list written before a callee that declares no type parameters is `E0807`,
-  including a value of function type (`f<int>(…)` where `f: fn(int): int`) and
+  including a value of function type (`f<Int>(…)` where `f: fn(Int): Int`) and
   a `struct` or `enum` constructor. The rule applies wherever the callee ends
-  in an identifier — a method (`r.first<int>(xs)`), a trait static
-  (`Trait.method<int>(x)`), a namespace member (`Task.all<int>(…)`), or a
-  component (`Counter<int>() { … }`).
+  in an identifier — a method (`r.first<Int>(xs)`), a trait static
+  (`Trait.method<Int>(x)`), a namespace member (`Task.all<Int>(…)`), or a
+  component (`Counter<Int>() { … }`).
 
 ## Constraint generation and solving
 

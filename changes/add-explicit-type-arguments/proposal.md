@@ -7,13 +7,13 @@
 ## Summary
 
 A call MAY carry an explicit type-argument list between the callee and the
-argument list — `first<int>(…)`, `map<string, int>(…)`. The written arguments
+argument list — `first<Int>(…)`, `Map<String, Int>(…)`. The written arguments
 replace inference for that call: they are checked against the callee's
 declaration for arity and bounds, and then used directly in place of solving.
 A call that omits the list is checked exactly as it is today.
 
 Until this change is accepted, the chapters named above remain normative and
-`first<int>(…)` stays ill-formed: [`../../types/generics.md`](../../types/generics.md)
+`first<Int>(…)` stays ill-formed: [`../../types/generics.md`](../../types/generics.md)
 states that the language has no syntax for explicit type arguments in a call,
 [`../../expressions/calls.md`](../../expressions/calls.md) states that
 writing one is not well-formed, and [`../../functions.md`](../../functions.md)
@@ -32,11 +32,11 @@ repaired only by arranging an expected type, and the only place to put one is
 the surrounding context:
 
 ```xulo
-fn empty<T>(): list<T> { [] }
+fn empty<T>(): List<T> { [] }
 
 let xs = empty()             // error[E0216]: T is not determined
-let ys: list<int> = empty()   // accepted: the annotation supplies T
-let zs = empty<int>()         // accepted: the call supplies T
+let ys: List<Int> = empty()   // accepted: the annotation supplies T
+let zs = empty<Int>()         // accepted: the call supplies T
 ```
 
 The annotation must be attached to a construct that can carry one, so a call
@@ -48,20 +48,20 @@ let head = empty()[0]          // error[E0216]: no expected type reaches `empty`
 ```
 
 ```xulo
-let tmp: list<int> = empty()   // a binding whose only purpose is to carry the type
+let tmp: List<Int> = empty()   // a binding whose only purpose is to carry the type
 let head = tmp[0]
 ```
 
 ```xulo
-let head = empty<int>()[0]     // the type is written where it is needed
+let head = empty<Int>()[0]     // the type is written where it is needed
 ```
 
 The same failure occurs in the prelude, where the entries of a map are the
 only place its key and value types could come from:
 
 ```xulo
-let annotated: map<string, int> = map_from_entries([])  // today: K and V come from the annotation
-let written = map_from_entries<string, int>([])         // proposed: K and V are written at the call
+let annotated: Map<String, Int> = map_from_entries([])  // today: K and V come from the annotation
+let written = map_from_entries<String, Int>([])         // proposed: K and V are written at the call
 ```
 
 ### The type is pinned where the call is read
@@ -73,8 +73,8 @@ together, so the intended instantiation is visible in the line that performs
 the call:
 
 ```xulo
-let by_annotation: map<string, int> = map_from_entries([])  // pinned away from the call
-let by_call = map_from_entries<string, int>([])             // pinned on the call
+let by_annotation: Map<String, Int> = map_from_entries([])  // pinned away from the call
+let by_call = map_from_entries<String, Int>([])             // pinned on the call
 ```
 
 It also records the author's choice rather than a property the checker
@@ -91,14 +91,14 @@ implementation MAY report further failures after the first. The root cause is
 one missing type argument, but it is charged many times over:
 
 ```xulo
-fn empty<T>(): list<T> { [] }
+fn empty<T>(): List<T> { [] }
 
 let xs = empty()        // error[E0216]: T is not determined
 let ys = xs + [1]       // reported as well: `xs` never received a type
 let n = xs[0] + 1       // and again here
 ```
 
-Writing `empty<int>()` repairs the root cause at the call, and the
+Writing `empty<Int>()` repairs the root cause at the call, and the
 downstream diagnostics disappear with it.
 
 ## Scope
@@ -148,7 +148,7 @@ downstream diagnostics disappear with it.
 
 ## Non-goals
 
-- **Default type parameters** (`fn empty<T = int>()`): a separate feature with
+- **Default type parameters** (`fn empty<T = Int>()`): a separate feature with
   its own interaction with bounds and with inference.
 - **Variadic generics**: a type-parameter list whose length is not fixed by
   the declaration.
