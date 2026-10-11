@@ -79,6 +79,21 @@ Additional conventions:
 5. **Type notation.** `T?` denotes the optional type, `T | U` a union,
    `T & U` an intersection, `fn(A): R` a function type, and `Task<T>` the type
    of an asynchronous computation.
+6. **Examples state their expected outcome.** A `xulo` block that illustrates a
+   rule whose result is not obvious from the surrounding prose SHOULD mark it in
+   a trailing comment: `// ok` for a program the checker accepts,
+   `// error[E0809]` for one it rejects with that code, `// error` where the
+   code is given by the surrounding prose, and `// runs: …` where the runtime
+   result is what the example is about. Where a failure has a code in
+   [`type-system/errors.md`](type-system/errors.md), the annotation MUST carry
+   that code. The forms serve readers and tooling; they impose no requirement on
+   an implementation, which reports diagnostics as that chapter specifies.
+7. **A rule that admits one form and forbids another shows both.** Where prose
+   draws such a line, the example marks the accepted form `// ok` and the
+   rejected one with its error code, in one block or in adjacent blocks, and
+   keeps only the code the rule needs. These annotations exist so the
+   implementation repository can lift a block into its test set unchanged; the
+   examples themselves remain non-normative (convention 1).
 
 ### 3.1 Normative references
 
