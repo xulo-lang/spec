@@ -144,6 +144,11 @@ fn Home(): View {
 - A store binding may name values (`user`, `theme`) or functions the store
   exposes (`setTheme`); both come from the same declaration form, and a body
   MAY contain several `@Store` declarations.
+- **The initializer is an ordinary expression.** The language fixes the
+  declaration form and the re-run semantics below; `useAppStore()` in the
+  examples is a library function that supplies the store, not an intrinsic,
+  and the store's contents are a library concern outside this specification
+  ([`../grammar.md`](../grammar.md), [README §1.1](../README.md)).
 - **Store values are shared.** Every component that declares them observes the
   same values: there is one store, and its state is not per instance. State that
   must be common to the program — a theme, a current user — belongs in a store;

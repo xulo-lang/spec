@@ -21,6 +21,13 @@ This specification defines the *design* of the Xulo language:
 - the memory, concurrency, and error-handling models,
 - a complete formal grammar.
 
+The design rests on one claim: *structural* trust in a program does not
+require reading the code. Types, mutability defaults, and exhaustive matches
+are enforced by the language; interfaces are written to be read without
+their bodies; and a component's source is the interface it renders. The
+layered goals that make this possible are stated in
+[`introduction.md`](introduction.md).
+
 It is written for language implementers, tool authors (compilers, linters,
 language servers, formatters), and advanced users who need a precise account of
 what is well-formed and what it means.

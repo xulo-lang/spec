@@ -12,8 +12,73 @@ program runs, not a choice of dialect.
 
 ## Design Goals
 
-The language design commits to the goals below; the later chapters elaborate
-them one at a time.
+**Trust does not scale with reading.** A Xulo program's *structural*
+properties — its types, its mutability defaults, its exhaustive matches — are
+enforced by the language, so a reader who skips code still inherits them.
+*Intent* is never fully enforceable, and this specification does not pretend
+otherwise: intent is examined at boundaries, in signatures, and in the
+rendered result. The goals below are the commitments that make the structural
+half of that claim hold; the later chapters elaborate them one at a time.
+
+Three depths of attention read the same `.xulo` file: the readers who verify
+semantics — implementers, framework authors, reviewers of this specification;
+the readers who judge interfaces — application developers and code reviewers
+with a limited attention budget per line; and the readers who consume
+results — designers, stakeholders, and automated agents for whom the rendered
+outcome is the only contact with the program. One file must serve all three
+without a translation layer. Automated readers multiply how often the first
+two depths are consumed without multiplying how often intent is judged — which
+is why the guarantees below live in the checker rather than in prose.
+Correspondingly, Xulo is not aimed at fields whose primary readers must
+verify every line — formal verification, kernel code, high-frequency trading
+cores. Those fields need a language that *requires* full reading; Xulo is the
+language that makes full reading optional for structural trust.
+
+### Layer 1 — Properties are enforced
+
+The trust substrate: what is checked here is checked for everyone, whether or
+not anyone reads the code.
+
+**Safe defaults.** `let` bindings are immutable unless declared `let mut`;
+`const` names a compile-time constant; a `match` must account for every case of
+the value it destructures; and `+` never mixes strings and numbers —
+conversion is written `str(x)`. Programmers opt *into* mutation, conversion,
+and openness, not out of them.
+
+**A predictable evaluation model.** Subexpressions evaluate left to right,
+blocks and patterns delimit scope, no value is coerced silently between
+unrelated types, and the grammar is newline-insensitive with `;` an optional
+statement terminator — so formatting never changes the meaning of a file.
+
+### Layer 2 — Contracts are legible
+
+The attention interface: this layer is what a reviewer needs to read; beyond
+it, reading the code is optional.
+
+**Local inference, explicit signatures at module boundaries.** Types are
+inferred inside function bodies and at `let` bindings, so annotations appear
+where they carry information. Declarations that cross a module boundary —
+`pub` items and module-level `fn` signatures — carry explicit types, so the
+interface of a file can be read without reading its body.
+
+**Syntax written to be read.** Keywords are words rather than symbol chains
+(`and`, `or`, `!`), mutability is spelled out (`let mut`), and the spelling of
+a construct rarely changes with context. The result is legible to a human
+reader and to a language model from the same text, with no dialect in which
+the two differ. For an automated reader the same surface is *addressable*,
+not merely legible: a rejected program names its diagnostic code, an
+interface is extractable from its signatures alone, and the AST is a fixed
+set of node names ([`ast.md`](ast.md)) — nothing a reviewer needs waits in
+prose.
+
+### Layer 3 — The result is the fact
+
+The experience surface: a component's source *is* the interface it renders,
+so consuming results instead of reading code is not a compromise — it is an
+admitted way of working. What the language fixes is the tree and the moments
+it updates; how a presentation target draws that tree belongs to the
+implementation, and the result is trustworthy exactly to the degree that
+target conforms to the semantics the later chapters specify.
 
 **UI-first structure.** A program is a tree of components. Structure comes
 from `{ ... }` blocks and comma-separated attributes: there are no closing tags
@@ -27,33 +92,29 @@ no markup island, and no second expression language embedded in the UI; the
 `if` and `for` that shape a view are the same `if` and `for` that shape a
 computation.
 
-**Syntax written to be read.** Keywords are words rather than symbol chains
-(`and`, `or`, `!`), mutability is spelled out (`let mut`), and the spelling of
-a construct rarely changes with context. The result is legible to a human
-reader and to a language model from the same text, with no dialect in which
-the two differ.
-
-**Safe defaults.** `let` bindings are immutable unless declared `let mut`;
-`const` names a compile-time constant; a `match` must account for every case of
-the value it destructures; and `+` never mixes strings and numbers —
-conversion is written `str(x)`. Programmers opt *into* mutation, conversion,
-and openness, not out of them.
-
-**Local inference, explicit signatures at module boundaries.** Types are
-inferred inside function bodies and at `let` bindings, so annotations appear
-where they carry information. Declarations that cross a module boundary —
-`pub` items and module-level `fn` signatures — carry explicit types, so the
-interface of a file can be read without reading its body.
-
 **Zero-boilerplate reactive state.** `@State`, `@Store`, `@Effect`, and
 `@Environment` appear at the top level of a component body and nothing else is
 required: dependency tracking and re-rendering are part of the language design
 rather than wiring the programmer assembles by hand.
 
-**A predictable evaluation model.** Subexpressions evaluate left to right,
-blocks and patterns delimit scope, no value is coerced silently between
-unrelated types, and the grammar is newline-insensitive with `;` an optional
-statement terminator — so formatting never changes the meaning of a file.
+### The parity principle
+
+A feature that requires more reading must, in exchange, add a new automatic
+guarantee — and *guarantee* here is checkable, not aspirational, with the
+kind of check following the layer. In Layers 1 and 2 it is compile-time: a
+new or extended diagnostic (a code in
+[`type-system/errors.md`](type-system/errors.md)) or a new statically
+enforced property, which the checker enforces. In Layer 3 it is normative
+runtime semantics: behavior this specification pins down, which the
+implementation must reproduce. A proposal that adds syntax with neither does
+not land. The principle runs both ways. Removing syntax
+while keeping its checks is always admissible at the parity gate — it
+reduces reading and preserves guarantees — though it remains a
+major-version change ([README §2](README.md)); removing a check is not
+admissible without naming what replaces it, and is likewise major.
+Guarantees accumulate downward toward Layer 1; the surface vocabulary stays
+stable, so a reader who engages only lightly never has to relearn the
+language as it grows.
 
 ## Non-Goals
 
