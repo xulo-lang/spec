@@ -62,7 +62,7 @@ a program declares them itself; they are not part of the prelude (see
 |-----------|----------|--------------|
 | `Math` | mathematical constants and functions | [`Math` namespace](intrinsic-functions.md#math-namespace) |
 | `Time` | timestamps and async sleep | [`Time` namespace](intrinsic-functions.md#time-namespace) |
-| `Task` | task combinators `all`, `race`, `resolve` | [`Task` namespace](intrinsic-functions.md#task-namespace) |
+| `Task` | task combinators `all`, `race`, `resolve`, `timeout` | [`Task` namespace](intrinsic-functions.md#task-namespace) |
 
 Members are selected with `.`, exactly like fields and methods:
 `Math.PI`, `Time.now()`, `Task.all(tasks)`
@@ -92,20 +92,28 @@ so is every intrinsic listed in
 
 Iteration, subscripts, and concatenation on the collections are core syntax and
 are specified with the types themselves. Everything else that the built-in
-collections need — removal, size, entry tests, bulk conversion, and the `Set`
-constructor — is a prelude operation: an unqualified function in scope in every
-module, called like any other function.
+collections need — removal, size, entry tests, lookup, append, enumeration,
+bulk conversion, and the `Set` constructor — is a prelude operation: an
+unqualified function in scope in every module, called like any other function.
 
 ```xulo
 let mut counts: Map<String, Int> = { "a": 1, "b": 2 }
 print(map_size(counts))              // 2
 print(map_has_key(counts, "a"))      // true
+print(map_get(counts, "z"))          // null: absent, and no failure
 let previous = map_remove(counts, "a")   // counts loses "a"; previous is 1
 
 let tags: Set<String> = set_from_list(["a", "b", "a"])
 print(set_size(tags))                // 2: the duplicate collapsed
 let added = set_insert(tags, "c")
 print(set_contains(tags, "c"))       // true
+
+let mut xs = ["a", "b"]
+list_push(xs, "c")                   // xs is ["a", "b", "c"]
+let removed = list_remove(xs, 0)     // "a"; xs is ["b", "c"]
+for e in enumerate(xs) {
+  print(`${e.0}=${e.1}`)             // 0=b, then 1=c
+}
 
 let user = { name: "lyy", age: 30 }  // a Map<String, String | Int>
 print(user["name"])                  // lyy
@@ -117,6 +125,7 @@ print(user["name"])                  // lyy
 |-----------|---------|
 | `map_size<K, V>(m: Map<K, V>): Int` | the number of entries in `m` |
 | `map_has_key<K, V>(m: Map<K, V>, k: K): Boolean` | `true` when `k` has a binding in `m` |
+| `map_get<K, V>(m: Map<K, V>, k: K): V?` | the value `k` is bound to, or `null` when `k` has no binding |
 | `map_remove<K, V>(m: mut Map<K, V>, k: K): V?` | removes the binding for `k` and returns the value it had, or `null` when `k` was absent |
 | `map_to_entries<K, V>(m: Map<K, V>): List<(K, V)>` | one `(key, value)` tuple per entry, in insertion order (bulk conversion) |
 | `map_from_entries<K, V>(entries: List<(K, V)>): Map<K, V>` | builds a map from `(key, value)` tuples, in list order; a repeated key keeps the later entry |
@@ -124,6 +133,9 @@ print(user["name"])                  // lyy
 - Reading (`m[k]`), writing (`m[k] = v`), and iterating the keys (`for k in m`)
   are core syntax and need no prelude function
   ([`../types/composite-types.md`](../types/composite-types.md)).
+- `map_get` is the lookup that cannot fail: reading `m[k]` for a key with no
+  binding is a runtime failure, while `map_get(m, k)` answers `null`
+  ([`../error-handling.md`](../error-handling.md)).
 - `map_remove` mutates its first argument, so that argument MUST be a mutable
   place — a `let mut` binding or a `mut` parameter; passing anything else is a
   compile-time error (`E0401`).
@@ -147,9 +159,24 @@ and the operations that manipulate a set.
   operation defines the order of the elements, and programs MUST NOT depend on
   one ([`../types/composite-types.md`](../types/composite-types.md)).
 
-`List<T>` needs no prelude operations of its own: `+`, the subscript, and
-iteration are core syntax
-([`../types/composite-types.md`](../types/composite-types.md)).
+### List operations
+
+`+`, the subscript, and iteration on a list are core syntax
+([`../types/composite-types.md`](../types/composite-types.md)); the prelude
+supplies the operations they do not cover:
+
+| Signature | Meaning |
+|-----------|---------|
+| `list_size<T>(xs: List<T>): Int` | the number of elements in `xs` |
+| `list_push<T>(xs: mut List<T>, v: T): Unit` | appends `v` to the end of `xs` |
+| `list_remove<T>(xs: mut List<T>, i: Int): T?` | removes the element at index `i`, shifting later elements down, and returns it; `null` when `i` is negative or at or past the end |
+| `enumerate<T>(xs: List<T>): List<(Int, T)>` | one `(index, element)` tuple per element, in order |
+
+- `list_push` and `list_remove` mutate their first argument, which MUST
+  therefore be a mutable place, exactly as for `map_remove`.
+- `list_remove` is the removal that cannot fail: the subscript `xs[i]` for an
+  out-of-range index is a runtime failure, while `list_remove(xs, i)` answers
+  `null` and leaves `xs` unchanged.
 
 ## Prelude visibility
 

@@ -64,12 +64,12 @@ formed first, then classified as keyword, reserved word, or identifier.
 
 ### Keywords
 
-The language has exactly the following closed set of 40 keywords; every other
+The language has exactly the following closed set of 41 keywords; every other
 word is an ordinary identifier unless it is reserved.
 
 ```text
 Keyword = "and" | "as" | "async" | "await" | "break" | "const"
-        | "continue" | "copy" | "else" | "enum" | "false" | "fn"
+        | "continue" | "copy" | "defer" | "else" | "enum" | "false" | "fn"
         | "for" | "from" | "if" | "impl" | "in" | "import" | "is" | "let"
         | "lock" | "match" | "move" | "mut" | "not" | "null" | "or" | "panic"
         | "pub" | "return" | "self" | "shared" | "spawn" | "struct" | "trait"
@@ -418,13 +418,17 @@ let ys = [...xs, 4]            // spread inside a literal
 
 ## Patterns
 
-A `match` arm binds with a pattern. There are no OR-patterns and no guards:
-the first arm whose pattern matches wins, and exhaustiveness is a checking rule
+A `match` arm binds with a pattern. A pattern MAY be a disjunction of
+alternatives, and an arm MAY carry a guard; the first arm whose pattern
+matches and whose guard, when present, evaluates to `true` wins, and
+exhaustiveness is a checking rule
 ([control-flow.md](expressions/control-flow.md)).
 
 ```text
-Pattern        = "_" | LiteralPattern | RangePattern | VariantPattern
-               | StructPattern | TypePattern | Identifier ;
+Pattern        = PatternAlt { "|" PatternAlt } ;
+PatternAlt     = "_" | LiteralPattern | RangePattern | VariantPattern
+               | StructPattern | TypePattern | Identifier
+               | "(" Pattern ")" ;
 LiteralPattern = IntegerLiteral | FloatLiteral | StringLiteral
                | BooleanLiteral | "null" ;
 RangePattern   = ( IntegerLiteral | FloatLiteral ) ( "..<" | "..." )
@@ -441,8 +445,16 @@ wildcard and a binding of the same spelling are one alternative. Enum variants
 use `::` in patterns exactly as in expressions, and the operands of a range
 pattern are numeric literals. A type pattern is a type designator followed by
 a binder — `String s`, `Unknown _`, `String? p` — and the designator admits no
-type-argument list; because OR-patterns do not exist, `|` between designators
-can only be a union type ([control-flow.md](expressions/control-flow.md)).
+type-argument list
+([control-flow.md](expressions/control-flow.md)).
+
+`|` does double duty: it joins the designators of a union type pattern and
+separates the alternatives of an or-pattern. The designator chain is read
+first when a binder follows it — `String | Int v` is one union type pattern,
+as before — and `|` separates alternatives when no binder follows: `0 | 1`,
+`A | B`, `Shape::Circle(_) | Shape::Dot(_)`. Parentheses group a single
+alternative and settle the remaining case: `(A) | B c` is two alternatives,
+while `A | B c` remains one union type pattern.
 
 ## Statements
 
@@ -452,13 +464,14 @@ the next token cannot continue it.
 
 ```text
 Statement = ( FnDecl | LetDecl | ConstDecl | ComponentDecl
-            | ReturnStmt | BreakStmt | ContinueStmt
+            | ReturnStmt | BreakStmt | ContinueStmt | DeferStmt
             | Assignment | ExpressionStatement
             | ForStmt | WhileStmt ) StatementEnd ;
 StatementEnd      = [ ";" ] ;
 ReturnStmt        = "return" [ Expression ] ;
 BreakStmt         = "break" ;
 ContinueStmt      = "continue" ;
+DeferStmt         = "defer" ( Block | Expression ) ;
 Assignment        = Place "=" AssignmentExpression ;
 ExpressionStatement = TernaryExpression ;
 Block             = "{" { Statement } "}" ;
@@ -473,18 +486,25 @@ every level below assignment, and its target MUST be a place
 expression, kept only if not followed by `;`
 ([return-and-block.md](statements/return-and-block.md)).
 
+`defer e` registers its operand — an expression or a block — for evaluation
+when control leaves the enclosing block, and discards the value it produces
+([return-and-block.md](statements/return-and-block.md)). An operand beginning
+with `{` is read as a block, not a map; write a map literal in parentheses
+when one must be deferred.
+
 ## Control flow
 
-`if` and `match` are expressions; `for`, `while`, and `break`/`continue` are
-statements; `panic` is an expression, so in statement position it is an
-`ExpressionStatement` whose value is discarded
+`if` and `match` are expressions; `for`, `while`, `break`/`continue`, and
+`defer` are statements; `panic` is an expression, so in statement position it is
+an `ExpressionStatement` whose value is discarded
 ([statements/expression-statements.md](statements/expression-statements.md)).
 
 ```text
 IfExpression  = "if" Expression Block [ "else" ( Block | IfExpression ) ] ;
 MatchExpression = "match" Expression "{" [ MatchArmList ] "}" ;
 MatchArmList  = MatchArm { [ "," ] MatchArm } [ "," ] ;
-MatchArm      = Pattern "=>" ( Expression | Block ) ;
+MatchArm      = Pattern [ Guard ] "=>" ( Expression | Block ) ;
+Guard         = "if" Expression ;
 
 ForStmt   = "for" Identifier "in" Expression Block ;
 WhileStmt = "while" Expression Block ;
@@ -492,8 +512,14 @@ WhileStmt = "while" Expression Block ;
 
 `else` may be followed directly by another `if`, which chains without limit.
 Arms are separated by newlines or optional `,`; each body is an expression or
-a block. Failure propagation with `?` and the stopping `panic` expression are
-specified in [error-handling.md](error-handling.md).
+a block, and each arm MAY carry a guard — `if condition` between its pattern
+and `=>` — which is evaluated only when the pattern has matched. The `=>` that
+ends an arm is the first one written outside any parentheses, brackets, or
+braces, so a closure cannot stand unparenthesized in a guard: write
+`x if ((n) => n > 0) => …`, and a `match` or `if` inside a guard is unaffected
+because its own `=>` and braces are nested. Failure propagation with `?` and
+the stopping `panic` expression are specified in
+[error-handling.md](error-handling.md).
 
 ## Components and UI
 
@@ -573,9 +599,9 @@ production itself appears exactly once, in its own section.
 | `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `LiteralType`, `TypeArgs`, `TypeList`, `TupleType`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
 | `Expression`, `AssignmentExpression`, `TernaryExpression`, `LogicalOrExpression`, `LogicalAndExpression`, `NullishExpression`, `EqualityExpression`, `IsExpression`, `RelationalExpression`, `RangeExpression`, `BitOrExpression`, `BitXorExpression`, `BitAndExpression`, `ShiftExpression`, `AdditiveExpression`, `MultiplicativeExpression`, `PowerExpression`, `UnaryExpression`, `PostfixExpression`, `PostfixOperand` | [Expressions](#expressions) |
 | `PrimaryExpression`, `VariantPath`, `PanicExpression`, `Place`, `ArgumentList`, `Argument`, `ListLiteral`, `ListElement`, `Spread`, `MapLiteral`, `TypedMap`, `BraceMap`, `MapEntry`, `MapField`, `TupleLiteral`, `ClosureExpression`, `FunctionExpression`, `ArrowClosure`, `ArrowParams`, `ClosureParamList`, `ClosureParam` | [Expressions](#expressions) |
-| `Pattern`, `LiteralPattern`, `RangePattern`, `VariantPattern`, `StructPattern`, `TypePattern`, `PatternType`, `PatternList` | [Patterns](#patterns) |
-| `Statement`, `StatementEnd`, `ReturnStmt`, `BreakStmt`, `ContinueStmt`, `Assignment`, `ExpressionStatement`, `Block` | [Statements](#statements) |
-| `IfExpression`, `MatchExpression`, `MatchArmList`, `MatchArm`, `ForStmt`, `WhileStmt` | [Control flow](#control-flow) |
+| `Pattern`, `PatternAlt`, `LiteralPattern`, `RangePattern`, `VariantPattern`, `StructPattern`, `TypePattern`, `PatternType`, `PatternList` | [Patterns](#patterns) |
+| `Statement`, `StatementEnd`, `ReturnStmt`, `BreakStmt`, `ContinueStmt`, `DeferStmt`, `Assignment`, `ExpressionStatement`, `Block` | [Statements](#statements) |
+| `IfExpression`, `MatchExpression`, `MatchArmList`, `MatchArm`, `Guard`, `ForStmt`, `WhileStmt` | [Control flow](#control-flow) |
 | `ComponentCall`, `ComponentBlock`, `ChildItem` | [Components and UI](#components-and-ui) |
 | `SpawnExpression`, `SpawnTarget`, `LockExpression`, `FieldInitList`, `FieldInit` | [Concurrency](#concurrency) |
 

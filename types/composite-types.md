@@ -18,6 +18,9 @@ let names: List<String> = []
 - `+` concatenates two lists into a new list of type `List<T | U>` — exactly `List<T>` when both operands are `List<T>` — and leaves the operands unchanged.
 - `xs[i]` requires `i` to have type `Int`. Reading yields the element at that index; writing (`xs[i] = v`) stores a value of the element type into it, subject to the mutable-place rules. An index that is negative or at or past the end of the list is a runtime error for both.
 - Iteration is written `for x in xs` and visits the elements in order.
+- Size, append, indexed removal, and enumeration — everything beyond `+`, the
+  subscript, and iteration — are prelude functions (see
+  [`../builtins/prelude.md`](../builtins/prelude.md)).
 - The type system does not assign identity to list values: binding, assignment, argument passing, and return never depend on whether two `List<T>` values share storage. Storage sharing, `shared` state, and aliasing are governed by the memory model, not by the type of the list (see [`../memory-and-runtime.md`](../memory-and-runtime.md)).
 
 ```xulo
@@ -84,7 +87,7 @@ let ages = Map<Int, String>{ 30: "thirty" }     // typed form: keys are not iden
   a `null` map yields `null`, the expression has type `V?`, and a missing
   key on a non-`null` map is still that runtime error. On a map whose
   key type is not `String` the member form is not available. All other map
-  operations — removal, size, entry tests, bulk conversion — are prelude
+  operations — lookup, removal, size, entry tests, bulk conversion — are prelude
   functions (see [`../builtins/prelude.md`](../builtins/prelude.md)).
 
 ```xulo

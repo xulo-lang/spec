@@ -17,7 +17,7 @@ covers statement position everywhere in this specification:
 
 > An expression statement that is not `Unit` is an error (`E0218`), EXCEPT when
 > it is a control-flow construct (`if`, `match`, `for`, `while`) whose value is
-> discarded.
+> discarded, or a `send` whose `Task<R>` is discarded.
 
 Accordingly, an `if` or `match` written as a statement MAY have branches or
 arms of unrelated types, because the value of the branch that runs is
@@ -57,8 +57,9 @@ if condition {
     on, the branch checks with `x : S` again.
   A type that is not testable, or one that does not fit `S`, is `E0222`
   ([`errors.md`](../type-system/errors.md)). Narrowing belongs to the `if`
-  condition alone: in every other `Boolean` position — `?:`, `while`, the
-  operands of `and` and `or`, under `!` — `is` is an ordinary test and `x`
+  condition alone: in every other `Boolean` position — `?:`, `while`, a
+  `match` guard, the operands of `and` and `or`, under `!` — `is` is an
+  ordinary test and `x`
   keeps type `S`, and a left operand that is not an identifier (a member
   access, a call) yields a `Boolean` but narrows nothing. The typing rules are
   in [`checking-rules.md`](../type-system/checking-rules.md).
@@ -107,8 +108,8 @@ fn negated(data: Unknown) {
 
 ## `match` expressions
 
-`match` tests a value against patterns and runs the body of the first arm that
-matches.
+`match` tests a value against patterns and runs the body of the first arm
+whose pattern matches and whose guard, when it has one, is `true`.
 
 ```xulo
 let label = match x {
@@ -120,10 +121,20 @@ let label = match x {
 
 - The scrutinee is evaluated exactly once, before any arm is tested, no matter
   how many arms are tried.
-- Arms are tested in source order; the first arm whose pattern matches wins and
-  its body is evaluated. All later arms are skipped.
-- An arm is `pattern => expression` or `pattern => { block }`; arms are
-  separated by newlines or optional commas.
+- Arms are tested in source order; the first arm whose pattern matches — and
+  whose guard, when the arm has one, evaluates to `true` — wins and its body
+  is evaluated. All later arms are skipped.
+- An arm is `pattern [if condition] => expression` or
+  `pattern [if condition] => { block }`; arms are separated by newlines or
+  optional commas.
+- A **guard** is an `if condition` written between the pattern and `=>`. It
+  is evaluated only when that arm's pattern has matched, and at most once:
+  when it is `false` the arm is skipped and testing continues with the next
+  arm, so one `match` may evaluate several guards in source order. The
+  condition MUST have type `Boolean` — there is no truthiness (`E0201`)
+  ([`checking-rules.md`](../type-system/checking-rules.md)). The guard is
+  evaluated with the bindings its arm's pattern made in scope, exactly as the
+  body will be.
 - `match` is an expression. In expression position all arm bodies MUST have a
   common type ([`checking-rules.md`](../type-system/checking-rules.md)); arms
   with no common type are a compile-time error (`E0211`)
@@ -148,10 +159,19 @@ match score {          // statement position: the arm values are discarded
 | Variant with payload | `Enum::Variant(p1, ..., pn)` | that variant; one sub-pattern per payload field, in declaration order |
 | Struct deconstruction | `Type(p1, ..., pn)` | a value of that struct type; one sub-pattern per field, in declaration order |
 | Type | `String s`, `Unknown _`, `String \| Int v` | a value whose type is the written type; binds the name for the body of the arm |
+| Or | `p1 \| p2` | a value matched by any alternative; the alternatives bind the same names |
 | Range | `a..<b`, `a...b` | numeric values inside the half-open or closed range |
 
 - Enum variants are written with `::` in patterns and in expressions
   (`Shape::Circle(r)`), never with `.`.
+- An **or-pattern** gives several alternatives separated by `|`
+  (`0 | 1`, `true | false`, `Result::Ok(v) | Result::Err(v)`): the arm
+  matches when any alternative matches, and an alternative MAY be a
+  parenthesized pattern. Every alternative MUST bind the same names, each at
+  the same type — both payloads of the `Result` example above bind `v` at one
+  type — so that the guard and the body read one set of bindings;
+  alternatives that disagree are a compile-time error (`E0304`)
+  ([`errors.md`](../type-system/errors.md)).
 - Sub-patterns nest arbitrarily: `Shape::Dot(Point(x, y))` matches a variant
   whose payload is a `Point` and then deconstructs that `Point`.
 - Named payload fields are still matched positionally: `Shape::Rect(w, h)`
@@ -166,8 +186,7 @@ match score {          // statement position: the arm values are discarded
   `String` and binds `s : String` for the arm's body, and `Unknown _` accepts
   any `Unknown` value without binding it. A type pattern is `match`'s type
   test; the same test outside `match` is the `is` operator (see
-  [`if` expressions](#if-expressions)), and there is no guard — an arm is
-  selected by its pattern alone.
+  [`if` expressions](#if-expressions)).
 - The written type MUST be a **testable type**: a base type name (`Int`,
   `String`, `Boolean`, `Float`, `Number`, the fixed-bit numerics, `Null`,
   `Unit`, `View`), a non-generic `struct` or `enum`, `Unknown`, or an optional
@@ -219,10 +238,31 @@ fn name(v: Unknown): String {
 }
 ```
 
+```xulo
+fn bucket(n: Int): String {
+  match n {
+    v if v < 0 => "negative"    // guard: the pattern alone matches everything
+    0 | 1 => "zero or one"      // or-pattern: two alternatives, one arm
+    v if v % 2 == 0 => "even"
+    _ => "odd"
+  }
+}
+// bucket(-3) => "negative"; bucket(1) => "zero or one";
+// bucket(4) => "even"; bucket(7) => "odd"
+
+match value {
+  Int x | String y => print(x)  // error: alternatives bind different names (E0304)
+}
+```
+
 ### Exhaustiveness and reachability
 
 - An arm **covers** a type when its pattern matches every value of that type:
-  a wildcard `_`, a binding `x`, or a type pattern of that exact type.
+  a wildcard `_`, a binding `x`, or a type pattern of that exact type. The
+  alternatives of an or-pattern cover together: `true | false` covers
+  `Boolean`, and the members of a union may be split across alternatives. A
+  **guarded** arm never covers — whatever its pattern, its guard may be
+  false — so exhaustiveness counts only unguarded arms.
 - A `match` MUST be exhaustive for the scrutinee's type. **`enum`**: every
   variant, by a variant pattern (possibly nested inside another pattern), or a
   covering arm. **`Boolean`**: `true` and `false`, or a covering arm. **A
@@ -238,10 +278,13 @@ fn name(v: Unknown): String {
   `Unknown` pattern or a covering arm, never by enumerating concrete types.
 - A `match` that fails these requirements is a compile-time error (`E0301`)
   ([`errors.md`](../type-system/errors.md)).
-- An arm that can never be selected is an error (`E0302`). In particular, every arm
-  after a wildcard or binding arm is unreachable, a literal that repeats an
-  earlier literal arm is unreachable, and a type pattern whose type is already
-  covered by an earlier arm is unreachable.
+- An arm that can never be selected is an error (`E0302`). In particular, every
+  arm after an unguarded wildcard or binding arm is unreachable, a literal
+  that repeats an earlier unguarded literal arm is unreachable, and a type
+  pattern whose type is already covered by earlier unguarded arms is
+  unreachable. A guarded arm never makes a later arm unreachable — its guard
+  may fail — and an or-pattern makes a later arm unreachable only when every
+  value its alternatives match was already selected by earlier unguarded arms.
 
 ```xulo
 fn describe(flag: Boolean): String {
@@ -360,6 +403,10 @@ while count < 10 {
   element, for `while` loops to a fresh evaluation of the condition.
 - `break` MUST NOT carry a value. There is no `loop` expression and no loop
   labels, so both statements always target the innermost enclosing loop.
+- Neither statement may appear in a `defer` operand, even inside a loop: the
+  operand runs while control is already leaving a block, so there is no jump
+  left to make, and the violation is `E0229`
+  ([`../statements/return-and-block.md`](../statements/return-and-block.md)).
 - `break` or `continue` outside a loop, or inside a function or closure body
   nested within a loop, is a compile-time error (`E0214`)
   ([`errors.md`](../type-system/errors.md)).
@@ -414,7 +461,7 @@ follows:
 | `c ? x : y` | `c`, then exactly one of `x`, `y` | the branch not selected |
 | `a ?? b` | `a`; `b` only when `a` is `null` | `b` when `a` is not `null` |
 | `if c { A } else { B }` | `c` once, then the selected branch | the other branch |
-| `match e { ... }` | `e` once, then patterns top to bottom, then the body of the first match | every later arm |
+| `match e { ... }` | `e` once, then each arm's pattern in order, the guard of each arm whose pattern matched, then the body of the first arm selected | every later arm |
 | `while c { B }` | `c` before each iteration, then `B` while `c` is `true` | `B` when `c` is `false` |
 | `for x in it { B }` | `it` once, then one element binding and `B` per element | the whole body when the sequence is empty |
 | `break` / `continue` | the jump itself | the rest of the current iteration; `break` also skips the rest of the loop |

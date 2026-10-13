@@ -172,9 +172,10 @@ literal ([`../types/composite-types.md`](../types/composite-types.md)).
 
 ### `if`, `match`, `for`, and `?:`
 
-- The condition of `if` and of `?:` must be `Boolean` (`E0201`); there is no
-  truthiness. With an `else` branch both branches check against their common
-  type, which is the type of the `if`; without `else` the type is `Unit`.
+- The condition of `if`, of `?:`, and of a `match` arm's guard must be
+  `Boolean` (`E0201`); there is no truthiness. With an `else` branch both
+  branches check against their common type, which is the type of the `if`;
+  without `else` the type is `Unit`.
 - When the condition of an `if` is `x is T` or `x is not T`, with `x` an
   identifier of type `S` in `Γ`, `T` a testable type, and `T ≼ S` (`E0222`
   otherwise), each branch checks in `Γ` extended with a narrowed type for
@@ -184,12 +185,14 @@ literal ([`../types/composite-types.md`](../types/composite-types.md)).
   `T = String`, `Null` for `S = String?` with `T = String`. When every member
   is covered — `S = T` — the else branch never runs; `is not` swaps the two
   branch types. An assignment to `x` inside a branch drops the extension from
-  that point on. In every other `Boolean` position — `?:`, `while`, the
-  operands of `and` and `or`, under `!` — `is` is an ordinary test with no
-  extension
+  that point on. In every other `Boolean` position — `?:`, `while`, a `match`
+  guard, the operands of `and` and `or`, under `!` — `is` is an ordinary test
+  with no extension
   ([`../expressions/control-flow.md`](../expressions/control-flow.md)).
 - `match` checks its scrutinee `e : T`, each pattern against `T`
-  ([Pattern typing](#pattern-typing)), then the arm bodies: in expression
+  ([Pattern typing](#pattern-typing)), each guard as a `Boolean` expression
+  in `Γ` extended with that arm's pattern bindings (`E0201`), then the arm
+  bodies: in expression
   position all arm bodies must have a common type (`E0211`); in statement
   position the rule below applies. In statement position the branches and arms
   of `if`, `match`, `for`, and `while` MAY be of unrelated types.
@@ -234,7 +237,7 @@ enclosing body (`E0703`), and a trailing block on a function not declaring
 ## Pattern typing
 
 A pattern is always checked against a known scrutinee type: `Γ ⊢ p ⇐ T ok`
-derives the bindings the arm's body may use.
+derives the bindings the arm's guard and body may use.
 
 | Pattern | Premises | Bindings |
 |---------|----------|----------|
@@ -245,9 +248,11 @@ derives the bindings the arm's body may use.
 | `Type(sp₁ … spₙ)` | `T` expands to struct `Type`; one sub-pattern per field, in declaration order | the sub-patterns' bindings |
 | `a..<b`, `a...b` | `T` is numeric and both operands are literals of `T`'s type | none |
 | `Type b` (type) | after alias expansion, `Type` is a testable type and `Type ≼ T` (`E0303` otherwise); `b` an identifier or `_` | `b : Type` when `b` is an identifier |
+| `p₁ \| … \| pₙ` (or) | every alternative checks against `T` (`E0303`), and every alternative binds the same names, each at the same type (`E0304` otherwise) | the alternatives' shared bindings |
 
 Exhaustiveness: an arm **covers** a type when it is a wildcard, a binding, or
-a type pattern of that exact type. A `match` MUST be exhaustive for the
+a type pattern of that exact type; the alternatives of an or-pattern cover
+together, and a guarded arm never covers. A `match` MUST be exhaustive for the
 scrutinee's type: an `enum` — every variant, by a variant pattern possibly
 nested, or a covering arm; `Boolean` — `true` and `false`, or a covering arm;
 a union — every member, by a type pattern of it, by its literal pattern when
@@ -257,8 +262,8 @@ testable; any other type — a covering arm, because literals, ranges, and type
 patterns cannot cover it (`Unknown` included: concrete type patterns never
 exhaust it). Failure is `E0301`; an arm that can never be selected is
 `E0302`; a pattern that names a type that is not testable, or whose type is
-not assignable to the scrutinee's type, is `E0303`. OR-patterns and guards do
-not exist.
+not assignable to the scrutinee's type, is `E0303`; or-pattern alternatives
+that disagree on what they bind are `E0304`.
 
 ## Statement rules
 
@@ -281,7 +286,7 @@ not exist.
 
   > An expression statement that is not `Unit` is an error, EXCEPT when it is a
   > control-flow construct (`if`, `match`, `for`, `while`) whose value is
-  > discarded.
+  > discarded, or a `send` whose `Task<R>` is discarded.
 
   Statement-position `if`/`match` may therefore have branches or arms of
   unrelated types; expression position requires a common type. A violation is
@@ -291,6 +296,10 @@ not exist.
   an `async` body `e ⇐ T`, the declared type denoting `Task<T>` (`E0503`).
   `return` outside any function, and `break`/`continue` outside a loop, are
   `E0214`; the latter two take no operand.
+- **`defer`.** The operand checks as an expression or a block in the
+  enclosing scope and its value is discarded; `return`, `break`, `continue`,
+  or `?` written inside it is `E0229`
+  ([`../statements/return-and-block.md`](../statements/return-and-block.md)).
 - **`?` and `panic`.** `e?` requires `e : T?` or `e : Result<T, E>`, has the
   success type, and — on failure — performs the enclosing function's early
   return, which needs a declared return type admitting `null` or that

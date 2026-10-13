@@ -12,7 +12,7 @@ expression of a block are specified in [`return-and-block.md`](return-and-block.
 
 > An expression statement that is not `Unit` is an error (`E0218`), EXCEPT when
 > it is a control-flow construct (`if`, `match`, `for`, `while`) whose value is
-> discarded.
+> discarded, or a `send` whose `Task<R>` is discarded.
 
 The rule exists because a computed value that nobody reads is almost always a
 mistake: a comparison that was meant to be a call, a call whose result was
@@ -53,8 +53,9 @@ if ready { prepare() } else { "not ready" }   // legal as a statement
 match half(3) { Result::Ok(v) => str(v) Result::Err(e) => e }   // legal: value discarded
 ```
 
-The exception covers only those four constructs. In particular a ternary
-`c ? x : y` is not one of them ([`../expressions/operators.md`](../expressions/operators.md)),
+The control-flow exception covers only those four constructs. In particular a
+ternary `c ? x : y` is not one of them
+([`../expressions/operators.md`](../expressions/operators.md)),
 and a `spawn` expression — though it names control flow — is deliberately not
 one either: bind it, `await` it, or pass it on
 ([`../concurrency.md`](../concurrency.md)).
@@ -62,6 +63,17 @@ one either: bind it, `await` it, or pass it on
 ```xulo
 spawn async { compute() }   // error: Task<T> discarded (E0218)
 let t = spawn async { compute() }   // legal: the task is bound
+```
+
+The second exception is a `send`. `handle.send(m)` MAY stand alone in
+statement position, discarding its `Task<R>`: the message is queued when the
+call evaluates, so the send itself loses nothing — only the reply goes unread
+— and the task belongs to the block, which settles it at exit
+([`../concurrency.md`](../concurrency.md)).
+
+```xulo
+worker.send(cmd)            // legal: fire-and-forget; the message is queued
+let r = worker.send(cmd)    // legal: the reply is wanted
 ```
 
 ## The leading `{` restriction
@@ -100,7 +112,7 @@ No reordering across statement boundaries is permitted by this chapter.
 
 | Code | Trigger | Example | Message shape |
 |------|---------|---------|---------------|
-| `E0218` | an expression statement has a type other than `Unit` and is not an excepted control-flow construct | `a + b` with `a: Int` | ``expected `Unit`, found `Int``` |
+| `E0218` | an expression statement has a type other than `Unit` and is neither an excepted control-flow construct nor a `send` whose task is discarded | `a + b` with `a: Int` | ``expected `Unit`, found `Int``` |
 | `E0402` | the statement is an assignment whose target is not a place | `f() = 2` | ``invalid assignment target`` |
 | `W0103` | a statement can never run | a statement after `return` | ``unreachable code`` |
 

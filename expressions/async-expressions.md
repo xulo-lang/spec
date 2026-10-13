@@ -136,6 +136,7 @@ and the built-in `Task` namespace is accessed with `.`:
 | `Task.all` | `all<T>(tasks: List<Task<T>>): Task<List<T>>` | completes when every task has completed; results in argument order |
 | `Task.race` | `race<T>(tasks: List<Task<T>>): Task<T>` | completes with the first task to complete |
 | `Task.resolve` | `resolve<T>(value: T): Task<T>` | an already-completed task holding `value` |
+| `Task.timeout` | `timeout<T>(t: Task<T>, ms: U64): Task<Result<T, Error>>` | settles with `t`'s result within `ms`, or fails with `Error("timed out")` |
 
 Generic type arguments are inferred at the call site. `Task.all` and
 `Task.race` are commonly combined with `await`:
@@ -145,6 +146,16 @@ async fn fetchAll(): List<User> {
   let a = fetchUser(1)
   let b = fetchUser(2)
   await Task.all([a, b])
+}
+```
+
+`Task.timeout` wraps one task in a deadline and is awaited the same way; what
+its result and its cancellation mean is specified in
+[`../error-handling.md`](../error-handling.md):
+
+```xulo
+async fn bounded(t: Task<Int>): Result<Int, Error> {
+  await Task.timeout(t, 2000)   // Ok(value) in time, Err("timed out") otherwise
 }
 ```
 
@@ -176,8 +187,9 @@ async fn log_user(id: Int) {
 }
 ```
 
-`Task.all` and `Task.race`, propagation through them, and the runtime-failure
-table are specified in [`../error-handling.md`](../error-handling.md).
+`Task.all`, `Task.race`, and `Task.timeout`, propagation through them, and the
+runtime-failure table are specified in
+[`../error-handling.md`](../error-handling.md).
 
 ## Composition patterns
 

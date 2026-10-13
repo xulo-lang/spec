@@ -25,7 +25,7 @@ The following entities are named, each by an identifier:
 | Struct fields | A field declaration inside `struct` | Accessed with `.` |
 | Enum variants | A constructor inside `enum` | Named `Enum::Variant`, never `Enum.Variant` |
 | Type parameters | `<T>` in a signature or a `where` clause | Visible in the signature and the body |
-| Pattern bindings | A `match` arm pattern | Scoped to that arm only |
+| Pattern bindings | A `match` arm pattern | Scoped to that arm's guard and body only |
 | Namespaces | `import * as ns from "m"`; built-ins `Math`, `Time`, `Task` | Members are selected with `.` |
 | Argument labels | Named parameters and component attributes | The label before `:` — `spacing`, `onClick` — is part of a signature, not a separate binding |
 
@@ -100,7 +100,7 @@ the following scope kinds:
 | Generic-parameter scope | `<T>` or a `where` clause | The type parameter, in the signature, return type, and body |
 | Block scope | Every `{ ... }` | Declarations made inside the block |
 | Closure scope | A closure (`fn() { ... }`, `=>`) | Its parameters, plus everything captured at creation |
-| Pattern scope | A `match` arm pattern | Bindings made by the pattern, in that arm's body only |
+| Pattern scope | A `match` arm pattern | Bindings made by the pattern, in that arm's guard and body only |
 
 Declaration order decides visibility:
 

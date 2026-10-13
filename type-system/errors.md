@@ -134,7 +134,7 @@ the source line, a caret line, and optional notes.
 | `E0215` | a subscript is applied to a type that is not a `List` or `Map` | `"abc"[0]` | `` `String` cannot be indexed `` | [checking-rules.md](checking-rules.md) |
 | `E0216` | a type cannot be determined: an empty collection, a bare `null`, an unannotated closure, an unsolved generic argument | `let xs = []` | `type annotations needed` | [checking-rules.md](checking-rules.md) |
 | `E0217` | a `?` propagation is ill-formed: its operand is neither `T?` nor `Result<T, E>`; it appears outside a function or in one with no declared return type; or the early return's value does not fit the declared return type | `fn f(): Int { half(3)? }` | ``cannot propagate `?` to return type `Int``` | [error-handling.md](../error-handling.md) |
-| `E0218` | an expression statement in statement position has a type other than `Unit` and is not an excepted control-flow construct | `a + b` with `a: Int` | ``expected `Unit`, found `Int``` | [expression-statements.md](../statements/expression-statements.md) |
+| `E0218` | an expression statement in statement position has a type other than `Unit` and is neither an excepted control-flow construct nor a `send` whose task is discarded | `a + b` with `a: Int` | ``expected `Unit`, found `Int``` | [expression-statements.md](../statements/expression-statements.md) |
 | `E0219` | a tuple destructuring's initializer is not a tuple type, or the name count differs from the tuple's arity | `let (a, b) = 42` | ``expected a tuple of 2 elements, found `Int` `` | [composite-types.md](../types/composite-types.md) |
 | `E0220` | a positional access has a non-tuple receiver, or the position is at or past the arity | `p.2` for `p: (Int, Int)` | `` `(Int, Int)` has no element `.2` `` | [path-and-access.md](../expressions/path-and-access.md) |
 | `E0221` | a typed map literal repeats a type an expected `Map<K, V>` already gives, with identifier keys or no entries | `let m: Map<String, Int> = Map<String, Int>{}` | ``literal `Map<String, Int>{ … }` repeats the expected type`` | [composite-types.md](../types/composite-types.md) |
@@ -145,6 +145,7 @@ the source line, a caret line, and optional notes.
 | `E0226` | an intersection `&` has an operand that is not a trait type | `User & Area` | ``intersection operand `User` is not a trait`` | [composite-types.md](../types/composite-types.md) |
 | `E0227` | an operand of `+` is a `String` and the other is not | `"count=" + 1` | ``cannot add `Int` to `String` `` | [operators.md](../expressions/operators.md) |
 | `E0228` | a parameter's default value does not fit the parameter's declared type | `fn f(name: String = 42)` | ``expected `String`, found `Int` `` | [calls.md](../expressions/calls.md) |
+| `E0229` | `return`, `break`, `continue`, or `?` appears in a `defer` operand | `defer { return }` | ``cannot transfer control out of a `defer` operand`` | [return-and-block.md](../statements/return-and-block.md) |
 
 ### Pattern errors
 
@@ -153,6 +154,7 @@ the source line, a caret line, and optional notes.
 | `E0301` | a `match` does not cover every variant, both booleans, or every testable member of a union without a covering arm | `match c { Color::Red => 0 }` | `` `match` does not cover every variant of `Color` (missing `Blue`) `` | [control-flow.md](../expressions/control-flow.md) |
 | `E0302` | an arm can never be selected | an arm after `_ =>` | ``this arm is unreachable`` | [control-flow.md](../expressions/control-flow.md) |
 | `E0303` | a pattern does not fit the scrutinee's type, or names a type that cannot be tested | `Color::Red` against `Int`, `List<Int> xs` anywhere | ``pattern `Color::Red` does not match `Int` `` | [control-flow.md](../expressions/control-flow.md) |
+| `E0304` | the alternatives of an or-pattern bind different names, or a name at different types | `Int x \| String y` | ``or-pattern alternatives must bind the same names at the same types`` | [control-flow.md](../expressions/control-flow.md) |
 
 ### Place and assignment errors
 

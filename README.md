@@ -130,7 +130,7 @@ and the xulo-website documents named in § 6.
 | [`names.md`](names.md) | Identifiers, naming conventions, scoping, shadowing |
 | [`types/`](types/README.md) | The type constructors: primitives, composites, function types, generics, enums, traits, type relations |
 | [`expressions/`](expressions/README.md) | Expression layer: literals, operators, access, calls, control flow, closures, async |
-| [`statements/`](statements/README.md) | Bindings, assignment, blocks, returns, expression statements |
+| [`statements/`](statements/README.md) | Bindings, assignment, blocks, returns, defers, expression statements |
 | [`functions.md`](functions.md) | Function definitions, parameter modes, recursion, methods |
 | [`components/`](components/README.md) | Components: `View`, state, effects, environment, binding, layout |
 | [`modules/`](modules/README.md) | Source files, import/export, visibility |

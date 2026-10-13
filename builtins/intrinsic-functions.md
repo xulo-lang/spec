@@ -239,6 +239,7 @@ which also specifies where `await` may appear and how a task is started.
 | `Task.all` | `all<T>(tasks: List<Task<T>>): Task<List<T>>` | completes when every task has completed; results in argument order |
 | `Task.race` | `race<T>(tasks: List<Task<T>>): Task<T>` | completes with the first task to complete |
 | `Task.resolve` | `resolve<T>(value: T): Task<T>` | an already-completed task holding `value` |
+| `Task.timeout` | `timeout<T>(t: Task<T>, ms: U64): Task<Result<T, Error>>` | settles with `t`'s result within `ms`, or fails with `Error("timed out")` |
 
 `Task.all` and `Task.race` combine tasks that already exist: neither starts any
 work of its own, because a call to an `async` function has already started its
@@ -247,9 +248,14 @@ body ([`../expressions/async-expressions.md`](../expressions/async-expressions.m
 results in argument order; `Task.race` settles as soon as the first task of the
 list settles and yields that task's result. `Task.resolve` wraps a value that
 is already at hand, producing a task that has already settled: awaiting it
-yields the value immediately. Generic type arguments are inferred at the call
-site, and how results and cancellation combine through the combined tasks is
-specified in [`../error-handling.md`](../error-handling.md).
+yields the value immediately. `Task.timeout` starts a deadline of its own:
+within `ms` milliseconds it settles with the wrapped task's result, and on
+expiry it cancels the wrapped task and settles with
+`Result::Err(Error("timed out"))` — unlike `Task.all` and `Task.race`, it does
+cancel what it wraps. Generic type arguments are
+inferred at the call site, and how results and cancellation combine through
+the combined tasks is specified in
+[`../error-handling.md`](../error-handling.md).
 
 ```xulo
 async fn fetchAll(): List<User> {
@@ -307,6 +313,7 @@ Constants give their type in place of a signature.
 | `Task.all` | `all<T>(tasks: List<Task<T>>): Task<List<T>>` | [`Task` namespace](#task-namespace) |
 | `Task.race` | `race<T>(tasks: List<Task<T>>): Task<T>` | [`Task` namespace](#task-namespace) |
 | `Task.resolve` | `resolve<T>(value: T): Task<T>` | [`Task` namespace](#task-namespace) |
+| `Task.timeout` | `timeout<T>(t: Task<T>, ms: U64): Task<Result<T, Error>>` | [`Task` namespace](#task-namespace) |
 | `Time.monotonic` | `fn(): U64` | [`Time` namespace](#time-namespace) |
 | `Time.monotonic_nanos` | `fn(): U64` | [`Time` namespace](#time-namespace) |
 | `Time.now` | `fn(): U64` | [`Time` namespace](#time-namespace) |

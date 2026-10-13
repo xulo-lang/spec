@@ -505,6 +505,7 @@ interface MatchExpr extends BaseNode {
 interface MatchArmNode extends BaseNode {
   type: 'MatchArm';
   pattern: PatternNode;
+  guard: ExpressionNode | null;
   body: ExpressionNode | BlockNode;
 }
 
@@ -627,7 +628,8 @@ type PatternNode =
   | RangePattern
   | VariantPattern
   | StructPattern
-  | TypePattern;
+  | TypePattern
+  | OrPattern;
 
 interface WildcardPattern extends BaseNode {
   type: 'WildcardPattern';
@@ -669,6 +671,11 @@ interface TypePattern extends BaseNode {
   binder: IdentifierNode | WildcardPattern;
 }
 
+interface OrPattern extends BaseNode {
+  type: 'OrPattern';
+  alternatives: PatternNode[];
+}
+
 interface PatternDesignatorNode extends BaseNode {
   type: 'PatternDesignator';
   name: IdentifierNode;
@@ -676,7 +683,7 @@ interface PatternDesignatorNode extends BaseNode {
 }
 ```
 
-`Pattern = "_" | LiteralPattern | RangePattern | VariantPattern | StructPattern | TypePattern | Identifier` gives seven alternatives, and the wildcard is one of them even though it lexes as an identifier: `_` is `WildcardPattern`, any other bare identifier is `IdentifierPattern`, which binds. `RangePattern.endInclusive` records `...` versus `..<`, and both operands are numeric literals, matching the production. `bindings` is `null` when the pattern writes no parentheses and an array otherwise; there are no OR-patterns and no guards, so a pattern never holds a list of alternatives.
+`Pattern = PatternAlt { "|" PatternAlt }` has eight `PatternAlt` alternatives — the wildcard is one of them even though it lexes as an identifier: `_` is `WildcardPattern`, any other bare identifier is `IdentifierPattern`, which binds — and a disjunction of two or more alternatives parses as one `OrPattern` whose `alternatives` is a flat list, so `a | b | c` is three alternatives and never nested pairs. A parenthesized alternative parses as the pattern inside it and adds no node of its own. `MatchArmNode.guard` is the arm's guard expression, `null` when the arm has none. `RangePattern.endInclusive` records `...` versus `..<`, and both operands are numeric literals, matching the production. `bindings` is `null` when the pattern writes no parentheses and an array otherwise.
 
 `TypePattern.binder` is the name or `_` that follows the designators, and `designators` is the possibly unioned list of type names, each with the `optional` flag its `?` carries.
 
@@ -691,6 +698,7 @@ type StatementNode =
   | ReturnStatement
   | BreakStatement
   | ContinueStatement
+  | DeferStatement
   | AssignmentNode
   | ExpressionStatement
   | ForStatement
@@ -707,6 +715,11 @@ interface BreakStatement extends BaseNode {
 
 interface ContinueStatement extends BaseNode {
   type: 'ContinueStatement';
+}
+
+interface DeferStatement extends BaseNode {
+  type: 'DeferStatement';
+  operand: ExpressionNode | BlockNode;
 }
 
 interface AssignmentNode extends BaseNode {
@@ -734,7 +747,7 @@ interface WhileStatement extends BaseNode {
 }
 ```
 
-`Statement = ( FnDecl | LetDecl | ConstDecl | ComponentDecl | ReturnStmt | BreakStmt | ContinueStmt | Assignment | ExpressionStatement | ForStmt | WhileStmt ) StatementEnd`. A `Block` is not one of them — a block is the body of a construct, never a statement — and the trailing `;` is an optional terminator the AST does not store, since `span` already covers it. `AssignmentNode.target` is a `PlaceNode`, not a general expression, which is what makes an assignment a statement rather than an expression.
+`Statement = ( FnDecl | LetDecl | ConstDecl | ComponentDecl | ReturnStmt | BreakStmt | ContinueStmt | DeferStmt | Assignment | ExpressionStatement | ForStmt | WhileStmt ) StatementEnd`. A `Block` is not one of them — a block is the body of a construct, never a statement — and the trailing `;` is an optional terminator the AST does not store, since `span` already covers it. `AssignmentNode.target` is a `PlaceNode`, not a general expression, which is what makes an assignment a statement rather than an expression. `DeferStatement.operand` is an `ExpressionNode` or a `BlockNode`, recorded as written; the operand's value is discarded when it runs.
 
 ## Common Nodes
 

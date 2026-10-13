@@ -1,11 +1,11 @@
 # Statements
 
 Xulo is expression-oriented, but not purely so: a small set of constructs
-exists only to introduce a name, to change a place, or to redirect control,
-and those constructs are **statements** — they produce no meaningful value.
-Everything else is an expression. This chapter defines the split, statement
-termination, and the rule that constrains expression statements. The
-expression layer as a whole is mapped in
+exists only to introduce a name, to change a place, to redirect control, or to
+schedule work for a block's exit, and those constructs are **statements** —
+they produce no meaningful value. Everything else is an expression. This
+chapter defines the split, statement termination, and the rule that
+constrains expression statements. The expression layer as a whole is mapped in
 [`../expressions/README.md`](../expressions/README.md).
 
 ## The Statement/Expression Split
@@ -18,6 +18,7 @@ The split is exact: every construct is either a statement or an expression.
 | `place = value` | Statement |
 | `return e`, `return` | Statement |
 | `break`, `continue` | Statement |
+| `defer e`, `defer { … }` | Statement |
 | `for … in … { … }`, `while … { … }` | Statement |
 | Expression statement (a bare expression in statement position) | Statement |
 | `if` … `else` …, `match` …, block `{ … }` | Expression |
@@ -53,17 +54,19 @@ let c = 3; let d = 4; print(c + d)   // semicolons separate one-line statements
 
 > An expression statement that is not `Unit` is an error (`E0218`), EXCEPT when
 > it is a control-flow construct (`if`, `match`, `for`, `while`) whose value is
-> discarded.
+> discarded, or a `send` whose `Task<R>` is discarded.
 
-The exception covers control-flow constructs in statement position: their
-value is discarded, so branches or arms MAY have unrelated types. The full
-treatment — including the leading-`{` restriction below and the error code —
-is in [`expression-statements.md`](expression-statements.md).
+One exception covers control-flow constructs in statement position: their
+value is discarded, so branches or arms MAY have unrelated types; the other
+covers a `send` whose reply is discarded. The full treatment — including the
+leading-`{` restriction below and the error code — is in
+[`expression-statements.md`](expression-statements.md).
 
 ```xulo
 if c { print("a") } else { print("b") }   // legal: value discarded
 match half(3) { Result::Ok(v) => str(v) Result::Err(e) => e }  // legal: value discarded
-a + b              // error: not Unit, not a control-flow construct
+a + b              // error: not Unit, and neither exception applies
+worker.send(cmd)   // legal: a send's Task may be discarded
 print("hi")        // legal: Unit-returning call
 let x = a + b      // legal in expression position: value initializes x
 ```
@@ -77,12 +80,12 @@ must appear in statement-like position.
 A block `{ … }` is both a value and a scope: its type is the type of its
 final expression (or `Unit` when there is none), and every statement inside
 introduces bindings visible from their declaration to the end of the block.
-Blocks, returns, and implicit return are specified in
+Blocks, returns, defers, and implicit return are specified in
 [`return-and-block.md`](return-and-block.md); scoping and shadowing in
 [`../names.md`](../names.md).
 
 ## Index
 
 - [`let-and-assignment.md`](let-and-assignment.md) — `let`, `let mut`, `const`, assignment, destructuring, and shadowing.
-- [`return-and-block.md`](return-and-block.md) — blocks as expressions, `return`, implicit return, and statement evaluation order.
+- [`return-and-block.md`](return-and-block.md) — blocks as expressions, `return`, `defer`, implicit return, and statement evaluation order.
 - [`expression-statements.md`](expression-statements.md) — bare expressions in statement position and the constraints on them.

@@ -1,9 +1,10 @@
 # Return and Blocks
 
 A block is both a scope and a value: `{ stmt; stmt; expr }` evaluates to the
-value of its final expression where a value is expected, and `return` leaves
-a function with an explicit value. This chapter defines block typing, the
-rules of `return`, implicit return, and the evaluation order of statements.
+value of its final expression where a value is expected, `return` leaves
+a function with an explicit value, and `defer` registers cleanup for a block's
+exit. This chapter defines block typing, the rules of `return` and `defer`,
+implicit return, and the evaluation order of statements.
 Binding forms are specified in
 [`let-and-assignment.md`](let-and-assignment.md); the statement-value rule
 that constrains expression statements is in [`README.md`](README.md).
@@ -157,6 +158,59 @@ fn clamp(n: Int, lo: Int, hi: Int): Int {
   explicit. It is a convention, not a special form: any mix of `return` and
   a trailing expression is well-formed when the types agree.
 
+## `defer`
+
+```xulo
+fn handle(path: String) {
+  let f = open(path)
+  defer close(f)          // runs when this block exits
+  process(f)
+}
+```
+
+- The form is `defer e`, where `e` is an expression or a block —
+  `defer close(f)`, or `defer { close(f); print("closed") }`. Executing the
+  statement registers the operand; it does **not** evaluate it.
+- The registered operand is evaluated **when control leaves the block** that
+  contains the `defer`, and the value it produces is discarded. A `defer` is a
+  statement of its own, not an expression statement, so the statement-value
+  rule never applies to it (`E0218` cannot fire)
+  ([`README.md`](README.md)).
+- Several defers in one block run in **reverse order of registration**: the
+  last one written runs first.
+
+```xulo
+fn two() {
+  defer print("first registered")
+  defer print("second registered")
+  print("body")
+}
+// prints: body, second registered, first registered
+```
+
+- Control leaves a block when the block reaches its end, when a `return` or
+  the early return of `?` passes out of it, when `break` or `continue` passes
+  out of it, and when the task running the block stops as cancelled at an
+  `await` ([`../concurrency.md`](../concurrency.md)). In every case the live
+  blocks are left innermost first, and each block's defers run before control
+  reaches the next block out.
+- A block's defers run after its value has been determined and after the
+  tasks spawned in the block have settled
+  ([`../concurrency.md`](../concurrency.md#scopes-and-structured-concurrency)),
+  so cleanup observes a finished block and can no longer change its value.
+- **`panic` runs no defers.** The program stops where the `panic` is written;
+  every defer whose operand has not begun is abandoned
+  ([`../error-handling.md`](../error-handling.md)).
+- `return`, `break`, `continue`, and `?` MUST NOT appear in a defer's operand:
+  the operand runs while control is already leaving a block, and there is no
+  second exit to perform. A violation is a compile-time error (`E0229`),
+  reported instead of `E0214` when such a `break` or `continue` is also
+  outside any loop.
+- An `await` inside a defer's operand suspends and resumes as anywhere else on
+  a normal exit; in a task that is being cancelled it produces no value, and
+  the task settles there
+  ([`../concurrency.md`](../concurrency.md)).
+
 ## Blocks in other contexts
 
 A block is accepted wherever the corresponding construct accepts a body:
@@ -178,4 +232,5 @@ reordering of side effects across statements. Evaluation order inside a
 single expression — operands, arguments, assignment places — is specified in
 [`../expressions/README.md`](../expressions/README.md). A `return`, `break`,
 or `continue` abandons the remaining statements of the current path
-immediately.
+immediately — except that the defers registered in the blocks being left still
+run before control passes out of them ([`defer`](#defer)).

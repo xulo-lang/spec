@@ -20,6 +20,7 @@ value) or a statement (it does not). Statements are specified in
 | `place = value` | Statement |
 | `return e`, `return` | Statement |
 | `break`, `continue` | Statement |
+| `defer e`, `defer { … }` | Statement |
 | `for … in … { … }`, `while … { … }` | Statement |
 | Expression statement (a bare expression in statement position) | Statement |
 | `if` … `else` …, `match` …, block `{ … }` | Expression |
@@ -108,6 +109,6 @@ Assigning to an identifier that is not backed by `mut` is a compile-time error (
 - [`operators.md`](operators.md) — Precedence, associativity, and the rules of every operator.
 - [`path-and-access.md`](path-and-access.md) — Identifiers, member access, positional tuple access, `::` variant paths, subscripts, optional chaining.
 - [`calls.md`](calls.md) — Call syntax, argument matching, method and generic calls, components.
-- [`control-flow.md`](control-flow.md) — `if` and `match` as expressions, patterns and exhaustiveness, loops and `break`/`continue` as statements.
+- [`control-flow.md`](control-flow.md) — `if` and `match` as expressions, patterns, guards, and exhaustiveness, loops and `break`/`continue` as statements.
 - [`closures.md`](closures.md) — Anonymous functions, capture, and function types.
 - [`async-expressions.md`](async-expressions.md) — `async` bodies, `await`, and `Task<T>`.

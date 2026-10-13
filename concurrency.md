@@ -60,10 +60,9 @@ spawn.process Type { FieldInit , … }
   cancellation rules are identical in every mode.
 - `spawn` is an ordinary expression: it may appear in a synchronous or an
   `async` body, in any expression position its type permits.
-- A `spawn` expression is not `Unit`, so — like every non-`Unit` expression —
-  it may not stand alone as an expression statement
-  ([`statements/README.md`](statements/README.md)). Bind it, `await` it, or
-  pass it on.
+- A `spawn` expression is not `Unit`, so it may not stand alone as an
+  expression statement ([`statements/README.md`](statements/README.md)).
+  Bind it, `await` it, or pass it on.
 
 ```xulo
 async fn main() {
@@ -119,7 +118,7 @@ fn upload_files(): Task<Unit> {
 
 Every block is a **scope** for the tasks spawned inside it, including a
 function or closure body and the body of `main`. When a block finishes, it
-does not simply stop: it settles its tasks first.
+does not simply stop: it settles its tasks first, then runs its `defer`s.
 
 1. The block's value, if any, is determined.
 2. Each task spawned in the block that has not settled is cancelled.
@@ -127,14 +126,16 @@ does not simply stop: it settles its tasks first.
 4. Each settled child contributes nothing further: a child that settled as
    cancelled is absorbed, and a result no longer reachable from the block's
    value is discarded.
-5. The block's value is produced.
+5. Each `defer` registered in the block runs, in reverse order of
+   registration ([`statements/return-and-block.md`](statements/return-and-block.md)).
+6. The block's value is produced.
 
 A task **reachable from the block's value** is exempt from step 2: it is not
 cancelled, and its ownership passes to the enclosing scope together with the
 value, where the same rules apply. This is how a function returns a task it
 spawned.
 
-Two consequences follow:
+Three consequences follow:
 
 - **Parent cancellation propagates downward.** Cancelling a task cancels the
   scope inside its body, which cancels that scope's tasks in turn.
@@ -143,6 +144,10 @@ Two consequences follow:
   program ends when its task settles — completed or cancelled — by which time
   its body's scope has already drained. Work that must finish before exit is
   awaited inside the scope that owns it.
+- **Services outlive the block that started them.** A service is not a task
+  ([Services](#services)): a block's completion neither cancels nor stops it,
+  and its lifetime is governed by its handle
+  ([Service lifetime and `stop`](#service-lifetime-and-stop)).
 
 ## Cancellation
 
@@ -153,6 +158,12 @@ cancelled task's own scope.
 - A cancelled task stops at its next `await`: the pending `await` produces no
   value and the task settles as cancelled. A task that is running continues
   until it suspends.
+- Before it settles, a cancelled task runs the defers registered in its live
+  blocks — innermost block first, each in reverse order of registration. An
+  `await` inside such a defer ends that run where it stands, like any other
+  `await` of a cancelled task: the remainder of that defer and every defer
+  still waiting are abandoned, and the task settles
+  ([`statements/return-and-block.md`](statements/return-and-block.md)).
 - Cancellation carries no error value: no expression observes it, nothing
   raises it, and there is nothing to catch. The body runs as written between
   the cancellation request and its next `await`.
@@ -270,6 +281,7 @@ async fn main() {
   let worker = spawn.process Tally { total: 0 }
   let sum = await worker.send(41)
   print(sum)                        // 41
+  worker.stop()                     // the service ends; nothing else is queued
 }
 ```
 
@@ -283,11 +295,21 @@ async fn main() {
   or `mut self`) and exactly one message parameter of some type `M`; it MAY be
   declared `async`.
 - The spawn evaluates to a **service handle**: a value of the structural type
-  `{ send: fn(M): Task<R> }`, whose `send` member takes a value of `M`.
+  `{ send: fn(M): Task<R>, stop: fn(): Unit }`, whose `send` member takes a
+  value of `M` and whose `stop` member ends the service
+  ([Service lifetime and `stop`](#service-lifetime-and-stop)).
 - `handle.send(m)` copies the message value into a message, queues it for the
   service, and returns a task of type `Task<R>` immediately. The message is a
   value ([`memory-and-runtime.md`](memory-and-runtime.md)): it is deep-copied
-  in transit and the sender's value is unaffected.
+  in transit and the sender's value is unaffected. When the operand is
+  `move x`, ownership of the message instead transfers to the service: no copy
+  is performed, and any later use of `x` is a compile-time error (`E0403`),
+  exactly as after any other `move`
+  ([`memory-and-runtime.md`](memory-and-runtime.md)).
+- The returned `Task<R>` MAY be discarded: `handle.send(m)` in statement
+  position is fire-and-forget — the message was queued when the call
+  evaluated, so only the reply goes unread, and the block settles the task on
+  exit ([`statements/expression-statements.md`](statements/expression-statements.md)).
 - A service handles one message at a time, in arrival order: `on_message` runs
   to completion — through every `await`, if it is `async` — before the next
   message begins.
@@ -298,6 +320,29 @@ async fn main() {
   executed path performed — or, when that path performed none although the
   method contains `reply` calls, settling as cancelled.
 - Cancelling a send task does not withdraw a message already queued.
+
+### Service lifetime and `stop`
+
+A service is not bound to the block that started it. It runs until it is
+stopped through its handle or until the program ends:
+
+- Completing the block that evaluated the `spawn.process` expression does not
+  stop the service. The handle may be stored, passed, and used after that
+  block has finished — including from a later iteration of a loop whose body
+  started the service.
+- `handle.stop()` requests that the service stop. Stopping is cooperative: it
+  follows the same rule as a cancelled task
+  ([Cancellation](#cancellation)) — the service finishes its current
+  synchronous run and stops at its next `await`. A body that never awaits
+  again runs to completion, and the service has stopped when `on_message`
+  returns.
+- When a service stops, every message still queued for it is discarded, and
+  each discarded message's send task settles as cancelled. A `reply` performed
+  by the path that was executing is unaffected.
+- `stop` is idempotent: calling it on a service that has already stopped — or
+  from several holders of the handle — has no further effect.
+- When the program ends, every service that has not stopped is stopped and its
+  queued messages are discarded.
 
 Messages are the only channel: there is no shared state between a service and
 its clients, so a service never needs `shared` or `lock`.
@@ -325,9 +370,9 @@ program as a panic ([`error-handling.md`](error-handling.md)).
 
 ## The `Task` utilities
 
-`Task.all`, `Task.race`, and `Task.resolve` combine and produce tasks; their
-signatures are given identically in
+`Task.all`, `Task.race`, `Task.resolve`, and `Task.timeout` combine and produce
+tasks; their signatures are given identically in
 [`expressions/async-expressions.md`](expressions/async-expressions.md) and
 [`builtins/intrinsic-functions.md`](builtins/intrinsic-functions.md). How
-results and cancellation combine through `Task.all` and `Task.race` is
-specified in [`error-handling.md`](error-handling.md).
+results and cancellation combine through `Task.all`, `Task.race`, and
+`Task.timeout` is specified in [`error-handling.md`](error-handling.md).

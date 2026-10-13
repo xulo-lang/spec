@@ -280,10 +280,24 @@ unspecified time thereafter.
 - There is no explicit deallocation, no destructor, and no operation that
   frees memory early; a program cannot observe reclamation, and no program
   behavior depends on when it happens.
+- The reclamation mechanism is not fixed: an implementation MAY reclaim
+  storage by tracing, by reference counting together with a means of
+  reclaiming cyclically reachable storage, by region-based bulk reclamation,
+  or by any combination. A mechanism that never reclaims a value that has
+  become unreachable from every root does not conform.
+- Allocation strategy is likewise free, and the language already bounds the
+  useful cases: the tree of a run that a later pass has replaced, and the
+  frame of a settled task, cannot be reached by any program afterwards. An
+  implementation MAY allocate such values in a region reclaimed in bulk when
+  that boundary is crossed, and SHOULD keep any single reclamation pause
+  within limits it documents. Neither the strategy nor the pause is
+  observable.
 - Deterministic *release of a resource* — a file, a connection — is a library
   concern expressed with ordinary control flow: cleanup is written on each
-  path that needs it, because the language provides no destructor and no
-  `finally` clause. The language itself manages only storage.
+  path that needs it or registered once with `defer`
+  ([`statements/return-and-block.md`](statements/return-and-block.md)),
+  because the language provides no destructor. The language itself manages
+  only storage.
 
 ## Runtime failures
 

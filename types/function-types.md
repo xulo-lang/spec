@@ -126,7 +126,7 @@ let a: fn(String): Task<String> = fetch   // async function as a value
 let b: fn(): Task<Int> = load             // sync function returning a task
 ```
 
-- `Task<T>` is a built-in generic type used as the result of an `async` function type; it requires no import. Its built-in utilities (`Task.all`, `Task.race`, `Task.resolve`) are specified in [`../expressions/async-expressions.md`](../expressions/async-expressions.md), and their concurrency model in [`../concurrency.md`](../concurrency.md).
+- `Task<T>` is a built-in generic type used as the result of an `async` function type; it requires no import. Its built-in utilities (`Task.all`, `Task.race`, `Task.resolve`, `Task.timeout`) are specified in [`../expressions/async-expressions.md`](../expressions/async-expressions.md), and their concurrency model in [`../concurrency.md`](../concurrency.md).
 
 ## Function subtyping and higher-order types
 

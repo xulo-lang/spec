@@ -75,8 +75,8 @@ fn doubled_half(n: Int): Int {
   Nothing jumps anywhere until the caller propagates it with `?`
   ([below](#the-operator)) or inspects it with `match`.
 - **Exhaustiveness applies.** A `match` over a `Result` MUST cover both
-  variants or have a wildcard or binding arm; an uncovered `Err` (or `Ok`) is
-  `E0301`
+  variants or have an unguarded wildcard or binding arm; an uncovered `Err`
+  (or `Ok`) is `E0301`
   ([`expressions/control-flow.md`](expressions/control-flow.md)).
 - **`Error` is the built-in base error type.** It is constructed by calling
   it with a message string — `Error("timed out")` — and carries one field,
@@ -114,6 +114,8 @@ Rules:
 - An early return abandons the rest of the body at that point, exactly like a
   `return` statement written there
   ([`statements/return-and-block.md`](statements/return-and-block.md)).
+  A `?` MUST NOT appear in a `defer` operand: control is already leaving a
+  block when the operand runs, so there is nothing to return from (`E0229`).
 - **The enclosing function MUST have a declared return type `R`, and the
   failure value MUST be assignable to `R`:** `null` for an optional operand
   (so `R` must be an optional type), and the whole `Result<T, E>` value for a
@@ -236,6 +238,31 @@ combine results and cancellation the way the operations they describe settle:
   that task's result when it completed, as cancelled when it was cancelled.
 - Neither combinator cancels the tasks it combines: the others run on and
   their results are discarded when they are not the ones selected.
+
+### `Task.timeout`
+
+`Task.timeout(t, ms)` puts a deadline on one task and produces a
+`Task<Result<T, Error>>`:
+
+- If `t` settles within `ms` milliseconds, the combined task settles with
+  `Result::Ok` wrapping that result. When `t` already carries a
+  `Result<T, E>` — a task whose body is itself fallible — the two results
+  nest as `Ok(Ok(…))` / `Ok(Err(…))`, and the caller unwraps them in order.
+- If the deadline elapses first, `t` is **cancelled** — this combinator,
+  unlike `Task.all` and `Task.race`, cancels the task it wraps — and the
+  combined task settles immediately with `Result::Err(Error("timed out"))`,
+  without waiting for `t` to stop. A result `t` produces afterwards is
+  discarded.
+- A wrapped task that settles as cancelled before the deadline settles the
+  combined task as cancelled: cancellation travels through `await` as it
+  always does and never becomes a timeout error.
+- Cancelling the combined task cancels `t` in turn.
+
+```xulo
+async fn poll_with_deadline(): Result<Int, Error> {
+  await Task.timeout(poll(), 2000)   // Ok(n) in time, Err("timed out") otherwise
+}
+```
 
 ## Runtime failures
 

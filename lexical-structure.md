@@ -53,7 +53,7 @@ Digit      ::= '0' .. '9'
 
 ## Keywords
 
-The language has exactly the following closed set of 40 keywords; every other
+The language has exactly the following closed set of 41 keywords; every other
 word is an ordinary identifier unless it is reserved below. No keyword MAY be
 used as one.
 
@@ -72,6 +72,7 @@ used as one.
 | | `where` | Introduces a generic constraint clause after a signature |
 | Control flow | `break` | Leaves the innermost enclosing `for` or `while` |
 | | `continue` | Starts the next iteration of the innermost loop |
+| | `defer` | Registers an expression to run when the enclosing block exits |
 | | `else` | Introduces the alternative of an `if` |
 | | `for` | Declares a counting or iterating loop |
 | | `if` | Conditional expression or statement |
@@ -122,7 +123,7 @@ does so is ill-formed. Reserving them leaves room for later syntax.
 
 ```text
 abstract actor arguments associatedtype bench
-case cfg channel class debugger default defer
+case cfg channel class debugger default
 deinit delete derive do doc eval export
 extension fallthrough final function generator
 generic global guard init instanceof interface
