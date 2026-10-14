@@ -5,7 +5,7 @@ functions among them their signatures and their meaning. An intrinsic is a
 function, or a member of a namespace, that the compiler provides directly:
 it is available without import, it has exactly one signature, and no module
 may redeclare its name. This chapter states the conventions those signatures
-follow, specifies `print`, `println`, and `str`, and then the members of the
+follow, specifies `print`, `println`, `str`, and `assert`, and then the members of the
 three built-in namespaces `Math`, `Time`, and `Task`. The names themselves are
 in scope because of the prelude ([`prelude.md`](prelude.md)).
 
@@ -23,7 +23,7 @@ in scope because of the prelude ([`prelude.md`](prelude.md)).
   neither default arguments nor named arguments apply to a call. The argument
   count and the argument types MUST match the signature
   ([`../functions.md`](../functions.md)).
-- `print`, `println`, and `str` are intrinsics, not keywords
+- `print`, `println`, `str`, and `assert` are intrinsics, not keywords
   ([`../lexical-structure.md`](../lexical-structure.md)); a module-scope
   declaration MUST NOT bear any intrinsic name
   ([`prelude.md`](prelude.md#reserved-names)).
@@ -104,6 +104,29 @@ let who = `hello ${name}`              // interpolation needs no str
 let maybe: Int? = null
 let absent = str(maybe ?? 0)           // "0": narrow an optional first
 let bad = str([1, 2])                  // error: List<Int> has no string form
+```
+
+## Assertion
+
+| Signature | Result |
+|-----------|--------|
+| `assert(condition: Boolean, message: String): Unit` | `Unit` |
+
+- Arguments are checked against the signature and evaluated left to right
+  exactly as in any other call: `message` is evaluated whether or not
+  `condition` holds.
+- When `condition` is `false`, the call stops the program with
+  `panic(message)` — the same effect as writing that `panic` directly
+  ([`../error-handling.md`](../error-handling.md)).
+- When `condition` is `true`, the call has no effect beyond producing `Unit`.
+- `assert` is how a `test` body states a requirement; the declaration that
+  holds it, and what pass and fail mean, are specified in
+  [`../testing.md`](../testing.md).
+
+```xulo
+let xs = [2, 4, 6]
+assert(list_size(xs) == 3, "three items")  // ok: no effect
+assert(list_size(xs) == 4, "not four")     // false: stops with `panic("not four")`
 ```
 
 ## `Math` namespace
@@ -281,6 +304,7 @@ Constants give their type in place of a signature.
 
 | Name | Signature | Section |
 |------|-----------|---------|
+| `assert` | `assert(condition: Boolean, message: String): Unit` | [Assertion](#assertion) |
 | `Math.abs` | `fn(x: Number): Number` | [`Math` namespace](#math-namespace) |
 | `Math.acos` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
 | `Math.asin` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |

@@ -64,7 +64,7 @@ formed first, then classified as keyword, reserved word, or identifier.
 
 ### Keywords
 
-The language has exactly the following closed set of 41 keywords; every other
+The language has exactly the following closed set of 42 keywords; every other
 word is an ordinary identifier unless it is reserved.
 
 ```text
@@ -72,8 +72,8 @@ Keyword = "and" | "as" | "async" | "await" | "break" | "const"
         | "continue" | "copy" | "defer" | "else" | "enum" | "false" | "fn"
         | "for" | "from" | "if" | "impl" | "in" | "import" | "is" | "let"
         | "lock" | "match" | "move" | "mut" | "not" | "null" | "or" | "panic"
-        | "pub" | "return" | "self" | "shared" | "spawn" | "struct" | "trait"
-        | "true" | "type" | "use" | "where" | "while" ;
+        | "pub" | "return" | "self" | "shared" | "spawn" | "struct" | "test"
+        | "trait" | "true" | "type" | "use" | "where" | "while" ;
 ```
 
 A `ReservedWord` is a word whose spelling appears in the reserved list of
@@ -150,7 +150,7 @@ written with `pub`, and the default is private everywhere.
 ```text
 Program     = { ImportDecl } { Declaration } [ Entry ] ;
 Declaration = FnDecl | StructDecl | EnumDecl | TraitDecl | ImplDecl
-            | TypeAlias | LetDecl | ConstDecl | PubUse ;
+            | TypeAlias | LetDecl | ConstDecl | TestDecl | PubUse ;
 
 ImportDecl      = "import" ( TypeImport | NamedImport
                            | NamespaceImport | SideEffectImport ) ;
@@ -178,8 +178,9 @@ EntryPoint = [ "pub" ] [ "async" ] "fn" "main" "(" ")" [ ":" Type ] Block ;
 
 ## Declarations
 
-Every alternative of `Declaration` MAY carry `pub`, except `impl`, which
-introduces no name and is never part of an interface
+Every alternative of `Declaration` MAY carry `pub`, except `impl` and
+`TestDecl`: `impl` introduces no name and is never part of an interface, and
+a `test` is never part of an interface either
 ([visibility.md](modules/visibility.md)); the four component declarations
 carry no visibility marker either
 ([state.md](components/state.md)). `async` follows `pub` and precedes `fn`.
@@ -237,6 +238,8 @@ DestructuringBinding = ( "{" IdentifierList "}"
 IdentifierList       = Identifier { "," Identifier } [ "," ] ;
 
 ConstDecl = [ "pub" ] "const" Identifier [ ":" Type ] "=" Expression ;
+
+TestDecl = "test" [ "async" ] "fn" Identifier "(" ")" Block ;
 ```
 
 `:=` appears only directly after `let`, never after `let mut` or `const`, and
@@ -245,6 +248,17 @@ ConstDecl = [ "pub" ] "const" Identifier [ ":" Type ] "=" Expression ;
 required. A `DestructuringBinding` deconstructs a `struct` with `{ … }` or a
 tuple with `( … )`; the two forms take an initializer of the matching shape
 and nothing else.
+
+A `TestDecl` is a function declaration with a fixed shape: `test` precedes
+`async` and `fn` (never `async test fn`), the parameter list and the return
+type are absent — the body is an implicit `fn(): Unit` — and it carries no
+`pub`, no generic parameters, and no `where` clause. The identifier is the
+test's identity as a tool reports it, not a name in the value namespace:
+referencing it is a compile-time error (`E0107`). The optional `async` marker
+makes the body an `async` context
+([async-expressions.md](expressions/async-expressions.md)); the declaration's
+checking, inertness, and pass/fail criterion are specified in
+[testing.md](testing.md).
 
 ### Component declarations
 
@@ -594,7 +608,7 @@ production itself appears exactly once, in its own section.
 | `StringLiteral`, `StringChar`, `EscapeSeq`, `TemplateLiteral`, `TemplateText`, `TemplateEscape`, `Interpolation` | [Lexical structure](#lexical-structure) |
 | `DQuote`, `SQuote`, `Backslash`, `Backtick`, `Operator`, `WordOperator`, `SymbolOperator`, `Delimiter` | [Lexical structure](#lexical-structure) |
 | `Program`, `Declaration`, `Entry`, `EntryPoint`, `ImportDecl`, `TypeImport`, `NamedImport`, `NamespaceImport`, `SideEffectImport`, `NamedImports`, `ImportEntry`, `PubUse` | [Program and modules](#program-and-modules) |
-| `FnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl` | [Declarations](#declarations) |
+| `FnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl`, `TestDecl` | [Declarations](#declarations) |
 | `ComponentDecl`, `StateDecl`, `StoreDecl`, `EffectDecl`, `EnvironmentDecl` | [Declarations](#declarations) |
 | `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `LiteralType`, `TypeArgs`, `TypeList`, `TupleType`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
 | `Expression`, `AssignmentExpression`, `TernaryExpression`, `LogicalOrExpression`, `LogicalAndExpression`, `NullishExpression`, `EqualityExpression`, `IsExpression`, `RelationalExpression`, `RangeExpression`, `BitOrExpression`, `BitXorExpression`, `BitAndExpression`, `ShiftExpression`, `AdditiveExpression`, `MultiplicativeExpression`, `PowerExpression`, `UnaryExpression`, `PostfixExpression`, `PostfixOperand` | [Expressions](#expressions) |

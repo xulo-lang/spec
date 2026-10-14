@@ -53,7 +53,7 @@ Digit      ::= '0' .. '9'
 
 ## Keywords
 
-The language has exactly the following closed set of 41 keywords; every other
+The language has exactly the following closed set of 42 keywords; every other
 word is an ordinary identifier unless it is reserved below. No keyword MAY be
 used as one.
 
@@ -67,6 +67,7 @@ used as one.
 | | `mut` | Marks a binding or a borrow as mutable |
 | | `self` | The receiver of a method inside an `impl` block |
 | | `struct` | Declares a structure type |
+| | `test` | Marks a function as a test: checked with the program, run only by a test tool |
 | | `trait` | Declares a trait |
 | | `type` | Declares a type alias |
 | | `where` | Introduces a generic constraint clause after a signature |

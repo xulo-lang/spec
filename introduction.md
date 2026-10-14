@@ -136,9 +136,12 @@ language as it grows.
 - **No macro system in v1.** The language as specified has no macro
   mechanism, no syntax extension, and no compile-time code generation. `#` is
   reserved for a possible future use and is not part of the language.
-- **No test syntax.** The language declares no `test` construct, no assertion
-  form, and no test-runner convention: tests are ordinary code in ordinary
-  files, and whatever runs them is a library and tooling concern.
+- **No test framework.** The language contributes exactly two things to
+  testing — the `test fn` form and the `assert` intrinsic
+  ([`testing.md`](testing.md)) — so that tests are checked and discoverable
+  from the source itself; how tests are organized, selected, isolated, and
+  reported remains a tooling concern, and no framework construct enters the
+  language.
 - **No operator overloading.** Every operator has fixed operand rules, a fixed
   result type, and a fixed precedence
   ([`expressions/operators.md`](expressions/operators.md)); no `trait` or

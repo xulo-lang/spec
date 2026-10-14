@@ -214,6 +214,9 @@ literal ([`../types/composite-types.md`](../types/composite-types.md)).
   (`E0502`); its type is `T`. Inside an `async` body every `return`
   operand and the trailing expression MUST have the declared type `T`, never
   `Task<T>` (`E0503`).
+- The identifier of a `test` function binds no value; any reference to it —
+  a call, a value use, or a path — is `E0107`
+  ([`../testing.md`](../testing.md)).
 - Every `${e}` in a template requires `e : Int | Float | Boolean | String` or a
   type implementing the built-in `ToString` trait; anything else is `E0212`
   ([`../expressions/literals.md`](../expressions/literals.md)). A template

@@ -139,6 +139,7 @@ and the xulo-website documents named in § 6.
 | [`memory-and-runtime.md`](memory-and-runtime.md) | Value/reference semantics, ownership, borrowing, runtime model |
 | [`concurrency.md`](concurrency.md) | Tasks, `spawn`, cancellation, structured concurrency |
 | [`error-handling.md`](error-handling.md) | Fallible operations: `Result`, `?` propagation, `panic`, runtime failures |
+| [`testing.md`](testing.md) | Test functions: checking, inertness, the `async` marker, pass and fail |
 | [`grammar.md`](grammar.md) | Complete EBNF grammar |
 | [`ast.md`](ast.md) | Abstract syntax tree node definitions and data structures |
 | [`machine-readable.md`](machine-readable.md) | Links to downloadable grammar files for parser generators (EBNF, Pest, tree-sitter) — informative; the files live in the implementation repository |

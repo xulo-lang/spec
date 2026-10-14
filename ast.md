@@ -46,6 +46,7 @@ type DeclarationNode =
   | TypeAlias
   | LetDeclaration
   | ConstDeclaration
+  | TestDeclaration
   | PubUseDeclaration;
 
 interface FnDeclaration extends BaseNode {
@@ -125,10 +126,18 @@ interface ConstDeclaration extends BaseNode {
   varType: TypeNode | null;
   value: ExpressionNode;
 }
+
+interface TestDeclaration extends BaseNode {
+  type: 'TestDeclaration';
+  name: IdentifierNode;
+  isAsync: boolean;
+  body: BlockNode;
+}
 ```
 
 - Visibility is written `pub` on every declaration that has it. There is no `export` keyword, so there is no `isExport` field and no export node ([`grammar.md`](grammar.md), [`modules/visibility.md`](modules/visibility.md)).
 - `impl` is never `pub` — it is never part of an interface — so `ImplDeclaration` carries no visibility flag at all.
+- `TestDeclaration.name` is the test's identity for tools, not a name in the value namespace, so any reference to it is `E0107`, and it carries no `isPub` flag: a test is never part of an interface ([`testing.md`](testing.md)).
 - `FnDeclaration.where` is the `where` clause as the list of items it holds, `null` when the clause is absent; only `FnDecl` takes one.
 - `LetDeclaration.isMutable` is `true` for `let mut x = e` and for `let x := e`, which means exactly the same thing. `isShared` is `true` only for the `shared` marker written before the initializer; it is never `true` on a `:=` binding or on a destructuring binding. `target` is a name or a destructuring target, and a destructuring target carries no type annotation, so `varType` is `null` for it.
 

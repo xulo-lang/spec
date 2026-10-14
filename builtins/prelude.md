@@ -81,7 +81,7 @@ in [`../type-system/errors.md`](../type-system/errors.md).
 | Value and marker types | `Null`, `Unit`, `Unknown`, `List`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error` |
 | Protocols | `ToString` |
 | Namespaces | `Math`, `Time`, `Task` |
-| Intrinsic functions | `print`, `println`, `str` |
+| Intrinsic functions | `print`, `println`, `str`, `assert` |
 
 `Task` appears twice because it is both a type and a namespace. The prelude
 operations defined in the next section are reserved under the same rule, and
