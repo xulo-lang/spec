@@ -109,8 +109,8 @@ either suspends at an `await` or completes:
 
 `await` is the only suspension point visible in the language: no other
 expression suspends an `async` body. Nothing further about scheduling is
-language-visible — which task runs next, how many may run concurrently, and on
-which execution resource are defined by the concurrency model
+language-visible — which ready task runs next, how many may run concurrently,
+and how long a suspension lasts are the concurrency model's business
 ([`concurrency.md`](../concurrency.md)).
 
 ```xulo
@@ -233,9 +233,12 @@ resource — is done with `spawn`, which is specified in
 - outside any function or closure body;
 - on a value whose type is not `Task<T>`.
 
-Inside an `async` body no further restriction applies: `await` is an expression
-and may appear in any expression position, including `f(await g())`,
-conditions, initializers, and `for` iterables.
+Inside an `async` body `await` is an expression and may appear in any
+expression position, including `f(await g())`, conditions, initializers, and
+`for` iterables — with one exception: the body of a `lock` expression
+contains no suspension point, and `await` inside it is a compile-time error
+(`E0410`
+([`../concurrency.md`](../concurrency.md))).
 
 ```xulo
 async fn cached(id: Int): User {

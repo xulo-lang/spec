@@ -296,7 +296,7 @@ interface EnumPayloadSlotNode extends BaseNode {
 - A declared function's parameter is always annotated — `Parameter = Receiver | Identifier ":" [ "mut" | "shared" ] Type [ "=" Expression ]` — so `ValueParameter.paramType` is never `null`, and a parameter is optional exactly when it has a `default`. `mode` is `null` unless the type wrote `mut` or `shared`; the mode is part of the parameter, not of its type.
 - `Receiver` is the `self` / `mut self` alternative of `Parameter`; a parameter list that begins with one carries `Receiver` rather than a name and a type.
 - A closure's parameter is written `ClosureParam = Identifier [ ":" Type ]`, so its annotation may be omitted and `ClosureParamNode.paramType` is `null` in that case; the two parameter nodes are separate because the grammar gives the two forms separately.
-- `GenericParamNode.bound` is the `TraitBound` written after `:`, `null` when the parameter is unbounded. A bound joined with `+` is a list of types, as in `WhereItemNode.bounds`.
+- `GenericParamNode.bound` is the `TraitBound` written after `:`, `null` when the parameter is unbounded. A bound joined with `+` is a list of types, as in `WhereItemNode.bounds`. A `TraitDeclaration`'s `genericParams` is always empty: a trait may not declare type parameters, and an attempt is diagnosed after parsing (`E0810`; [`types/traits.md`](types/traits.md)).
 - A variant with no payload has an empty `payload`. Each slot's `name` is `null`
   for a positional payload and non-`null` for a named one, and a variant never
   mixes the two forms: either every slot is named or none is

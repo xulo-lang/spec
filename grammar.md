@@ -184,8 +184,11 @@ a `test` is never part of an interface either
 ([visibility.md](modules/visibility.md)); the four component declarations
 carry no visibility marker either
 ([state.md](components/state.md)). `async` follows `pub` and precedes `fn`.
-Generic parameters are declared once, directly after the name
-([generics.md](types/generics.md)).
+Generic parameters are declared once, directly after the name, by functions,
+`struct`s, `enum`s, type aliases, and `impl` blocks — never by a `trait`,
+whose `GenericParams?` exists only so that an attempt can be diagnosed
+(`E0810`)
+([generics.md](types/generics.md), [traits.md](types/traits.md)).
 
 ```text
 FnDecl = [ "pub" ] [ "async" ] "fn" Identifier GenericParams?
@@ -319,7 +322,10 @@ WhereItem      = Identifier ":" TraitBound ;
 Because `>>` lexes as one token, two closing angle brackets MUST NOT be written
 adjacently: a space is REQUIRED between them, as in `List<List<T> >`
 ([generics.md](types/generics.md)). Bounds are written inline `<T: Area>` or
-in a `where` clause, joined with `+` when a parameter has several.
+in a `where` clause, joined with `+` when a parameter has several. A
+`WhereClause` follows a function's signature only — every other parameterized
+declaration uses the inline form — and a bound never carries type arguments
+(`E0811`).
 
 ## Expressions
 

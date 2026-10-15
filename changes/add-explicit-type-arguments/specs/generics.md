@@ -78,7 +78,14 @@ arguments is checked exactly as follows.
   | `List<T>` ≟ `Map<String, Int>` | fails (different heads) |
 
 - A parameter occurring twice in a signature receives one solution; if two
-  constraints demand different types for it, inference fails with a diagnostic.
+  constraints demand different types for it, inference fails and the later
+  argument is reported as a mismatch against the type the earlier one fixed
+  (`E0202`):
+
+  ```xulo
+  fn both<T>(a: List<T>, b: List<T>): T { a[0] }
+  let t = both([1], ["x"])    // error[E0202]: T is Int from `a`; `List<String>` does not match `List<Int>`
+  ```
 - An *expected type* MAY determine what the arguments leave undetermined — an
   empty list literal, a numeric literal, a closure with unannotated parameters.
   It MUST NOT override a type already fixed by the arguments: in

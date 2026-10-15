@@ -195,7 +195,7 @@ fn two() {
   blocks are left innermost first, and each block's defers run before control
   reaches the next block out.
 - A block's defers run after its value has been determined and after the
-  tasks spawned in the block have settled
+  tasks started in the block have settled
   ([`../concurrency.md`](../concurrency.md#scopes-and-structured-concurrency)),
   so cleanup observes a finished block and can no longer change its value.
 - **`panic` runs no defers.** The program stops where the `panic` is written;

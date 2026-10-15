@@ -33,10 +33,19 @@ Rules:
   names MUST be distinct — `<T, T>` is ill-formed. Each name is in scope for the
   remainder of the declaration: the signature, the body, and — for `struct`,
   `enum`, `type` — every field, payload, and aliased type.
+- A parameter list has **no default type arguments**: every argument of an
+  application is written or inferred; there is no `T = Int` form.
 - A type parameter is a type name: it MAY be used wherever a type is expected
   (parameter types, field types, return types, bounds, nested generic
   arguments). It is never a value: a type parameter has no runtime
-  representation and never occurs in an expression position.
+  representation and never occurs in an expression position. It is also never
+  a constructor: writing an application whose head is a type parameter —
+  `T<Int>` — is ill-formed (`E0230`), because a parameter stands for a proper
+  type, not for a family of them.
+- A `trait` is never parameterized. Its grammar accepts a type parameter list
+  only so that the attempt can be diagnosed, and declaring one is a
+  compile-time error (`E0810`; see [`traits.md`](traits.md)). Trait method
+  signatures therefore never mention type parameters.
 - Parameter names follow the conventions of [`../names.md`](../names.md): a
   single uppercase letter (`T`, `U`, `K`, `V`) for a simple parameter, or an
   UpperCamelCase descriptive name. These are conventions, not grammar rules.
@@ -57,7 +66,35 @@ let nested: List<Map<String, List<Int> > > = []
 | `List<List<T>>` | no — `>>` would be read as the shift token |
 | `List<List<List<T> > >` | yes |
 
-The rule applies at every generic argument position, including in bounds.
+The rule applies at every generic argument position.
+
+### Type applications
+
+A *type application* is a type written `Name<Args>` — in an annotation, a
+field type, a payload, an alias, a parameter or return type, or a pattern's
+type. (A bound is not a type application: it never carries type arguments,
+under [Bounds](#bounds).) Three rules make every application well-formed:
+
+- The number of type arguments MUST equal the number of type parameters the
+  declaration names. `Map<String>` and `Pair<Int, String, Int>` are
+  ill-formed (`E0230`).
+- A generic declaration's name MUST NOT appear without its arguments:
+  `let xs: List = []` is ill-formed (`E0230`), not shorthand for anything.
+  A non-generic name carries no argument list at all: `Int<String>` is
+  ill-formed (`E0230`) for the same reason.
+- A type parameter is never applied (`E0230`); see
+  [Type Parameters](#type-parameters).
+
+```xulo
+let ok: Map<String, Int> = {}        // well-formed
+// let bad: Map<String> = {}         // error[E0230]: `Map` expects 2 type arguments, found 1
+// let bare: List = []               // error[E0230]: `List` expects 1 type argument, found 0
+```
+
+Type arguments MAY be written in a type position even though they are never
+written at a call site ([Inference](#inference)); the two positions differ
+only in syntax, not in the checking they receive: written arguments are
+unified and bound-checked exactly like inferred ones.
 
 ## Bounds
 
@@ -77,12 +114,18 @@ Rules:
   A `where` clause follows the parameter list, parameter types, and declared
   return type, and precedes the body; it is a comma-separated list of bounds, one
   per parameter: `fn f<A, B>(x: A, y: B) where A: Area, B: Scalable { … }`.
+  A `where` clause MAY follow only a function's signature: `struct`, `enum`,
+  `trait`, `type`, and `impl` declarations use the inline form.
 - Multiple bounds on one parameter are joined with `+`: `<T: Area + Scalable>`,
   equivalently `where T: Area + Scalable`. The parameter is admissible only if
   its type argument satisfies **every** bound.
 - A bound MUST name a `trait` visible at the declaration site; naming anything
   else is a compile-time error (`E0806`)
   (see [`../type-system/errors.md`](../type-system/errors.md)).
+- A bound names a trait, never an application of one: writing type arguments on
+  a bound — `<T: Convert<String>>` — is a compile-time error (`E0811`). A
+  trait is not a type constructor, so there is no such thing as a partially
+  or fully applied trait to constrain with.
 - A bound is a *constraint*, not a subtyping relation: `T` with bound `Area` does
   not thereby become a subtype of `Area`. Inside the body, values of type `T`
   expose the members declared by `Area`, and explicit dispatch through the bound
@@ -91,11 +134,27 @@ Rules:
   combines types a value already has, whereas `T: A + B` restricts which types
   may be substituted for a parameter.
 
-**Bound checking at call sites.** Every type argument determined for a call MUST
-satisfy every bound of the corresponding parameter. A call that would instantiate
-a parameter with a type that does not implement one of its bounds is ill-formed
-and MUST be reported with a diagnostic, even when the type argument was inferred
-rather than written; see [`../type-system/checking-rules.md`](../type-system/checking-rules.md).
+**Bound checking.** Every type argument determined for a declaration MUST
+satisfy every bound of the corresponding parameter — whether the argument was
+inferred at a call site or written in a type application, and whether the
+declaration is a function, a `struct`, an `enum`, an alias, or an `impl`. A
+call that would instantiate a parameter with a type that does not implement
+one of its bounds is ill-formed, and so is an annotation that names the same
+instantiation:
+
+```xulo
+trait Area { fn area(self): Float }
+struct Palette<T: Area> { shape: T }
+
+let ok = Palette(shape: rect)       // T = Rect, and Rect: Area
+// let bad: Palette<Int> = …        // error[E0801]: `Int` does not implement `Area`
+```
+
+A violation MUST be reported with a diagnostic even when the type argument was
+inferred rather than written; see
+[`../type-system/checking-rules.md`](../type-system/checking-rules.md). How a
+type is found to satisfy a bound — through which `impl`, and when that `impl`
+itself carries bounds — is specified in [`traits.md`](traits.md).
 
 ## Inference
 
@@ -125,7 +184,14 @@ Rules:
   | `List<T>` ≟ `Map<String, Int>` | fails (different heads) |
 
 - A parameter occurring twice in a signature receives one solution; if two
-  constraints demand different types for it, inference fails with a diagnostic.
+  constraints demand different types for it, inference fails and the later
+  argument is reported as a mismatch against the type the earlier one fixed
+  (`E0202`):
+
+  ```xulo
+  fn both<T>(a: List<T>, b: List<T>): T { a[0] }
+  let t = both([1], ["x"])    // error[E0202]: T is Int from `a`; `List<String>` does not match `List<Int>`
+  ```
 - An *expected type* MAY determine what the arguments leave undetermined — an
   empty list literal, a numeric literal, a closure with unannotated parameters.
   It MUST NOT override a type already fixed by the arguments: in

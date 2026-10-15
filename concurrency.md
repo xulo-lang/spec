@@ -1,9 +1,10 @@
 # Concurrency
 
 This chapter specifies Xulo's concurrency model: tasks and the `spawn`
-expression, capture rules for spawned work, scopes and structured
-concurrency, cancellation, shared state guarded by `lock`, and message-passing
-services. The evaluation and ownership rules that concurrency builds on are in
+expression, the executors that run spawned blocks, capture rules for spawned
+work, scopes and structured concurrency, cancellation, shared state guarded by
+`lock`, and message-passing services. The evaluation and ownership rules that
+concurrency builds on are in
 [`memory-and-runtime.md`](memory-and-runtime.md); `async`, `await`, and the
 `Task` utilities are in
 [`expressions/async-expressions.md`](expressions/async-expressions.md);
@@ -56,8 +57,9 @@ spawn.process Type { FieldInit , … }
   ([`expressions/async-expressions.md`](expressions/async-expressions.md)).
 - The first four forms are expressions of type `Task<T>`, where `T` is the
   type of the block. The service form evaluates to a service handle.
-- The dispatch mode changes only where the block runs. Capture, scope, and
-  cancellation rules are identical in every mode.
+- The dispatch mode selects the executor that runs the block's segments
+  ([Executors](#executors)). Capture, scope, and cancellation rules are
+  identical in every mode.
 - `spawn` is an ordinary expression: it may appear in a synchronous or an
   `async` body, in any expression position its type permits.
 - A `spawn` expression is not `Unit`, so it may not stand alone as an
@@ -71,6 +73,39 @@ async fn main() {
   print(await first + await second)   // 7
 }
 ```
+
+### Executors
+
+The dispatch mode selects the **executor** that runs the block: the default
+task scheduler, an operating-system thread, a separate process, or a
+caller-supplied pool. The service form does not produce a task; its process
+is governed by [Services](#services). A task's execution is a sequence of
+**segments**: the body runs until it either completes or suspends at an
+`await`, and each segment is handed to the task's executor when the task
+becomes ready to run — once when the `spawn` expression is evaluated, and once
+more after each `await` in the block completes.
+
+- A segment runs from the task's current position to its next suspension or
+  to settlement. The executor MAY begin the segment before the call that
+  hands it over returns; the `spawn` expression itself yields the `Task`
+  without waiting for any segment to finish.
+- The result of the block is carried by the `Task` itself, never through the
+  executor: the `fn(): Unit` a pool receives runs one segment and returns
+  `Unit`, and the value the block produces is stored in the task when it
+  settles.
+- For `spawn.on(pool)`, each ready transition calls `pool` with one segment
+  thunk. The pool MAY run it immediately, queue it, or hand it to a thread.
+  A pool that never invokes a thunk leaves the corresponding task unsettled,
+  so a scope draining that task waits indefinitely. The runtime never hands
+  one task two thunks at once.
+- For `spawn.thread`, each segment runs on an operating-system thread, which
+  MAY be released when the segment ends and MAY differ from segment to
+  segment. No language rule depends on which thread a segment runs on.
+- For `spawn.process async { … }`, segments run on the new process's own
+  scheduler, and the block's result is carried back to the `Task` in the
+  spawning process when the block settles.
+- A task cancelled while its next segment waits in an executor settles as
+  cancelled when that segment runs; the body does not resume.
 
 ## Capture into a `spawn` block
 
@@ -116,12 +151,13 @@ fn upload_files(): Task<Unit> {
 
 ## Scopes and structured concurrency
 
-Every block is a **scope** for the tasks spawned inside it, including a
-function or closure body and the body of `main`. When a block finishes, it
-does not simply stop: it settles its tasks first, then runs its `defer`s.
+Every block is a **scope** for the tasks started inside it — by `spawn` or
+by an `async` call — including a function or closure body and the body of
+`main`. When a block finishes, it does not simply stop: it settles its tasks
+first, then runs its `defer`s.
 
 1. The block's value, if any, is determined.
-2. Each task spawned in the block that has not settled is cancelled.
+2. Each task started in the block that has not settled is cancelled.
 3. The block waits until every one of those tasks has settled.
 4. Each settled child contributes nothing further: a child that settled as
    cancelled is absorbed, and a result no longer reachable from the block's
@@ -133,7 +169,7 @@ does not simply stop: it settles its tasks first, then runs its `defer`s.
 A task **reachable from the block's value** is exempt from step 2: it is not
 cancelled, and its ownership passes to the enclosing scope together with the
 value, where the same rules apply. This is how a function returns a task it
-spawned.
+started — whether by `spawn` or by an `async` call.
 
 Three consequences follow:
 
@@ -207,6 +243,18 @@ lock state { Block }             // a critical section
 - `lock` is an expression: its value is the value of the block, so a section
   both mutates and produces. The lock is released when the block finishes —
   normally, or by `return`.
+- A `lock` body contains no suspension point: `await` inside `lock` is a
+  compile-time error (`E0410`). A critical section therefore runs from entry
+  to exit without yielding, and cancellation — which takes effect at a task's
+  next `await` — cannot interrupt one.
+- Acquiring a lock never suspends the acquiring task. On a runtime that runs
+  several tasks on one thread, a critical section's non-suspending nature
+  means two tasks on that thread can never contend for one binding's lock. On
+  a runtime that runs tasks in parallel, the executing thread waits — blocked
+  or spinning — until the section in progress finishes; because that section
+  contains no `await`, the wait is bounded by its duration. Waiting this way
+  is not a suspension point, so `await` remains the only one
+  ([`expressions/async-expressions.md`](expressions/async-expressions.md)).
 - Locks are not reentrant: acquiring a lock the current task already holds is
   a runtime failure defined in [Runtime failures](#runtime-failures).
 
@@ -222,6 +270,22 @@ fn join(state: shared AppState, name: String) {
 
 fn report(state: shared AppState): Int {
   lock state { state.total_online }
+}
+```
+
+The no-suspension rule draws a line between where a value is fetched and where
+it is installed; the await belongs outside the section:
+
+```xulo
+async fn refresh_bad(state: shared AppState) {
+  lock state {
+    state.total_online = await fetch_count()   // error[E0410]
+  }
+}
+
+async fn refresh_ok(state: shared AppState) {
+  let fresh = await fetch_count()              // ok: the await is outside the lock
+  lock state { state.total_online = fresh }
 }
 ```
 
@@ -305,7 +369,13 @@ async fn main() {
   `move x`, ownership of the message instead transfers to the service: no copy
   is performed, and any later use of `x` is a compile-time error (`E0403`),
   exactly as after any other `move`
-  ([`memory-and-runtime.md`](memory-and-runtime.md)).
+  ([`memory-and-runtime.md`](memory-and-runtime.md)). Because the copy
+  completes before `send` returns, the argument's borrow — if it had one —
+  ends with the call and does not span the returned task
+  ([`memory-and-runtime.md`](memory-and-runtime.md), Span end).
+- The queue of messages waiting for a service is unbounded: `send` never
+  waits for capacity and never fails because the queue is full. A client that
+  needs backpressure limits how many sends it leaves unanswered.
 - The returned `Task<R>` MAY be discarded: `handle.send(m)` in statement
   position is fire-and-forget — the message was queued when the call
   evaluated, so only the reply goes unread, and the block settles the task on
@@ -339,6 +409,9 @@ stopped through its handle or until the program ends:
 - When a service stops, every message still queued for it is discarded, and
   each discarded message's send task settles as cancelled. A `reply` performed
   by the path that was executing is unaffected.
+- A `send` performed after the service has stopped is discarded immediately
+  and its task settles as cancelled, exactly like a message still queued when
+  the service stopped.
 - `stop` is idempotent: calling it on a service that has already stopped — or
   from several holders of the handle — has no further effect.
 - When the program ends, every service that has not stopped is stopped and its
@@ -350,11 +423,12 @@ its clients, so a service never needs `shared` or `lock`.
 ## Scheduling and progress
 
 Nothing about scheduling is language-visible: which ready task runs next, how
-many run concurrently, which execution resource a mode uses, and how long a
-suspension lasts are outside the specification, and programs MUST NOT depend
-on them. What is fixed — evaluation order, scope completion, message arrival
-order, the order of `Task.all` results — is listed under
-[`memory-and-runtime.md`](memory-and-runtime.md).
+many run concurrently, and how long a suspension lasts are outside the
+specification, and programs MUST NOT depend on them. Which executor runs a
+mode's segments is fixed ([Executors](#executors)); which thread or process
+instance within that executor is not. What is fixed — evaluation order, scope
+completion, message arrival order, the order of `Task.all` results — is listed
+under [`memory-and-runtime.md`](memory-and-runtime.md).
 
 ## Runtime failures
 

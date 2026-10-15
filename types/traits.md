@@ -21,6 +21,13 @@ Rules:
 
 - A trait declaration is `trait` Identifier `{` methods `}`. Method declarations
   are separated by `;`, and a `;` after the final method is permitted.
+- A trait declares **no type parameters**. Its grammar accepts a type
+  parameter list only so that the attempt can be diagnosed; declaring one —
+  `trait Convert<T> { … }` — is a compile-time error (`E0810`), and a trait's
+  methods therefore never mention type parameters. A trait is a fixed
+  contract: a type that should convert to several targets implements one
+  trait per target, not one parameterized trait
+  ([`generics.md`](generics.md)).
 - A trait method is a *signature only*: it declares parameters and a return type
   and has no body. A trait MUST NOT provide a default implementation, and an
   implementation therefore cannot inherit code from the trait it implements.
@@ -90,6 +97,39 @@ Rules:
   }
   ```
 
+- **When an impl applies.** A generic `impl` applies to a type exactly when
+  its type parameters can be instantiated so that the implemented type —
+  `Pair<T, T>` above — equals that type, and the impl's bounds are satisfied
+  by that same instantiation. An impl that cannot be so instantiated, or whose
+  bounds are not satisfied, contributes **nothing** for that type: no members
+  through member-call resolution, and no trait implementation for explicit
+  dispatch or bound checking. Satisfaction is recursive: an impl whose bounds
+  name other traits applies only when those bounds hold in turn — which,
+  because traits are never parameterized, always means a bound naming a trait
+  with no arguments.
+
+  ```xulo
+  struct Palette<T> { shape: T }
+  struct Rect { w: Float, h: Float }
+  struct Dot { r: Float }
+
+  impl Area for Rect {
+    fn area(self): Float { self.w * self.h }
+    fn perimeter(self): Float { 2.0 * (self.w + self.h) }
+  }
+
+  impl<T: Area> Palette<T> {
+    fn render(self): Float { Area.area(self.shape) }
+  }
+
+  let ok = Palette(shape: Rect(w: 3.0, h: 4.0))
+  print(str(ok.render()))          // 12.0: Rect: Area, so the impl applies
+
+  let bad = Palette(shape: Dot(r: 1.0))
+  // bad.render()                  // error[E0102]: no member `render` on `Palette<Dot>`
+                                   //   the impl's bound `T: Area` is not satisfied
+  ```
+
 - Inherent methods are private to the module unless declared `pub`; `pub` on a
   method controls member visibility, exactly as it does for struct fields (see
   [`../README.md`](../README.md)).
@@ -147,8 +187,14 @@ members unless a bound grants them. See [`generics.md`](generics.md).
 ## Bounds and generic code
 
 A generic declaration constrains its parameters with `<T: Area>` or
-`where T: Area`; both forms, multiple bounds, and call-site checking are
-specified in [`generics.md`](generics.md).
+`where T: Area`; both forms, multiple bounds, checking at every position a
+type argument is written or inferred, and the rule that a bound never carries
+type arguments are specified in [`generics.md`](generics.md).
+
+A type satisfies a bound exactly when a visible `impl` for the bound's trait
+applies to it, under the applicability rules above — including the recursion
+through an impl's own bounds. That check is the whole of bound satisfaction:
+there is no structural fallback and no second source of evidence.
 
 Inside a body that carries the bound, values of type `T` expose the members the
 bound declares, and either spelling denotes the same static call:
@@ -172,8 +218,9 @@ The language rule for calls that depend on a type parameter is:
 - No expression performs a method lookup on the runtime type of a value. There
   is no dynamic dispatch, no default method fallback, and no reflection over
   type arguments.
-- Consequently, a bound is checked once per instantiation, at the call site
-  that selects the type argument, and every call inside the body is then fixed.
+- Consequently, a bound is checked once per instantiation, at the point that
+  selects the type argument — a call that infers it, or a type application
+  that writes it — and every call inside the body is then fixed.
 - **Which implementation a bound uses.** The implementation that satisfies a
   bound is the one visible at the point that selects the type argument, and it
   travels with the bound into the generic body: every bound-resolved call

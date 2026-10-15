@@ -137,7 +137,7 @@ and the xulo-website documents named in § 6.
 | [`type-system/`](type-system/README.md) | Checking rules, coercions, compile-time diagnostics (`E`/`W` codes) |
 | [`builtins/`](builtins/README.md) | Prelude and compiler intrinsics |
 | [`memory-and-runtime.md`](memory-and-runtime.md) | Value/reference semantics, ownership, borrowing, runtime model |
-| [`concurrency.md`](concurrency.md) | Tasks, `spawn`, cancellation, structured concurrency |
+| [`concurrency.md`](concurrency.md) | Tasks, `spawn` and its executors, cancellation, structured concurrency |
 | [`error-handling.md`](error-handling.md) | Fallible operations: `Result`, `?` propagation, `panic`, runtime failures |
 | [`testing.md`](testing.md) | Test functions: checking, inertness, the `async` marker, pass and fail |
 | [`grammar.md`](grammar.md) | Complete EBNF grammar |
@@ -153,7 +153,7 @@ normative for the whole specification.
 | Term | Definition |
 |------|------------|
 | **binding** | An association between a name and a value or type introduced by `let`, `let mut`, `const`, a parameter, or a declaration. |
-| **borrowing** | The grant by which a parameter or receiver accesses an argument's storage for the duration of a call instead of receiving it: `p: T` borrows immutably, `p: mut T` mutably, under aliasing XOR mutability. See [`memory-and-runtime.md`](memory-and-runtime.md). |
+| **borrowing** | The grant by which a parameter or receiver accesses an argument's storage for the duration of a call instead of receiving it — extended until the returned task settles when the call returns a `Task`: `p: T` borrows immutably, `p: mut T` mutably, under aliasing XOR mutability. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **bound** | A constraint on a type parameter, written inline `<T: Area>` or in a `where` clause; a type argument MUST satisfy every bound of its parameter. See [`types/generics.md`](types/generics.md). |
 | **closure** | A function value written in expression position — `fn(…) { … }` or `params => …` — which captures the bindings of the scope in which it was written. See [`expressions/closures.md`](expressions/closures.md). |
 | **coercion** | An implicit conversion from the closed list of [`type-system/coercion.md`](type-system/coercion.md), written `A ⇝ B`; nothing outside that list converts implicitly, and no coercion discards information. |

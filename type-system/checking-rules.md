@@ -319,15 +319,27 @@ that disagree on what they bind are `E0304`.
   the function produces a value — `pub` functions always; an omitted return
   type means `Unit` and the body is checked against `Unit`. Missing annotations
   are `E0216` ([`../functions.md`](../functions.md)).
-- **Bounds.** Every type argument a call site determines MUST satisfy its
-  parameter's bounds even though it was inferred (`E0801`); a bound that is not
-  a visible `trait` is `E0806`.
+- **Bounds.** Every type argument — inferred at a call or written in a type
+  application — MUST satisfy its parameter's bounds (`E0801`); a bound that is
+  not a visible `trait` is `E0806`, and a bound that applies type arguments to
+  a trait is `E0811`. A `trait` declaration that declares type parameters is
+  `E0810`
+  ([`../types/generics.md`](../types/generics.md), [`../types/traits.md`](../types/traits.md)).
+- **Type applications.** Every type application MUST be well-formed: the
+  argument count equals the declaration's type-parameter count, a generic
+  name never appears without its arguments, and a type parameter is never
+  applied — all `E0230`
+  ([`../types/generics.md`](../types/generics.md)).
 - **`impl` completeness.** A trait `impl` MUST declare every method of the
   trait (`E0802`) and no others (`E0804`), each signature — parameters, return
   type, receiver form — being mutually assignable with the declared one
   (`E0803`). Two implementations of one trait for one type in one module are
   `E0805`; one in each of two modules is legal, since an `impl` is module-scoped
-  ([`../types/traits.md`](../types/traits.md)).
+  ([`../types/traits.md`](../types/traits.md)). A generic `impl` contributes
+  its methods or its trait implementation only when it applies to the type in
+  question — its parameters instantiate to the type and its bounds are
+  satisfied — and otherwise is invisible to member lookup and to explicit
+  dispatch ([`../types/traits.md`](../types/traits.md)).
 - **Type aliases.** Expanding aliases MUST terminate: an alias that expands,
   directly or through a chain, to itself is `E0105`; recursion through a type
   constructor is not a cycle.

@@ -112,6 +112,10 @@ b` groups as `(move a) + b` and the second restriction below then rejects it.
 - The operand of `move` MUST be a path naming a binding. `move p.x`,
   `move xs[0]`, and `move compute()` are errors (`E0403`): a transfer moves a whole
   binding, never a part of one.
+- The binding MUST be one the current frame owns: a `let`, `let mut`,
+  `const`, loop, or pattern binding. A parameter or receiver borrows its
+  argument and owns no storage to transfer, so `move p` where `p` is a
+  parameter is an error (`E0403`).
 - `move` and `copy` are accepted in exactly three positions: the initializer
   of a `let`, an argument of a call, and the operand of `return`. In any other
   position — a condition, a binary operand, a field initializer, a literal
@@ -131,6 +135,13 @@ fn main() {
   let n = consume(move items)   // ownership transfers to the call
   print(n)                      // 2
   // print(items)               // error: `items` has been moved (E0403)
+}
+```
+
+```xulo
+fn steal(p: List<Int>): Int {
+  let owned = move p            // error[E0403]: `p` is a borrow, not an owned binding
+  owned[0]
 }
 ```
 
@@ -165,7 +176,9 @@ let bob = copy alice      // an independent deep copy
 ## Borrowing
 
 A parameter never receives its argument's storage; it *borrows* it for the
-duration of the call ([`types/function-types.md`](types/function-types.md)):
+duration of the call — extended past the call's return when the call returns
+a `Task`, as [Span end](#span-end) defines
+([`types/function-types.md`](types/function-types.md)):
 
 - `p: T` is an **immutable borrow** — the default. The callee may read the
   argument; it may not write through the parameter.
@@ -174,25 +187,35 @@ duration of the call ([`types/function-types.md`](types/function-types.md)):
   borrows immutably, `mut self` mutably
   ([`functions.md`](functions.md)).
 
+A parameter is an ordinary binding for every purpose but ownership: it MAY be
+passed on, where it lends its borrow to the inner call for that call's
+duration — an immutable parameter lends an immutable borrow, a `mut`
+parameter a mutable one. Onward lending obeys the same rules as the original
+call.
+
 Borrowing obeys **aliasing XOR mutability**: at any moment a value is either
 shared by any number of immutable borrows or held by at most one mutable
-borrow, never both. Three rules make that checkable:
+borrow, never both. Three rules make that checkable; in them, a place is
+**used** when it is read, written, moved, or passed as an argument.
 
 1. **A mutable borrow needs a mutable place.** An argument passed to a `mut`
    parameter — or supplied as a `mut self` receiver — MUST be a place backed
    by a `mut` binding. Passing a literal, a computed value, or an immutable
    binding is a compile-time error (`E0404`).
 2. **One call borrows without overlap.** Two arguments of one call MUST NOT
-   denote overlapping places when either parameter is `mut`: the same binding,
-   or a field or subscript of a place borrowed by another argument, is
-   borrowed mutably twice (`E0404`).
-3. **A mutable borrow spans suspension.** A mutable borrow begins when the
-   call starts and ends when the callee returns — or, for an `async` callee,
-   when its task settles. While a place is so borrowed, code outside the
-   callee MUST NOT read or write it; doing so is a compile-time error
-   (`E0405`). The same span applies to a `let mut` binding written by an
-   `async` closure that has suspended: the binding is borrowed by the running
-   body until the closure's task settles.
+   denote overlapping places when either of the two parameters is `mut`;
+   using a place this way is a compile-time error (`E0404`). When two places
+   overlap is defined under [Overlap](#overlap).
+3. **Borrows span suspension.** A borrow begins when the call starts and ends
+   when the callee returns — or, when the call returns a `Task`, when that
+   task settles ([Span end](#span-end)). While a **mutable** borrow of a
+   place is outstanding, code outside the callee MUST NOT use the place at
+   all (`E0405`). While an **immutable** borrow is outstanding, code outside
+   the callee MUST NOT write the place (`E0411`) and MUST NOT start a
+   mutable borrow of it (`E0404`); reads remain unrestricted. The same spans
+   apply to a `let mut` binding written by an `async` closure that has
+   suspended: the binding is borrowed by the running body until the
+   closure's task settles.
 
 ```xulo
 struct Counter { value: Int }
@@ -222,9 +245,90 @@ async fn main() {
 }
 ```
 
-Immutable borrows impose no such exclusion: a value may be read through any
-number of them at once, and ordinary reference sharing between bindings is
-not a borrow and is always allowed.
+```xulo
+async fn peek(xs: List<Int>) {
+  print(xs[0])
+}
+
+async fn watch(mut xs: List<Int>) {
+  let t = peek(xs)           // immutable borrow of xs, until t settles
+  // xs[0] = 9              // error[E0411]: written during an immutable borrow
+  print(xs[0])               // ok: reads remain unrestricted
+  await t                    // the borrow ends here
+  xs[0] = 9                  // ok
+}
+```
+
+Many immutable borrows may be outstanding at once, and ordinary reference
+sharing between bindings is not a borrow and is always allowed.
+
+### Overlap
+
+Two places overlap unless, walking their paths from the base, the first
+position where they differ proves them disjoint:
+
+- different field names — `a.x` and `a.y` — or, in tuples, different
+  positions — `p.0` and `p.1`;
+- the same list subscripted by two distinct integer literals — `xs[0]` and
+  `xs[1]`.
+
+Any pair whose paths do not diverge this way overlaps: the same binding; one
+path a prefix of the other (`a` and `a.x`); the same field (`a.x` and
+`a.x.y`); subscripts that are not two distinct literals (`xs[i]` and `xs[j]`,
+or `xs[i]` and `xs[0]`). Overlap is a static judgment: two non-literal
+indices are never assumed distinct.
+
+```xulo
+fn pair(a: mut Int, b: Int): Int { a + b }
+
+fn overlap(mut xs: List<Int>, i: Int) {
+  pair(xs[0], xs[1])         // ok: distinct literal subscripts are disjoint
+  pair(xs[0], xs[0])         // error[E0404]: the same place, mutably borrowed twice
+  pair(xs[0], xs[i])         // error[E0404]: a non-literal index is never assumed distinct
+}
+```
+
+### Span end
+
+A borrow from a call that returns a `Task<U>` — an `async` call, an `async`
+closure call, or a synchronous call whose result type is `Task<U>` — lasts
+until the checker can see that task settle. It can see it where control flow
+reaches a point after an `await` whose operand contains the task's binding:
+`await t`, `await Task.all([t, u])`, and `await Task.timeout(t, ms)` each
+wait for `t`. When the scope contains no such `await`, the borrow lasts until
+the scope ends.
+
+- The synchronous case is conservative: the callee MAY have stored a borrowed
+  place inside the task it returned, so the checker cannot end the borrow at
+  the call even though the callee has returned; with no `await` of the task,
+  the borrow lasts to the scope end, by which time the scope's exit has
+  settled the task ([`concurrency.md`](concurrency.md)).
+- Flow decides: on a path that has not reached such an `await` — the other
+  branch of an `if`, an earlier loop iteration — the borrow is still
+  outstanding.
+
+```xulo
+async fn fill(p: mut List<Int>) {
+  p[0] = 7
+}
+
+async fn main() {
+  let mut xs = [0]
+  let t = fill(xs)                    // mutable borrow of xs
+  await Task.all([t])                 // ok: the await's operand contains `t`
+  xs[0] = 1                           // ok: the borrow has ended
+}
+```
+
+```xulo
+async fn main() {
+  let mut xs = [0]
+  let t = fill(xs)                    // mutable borrow of xs
+  // xs[0] = 1                       // error[E0405]: the borrow is outstanding
+  await t                             //   until this await is reached
+  xs[0] = 1                           // ok
+}
+```
 
 ## Mutability rules
 
@@ -256,9 +360,10 @@ usable:
 - A binding's usable life runs from its declaration to the end of its block
   ([`names.md`](names.md)); using it earlier or after a `move` is a
   compile-time error (`E0403`).
-- A borrow lives exactly as long as its call — or, when the callee is `async`,
-  until its task settles — and no use outside the callee can name it, because
-  borrows are parameters, not values that can be stored.
+- A borrow lives exactly as long as its call — or, when the call returns a
+  `Task`, until that task settles, as [Span end](#span-end) defines — and no
+  use outside the callee can name it, because borrows are parameters, not
+  values that can be stored.
 - A closure extends the life of what it captures: captured bindings become
   part of the closure's value and their storage remains valid for as long as
   the closure is reachable, even beyond the frame that created them
@@ -335,7 +440,7 @@ What this specification fixes, it fixes for every conforming program:
   ([`expressions/async-expressions.md`](expressions/async-expressions.md)).
 - Termination of the structural operations: `==` and `copy` halt on cyclic
   values.
-- Scope completion: a block finishes only after the tasks spawned inside it
+- Scope completion: a block finishes only after the tasks started inside it
   have settled ([`concurrency.md`](concurrency.md)).
 
 What is deliberately not fixed: which ready task runs next, which of several

@@ -60,9 +60,9 @@ code MUST NOT be reused for a different failure.
 | Range | Family | Specified in |
 |-------|--------|--------------|
 | `E0101`–`E0199` | names, declarations, reserved names | [`../names.md`](../names.md), [modules](../modules/README.md) |
-| `E0201`–`E0299` | types, expressions, inference | this chapter, [`checking-rules.md`](checking-rules.md) |
+| `E0201`–`E0299` | types, expressions, inference | this chapter, [`checking-rules.md`](checking-rules.md), [`../types/generics.md`](../types/generics.md) |
 | `E0301`–`E0399` | patterns and `match` | [`../expressions/control-flow.md`](../expressions/control-flow.md) |
-| `E0401`–`E0499` | mutability, ownership, borrowing, shared state, and spawn | [`../statements/let-and-assignment.md`](../statements/let-and-assignment.md), [`../memory-and-runtime.md`](../memory-and-runtime.md), [`../concurrency.md`](../concurrency.md) |
+| `E0401`–`E0499` | mutability, ownership, borrowing, shared state, and spawn | [`../statements/let-and-assignment.md`](../statements/let-and-assignment.md), [`../memory-and-runtime.md`](../memory-and-runtime.md), [`../expressions/closures.md`](../expressions/closures.md), [`../concurrency.md`](../concurrency.md) |
 | `E0501`–`E0599` | `async` and `await` | [`../expressions/async-expressions.md`](../expressions/async-expressions.md) |
 | `E0601`–`E0699` | modules, visibility, entry point | [modules](../modules/README.md) |
 | `E0701`–`E0799` | components | [`../components/README.md`](../components/README.md) |
@@ -147,6 +147,7 @@ the source line, a caret line, and optional notes.
 | `E0227` | an operand of `+` is a `String` and the other is not | `"count=" + 1` | ``cannot add `Int` to `String` `` | [operators.md](../expressions/operators.md) |
 | `E0228` | a parameter's default value does not fit the parameter's declared type | `fn f(name: String = 42)` | ``expected `String`, found `Int` `` | [calls.md](../expressions/calls.md) |
 | `E0229` | `return`, `break`, `continue`, or `?` appears in a `defer` operand | `defer { return }` | ``cannot transfer control out of a `defer` operand`` | [return-and-block.md](../statements/return-and-block.md) |
+| `E0230` | a type application is ill-formed: the argument count differs from the declared type-parameter count, a generic name is written without its arguments, a non-generic name is given arguments, or the head is a type parameter | `Map<String>` | `` `Map` expects 2 type arguments, found 1 `` | [generics.md](../types/generics.md) |
 
 ### Pattern errors
 
@@ -161,20 +162,22 @@ the source line, a caret line, and optional notes.
 
 | Code | Trigger | Example | Message shape | Specified in |
 |------|---------|---------|---------------|--------------|
-| `E0401` | assignment to a place not backed by a `mut` binding | `let count = 0` then `count = 1` | ``cannot assign twice to immutable variable `count` `` | [let-and-assignment.md](../statements/let-and-assignment.md) |
+| `E0401` | assignment to a place not backed by a `mut` binding — including assignment through a closure's capture of a binding not declared `let mut` (a `mut` parameter or `mut self` included) | `let count = 0` then `count = 1` | ``cannot assign twice to immutable variable `count` `` | [let-and-assignment.md](../statements/let-and-assignment.md), [closures.md](../expressions/closures.md) |
 | `E0402` | the assignment target is not a place | `1 = 2`, `f() = 2` | ``invalid assignment target`` | [expression-statements.md](../statements/expression-statements.md) |
 
 ### Ownership, borrowing, shared state, and spawn errors
 
 | Code | Trigger | Example | Message shape | Specified in |
 |------|---------|---------|---------------|--------------|
-| `E0403` | `move` is applied to something that is not a binding path or appears outside a `let` initializer, an argument, or a `return`; a binding is used after it has been moved out | `consume(move items)` then `print(items)` | ``cannot use moved value `items` `` | [memory-and-runtime.md](../memory-and-runtime.md) |
-| `E0404` | an argument passed to a `mut` parameter or `mut self` receiver is not a mutable place, or two arguments of one call overlap where either is mutably borrowed | `bump(n, n)` | ``cannot borrow `n` as mutable`` | [memory-and-runtime.md](../memory-and-runtime.md) |
-| `E0405` | a place is read or written while a mutable borrow of it is outstanding — an `async` call or closure body that has not settled | `xs[0] = 2` after `let t = load(xs)` | ``cannot use `xs`: it is mutably borrowed`` | [memory-and-runtime.md](../memory-and-runtime.md) |
+| `E0403` | `move` is applied to something that is not a binding path, to a borrowed binding (a parameter or receiver), or outside a `let` initializer, an argument, or a `return`; a binding is used after it has been moved out | `consume(move items)` then `print(items)` | ``cannot use moved value `items` `` | [memory-and-runtime.md](../memory-and-runtime.md) |
+| `E0404` | an argument passed to a `mut` parameter or `mut self` receiver is not a mutable place, two arguments of one call overlap where either is mutably borrowed, or a mutable borrow starts while an immutable borrow of the place is outstanding | `bump(n, n)` | ``cannot borrow `n` as mutable`` | [memory-and-runtime.md](../memory-and-runtime.md) |
+| `E0405` | a place is used — read, written, moved, or passed as an argument — while a mutable borrow of it is outstanding from a call that has not returned, or whose task has not settled | `xs[0] = 2` after `let t = load(xs)` | ``cannot use `xs`: it is mutably borrowed`` | [memory-and-runtime.md](../memory-and-runtime.md) |
 | `E0406` | the contents of a shared binding are read or written outside `lock` on that binding | `state.total_online` outside `lock state` | ``shared state `state` is accessed outside `lock` `` | [concurrency.md](../concurrency.md) |
 | `E0407` | the operand of `lock` is not a shared binding, or a value that is not shared is passed to a `shared` parameter | `lock xs { … }` with an ordinary `xs` | `` `lock` requires a shared binding `` | [concurrency.md](../concurrency.md) |
 | `E0408` | a `spawn` block uses an enclosing binding that was not captured with `move` or `copy` | `spawn async { print(config) }` | `` `config` is not captured by the spawned block `` | [concurrency.md](../concurrency.md) |
 | `E0409` | a type given to `spawn.process` declares no `on_message` | `spawn.process Tally { total: 0 }` | ``service `Tally` declares no `on_message` `` | [concurrency.md](../concurrency.md) |
+| `E0410` | `await` appears inside the body of a `lock` expression | `await fetch_count()` inside `lock state { … }` | `` `await` is not allowed inside `lock` `` | [concurrency.md](../concurrency.md) |
+| `E0411` | a place is written or moved while an immutable borrow of it is outstanding from a call that has not returned, or whose task has not settled | `xs[0] = 9` after `let t = peek(xs)` | ``cannot write `xs`: it is immutably borrowed`` | [memory-and-runtime.md](../memory-and-runtime.md) |
 
 ### `async` and `await` errors
 
@@ -230,6 +233,8 @@ reported with the call codes `E0202`, `E0204`, `E0207`, and `E0208`.
 | `E0805` | two impls of one trait for one type in one module | a second `impl Area for Rect` | `` `Area` is already implemented for `Rect` `` | [checking-rules.md](checking-rules.md) |
 | `E0806` | a bound does not name a visible trait | `<T: Int>` | ``bound `Int` is not a trait`` | [generics.md](../types/generics.md) |
 | `E0809` | a member call `value.method(…)` finds more than one trait method candidate in scope for the receiver's type | `r.grow()` with two traits in scope that both implement `grow` for `Rect` | ``multiple applicable implementations of `grow` for `Rect` `` | [traits.md](../types/traits.md) |
+| `E0810` | a `trait` declaration declares a type parameter list | `trait Convert<T> { fn convert(self): T }` | ``a trait may not declare type parameters`` | [traits.md](../types/traits.md) |
+| `E0811` | a bound applies type arguments to a trait | `<T: Convert<String>>` | ``bound `Convert<String>` applies type arguments; a trait has none`` | [generics.md](../types/generics.md) |
 
 `E0807` and `E0808` are reserved by the pending change
 [`add-explicit-type-arguments`](../changes/add-explicit-type-arguments/proposal.md).

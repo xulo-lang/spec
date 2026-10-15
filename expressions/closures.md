@@ -86,9 +86,14 @@ binding's storage instead of copying the value.
 - Reading a captured immutable binding (`let`, `const`, or a parameter) is
   unrestricted for as long as the closure value exists.
 - A closure MAY assign to a captured binding only when that binding was
-  declared `let mut`. Assigning to a captured non-`mut` binding is a
-  compile-time error (`E0401`), exactly as it is anywhere else (see
-  [`let-and-assignment.md`](../statements/let-and-assignment.md)).
+  declared `let mut`. A `mut` parameter or `mut self` receiver is a mutable
+  place for direct assignment ([`../memory-and-runtime.md`](../memory-and-runtime.md))
+  but is not declared `let mut`: assigning to it through a closure is a
+  compile-time error (`E0401`), exactly as assigning to any other
+  non-`let mut` capture is (see
+  [`let-and-assignment.md`](../statements/let-and-assignment.md)). A closure
+  returned from a function therefore cannot mutate the caller's place through
+  a borrowed receiver.
 - While a binding and a closure that captures it are both alive, a mutation
   made through the closure is visible through the binding, and a mutation made
   through the binding is visible through the closure.
@@ -135,6 +140,20 @@ Xulo has exactly two capture modes, chosen by the captured binding itself:
   ([`memory-and-runtime.md`](../memory-and-runtime.md)).
 - The set of captured bindings is implicit: there is no capture-list syntax,
   and a binding that the body never mentions is not captured.
+- A `mut` parameter or `mut self` receiver admits read capture only: the
+  closure may read it, but assigning through the capture is `E0401`.
+
+```xulo
+struct Counter { value: Int }
+
+fn broken(p: mut Counter): fn(): Unit {
+  fn(): Unit { p.value = p.value + 1 }   // error[E0401]: `p` is not declared `let mut`
+}
+
+fn ok(p: Counter): fn(): Int {
+  fn(): Int { p.value }                  // ok: read capture
+}
+```
 
 ## Lifetime of captured state
 

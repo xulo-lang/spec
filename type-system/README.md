@@ -45,7 +45,8 @@ which declarations are checked does not change the result.
 | Patterns | Each pattern fits its scrutinee, `match` is exhaustive, no arm is unreachable |
 | Visibility | Only `pub` names cross module boundaries, and no public signature exposes a private type |
 | Component declarations | `@State`, `@Store`, `@Effect`, and `@Environment` appear only at the top level of a component body, and children have an admissible type |
-| Generic bounds | Every bound a call site instantiates is satisfied by the chosen type argument |
+| Generic bounds | Every type argument — inferred at a call or written in a type application — satisfies its parameter's bounds |
+| Type applications | Every type application supplies exactly the declared number of arguments; a generic name is never bare and a type parameter is never applied |
 | `impl` completeness | Every trait method is implemented exactly once, with a matching signature |
 
 Each row is expanded in [`checking-rules.md`](checking-rules.md); a rule that
