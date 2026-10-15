@@ -96,6 +96,7 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
+| [add-declaration-attributes/](add-declaration-attributes/proposal.md) | draft | `#Derive(ToString)` — declarations MAY carry `#Name` attributes from a closed, checker-interpreted registry. |
 | [add-explicit-type-arguments/](add-explicit-type-arguments/proposal.md) | draft | `first<int>(…)` — a call MAY write its type arguments instead of inferring them. |
 
 ## Archived
