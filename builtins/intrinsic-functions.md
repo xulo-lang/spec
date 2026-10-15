@@ -51,7 +51,7 @@ of a container is built from the renderings of its elements.
 | `String` | the characters of the string itself, with no surrounding quotes and no escaping |
 | `Boolean` | `true` or `false` |
 | `Int` | the decimal numeral of the value |
-| `Float` | the decimal numeral, with no fractional part when the value is whole (`3.0` renders as `3`); the special values render as `NaN`, `Infinity`, and `-Infinity` |
+| `Float` | the shortest positional decimal numeral that reads back as the same `Float` — a whole value has no fractional part (`3.0` renders as `3`) and no trailing fractional zeros appear (`0.50` renders as `0.5`); scientific notation is never used, so a small magnitude is written in full (`0.0000001`); the special values render as `NaN`, `Infinity`, and `-Infinity` |
 | `Null` | `null` |
 | `List<T>` | `[`, then the renderings of the elements separated by `, `, then `]` — `[1, 2]` |
 | `Map<K, V>` | `{`, then the entries in insertion order as `key: value` pairs separated by `, `, each side rendered by this table, then `}` — `{ name: "lyy", age: 30 }` |
@@ -160,6 +160,12 @@ available without import. Its members are reached with `.` (`Math.PI`,
 | `Math.round` | `fn(x: Float): Int` | nearest integer to `x` |
 | `Math.trunc` | `fn(x: Float): Int` | integer formed by discarding the fractional part |
 
+### Formatting
+
+| Member | Signature | Meaning |
+|--------|-----------|---------|
+| `Math.toFixed` | `fn(x: Float, digits: Int): String` | the decimal numeral of `x` with exactly `digits` digits after the decimal point |
+
 ### Trigonometric functions
 
 | Member | Signature | Meaning |
@@ -195,6 +201,13 @@ available without import. Its members are reached with `.` (`Math.PI`,
   toward negative infinity, toward positive infinity, and toward zero; they
   return `Int`. `Math.round` returns the nearest `Int`, and a value exactly
   halfway between two integers rounds away from zero.
+- `Math.toFixed` rounds at the `digits`-th fractional place using the same
+  halfway-away-from-zero rule, keeps trailing zeros — a fixed width is the
+  point of the function — and renders the sign exactly as `str` does, so a
+  negative zero yields a leading `-`. The special values ignore `digits` and
+  render as `NaN`, `Infinity`, and `-Infinity`. A `digits` value outside
+  `0...=15` is a runtime failure
+  ([`../memory-and-runtime.md`](../memory-and-runtime.md)).
 - `Math.abs`, `Math.min`, and `Math.max` are declared over `Number`, so an
   `Int` or `Float` operand is accepted and a fixed-bit operand is not
   ([`../types/primitive-types.md`](../types/primitive-types.md)).
@@ -209,6 +222,10 @@ let value = 120
 let clamped = Math.min(Math.max(value, 0), 100)
 let halfPi = Math.PI / 2
 let whole = Math.floor(3.7)            // 3, of type Int
+print(`price: ${Math.toFixed(3.14159, 2)}`)  // price: 3.14
+print(`${Math.toFixed(2.5, 0)}`)             // 3
+print(`${Math.toFixed(-2.5, 0)}`)            // -3
+print(`${Math.toFixed(3.1, 2)}`)             // 3.10
 ```
 
 ## `Time` namespace
@@ -330,6 +347,7 @@ Constants give their type in place of a signature.
 | `Math.sqrt` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
 | `Math.tan` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
 | `Math.TAU` | `Float` (constant) | [`Math` namespace](#math-namespace) |
+| `Math.toFixed` | `fn(x: Float, digits: Int): String` | [`Math` namespace](#math-namespace) |
 | `Math.trunc` | `fn(x: Float): Int` | [`Math` namespace](#math-namespace) |
 | `print` | `print<T>(value: T): Unit` | [Output](#output) |
 | `println` | `println<T>(value: T): Unit` | [Output](#output) |
