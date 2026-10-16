@@ -97,6 +97,7 @@ never a version number or an implementation detail.
 | Change | Status | Summary |
 |--------|--------|---------|
 | [add-declaration-attributes/](add-declaration-attributes/proposal.md) | draft | `#Derive(ToString)` — declarations MAY carry `#Name` attributes from a closed, checker-interpreted registry. |
+| [change-test-to-attribute/](change-test-to-attribute/proposal.md) | draft | `#Test async fn name() { … }` — the test declaration is marked with the attribute registry; `test` leaves the keyword set. |
 
 ## Archived
 
