@@ -72,4 +72,4 @@
 ## Acceptance
 
 - [ ] All boxes above checked; archive the directory as `accepted`; drop the
-      index entry from [`../changes/README.md`](../README.md).
+      index entry from [`../changes/README.md`](../../README.md).

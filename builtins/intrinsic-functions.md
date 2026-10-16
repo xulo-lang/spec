@@ -119,7 +119,7 @@ let bad = str([1, 2])                  // error: List<Int> has no string form
   `panic(message)` — the same effect as writing that `panic` directly
   ([`../error-handling.md`](../error-handling.md)).
 - When `condition` is `true`, the call has no effect beyond producing `Unit`.
-- `assert` is how a `test` body states a requirement; the declaration that
+- `assert` is how a `#Test` body states a requirement; the declaration that
   holds it, and what pass and fail mean, are specified in
   [`../testing.md`](../testing.md).
 

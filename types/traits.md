@@ -284,7 +284,8 @@ struct User { name: String, age: Int }
 - A registered attribute is valid only on the declarations its registry entry
   allows (`E0109`), and its arguments must fit the shape that entry states
   (`E0110`). Attributes are written on the five item declarations — `fn`,
-  `struct`, `enum`, `trait`, and `impl` — and on nothing else
+  `struct`, `enum`, `trait`, and `impl` — and on the test form (`#Test`), and
+  on nothing else
   ([`../grammar.md`](../grammar.md)).
 - The registry of derive targets is closed in the same way. The only
   registered target is `ToString`. `Display` and `Debug` are reserved names
@@ -335,6 +336,25 @@ Rules:
   hand-written impl.
 - A derived impl participates in dispatch exactly as a written one; derive
   introduces no satisfaction that an `impl` would not.
+
+### Test
+
+`#Test` marks a function as a test. It is spelled only by the test form —
+`#Test [async] fn name() { … }` — whose shape is fixed
+([`../testing.md`](../testing.md)):
+
+- the declaration has no parameters, no return type, no generic parameters,
+  no `where` clause, and no `pub`;
+- the identifier binds no value, and any reference to it is `E0107`.
+
+Written on a `struct`, `enum`, `trait`, or `impl`, `#Test` is `E0109`
+(`` attribute `Test` is not valid on a struct ``). Written before a `fn`
+whose shape does not match the test form — parameters, a return type,
+generics, a `where` clause, or `pub` — it is `E0110`
+(`` attribute `Test` takes the form `#Test [async] fn name() { … }` ``).
+When the sequence `#Test` `async`? `fn` Identifier `(` `)` Block appears at
+file scope, the declaration is a `TestDecl` and no registry lookup runs
+([`../grammar.md`](../grammar.md)).
 
 ## Example
 

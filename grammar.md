@@ -73,7 +73,7 @@ Keyword = "and" | "as" | "async" | "await" | "break" | "const"
         | "for" | "if" | "impl" | "in" | "is" | "let"
         | "lock" | "match" | "mod" | "move" | "mut" | "not" | "null" | "or"
         | "panic" | "pub" | "return" | "self" | "shared" | "spawn" | "struct"
-        | "super" | "test" | "trait" | "true" | "type" | "use" | "where"
+        | "super" | "trait" | "true" | "type" | "use" | "where"
         | "while" ;
 ```
 
@@ -211,7 +211,7 @@ without surrounding whitespace and followed by `::` — the rule of
 
 Every alternative of `Declaration` MAY carry `pub`, except `impl` and
 `TestDecl`: `impl` introduces no name and is never part of an interface, and
-a `test` is never part of an interface either
+a `#Test` declaration is never part of an interface either
 ([visibility.md](modules/visibility.md)); the four component declarations
 carry no visibility marker either
 ([state.md](components/state.md)). `async` follows `pub` and precedes `fn`.
@@ -287,7 +287,7 @@ IdentifierList       = Identifier { "," Identifier } [ "," ] ;
 
 ConstDecl = [ "pub" ] "const" Identifier [ ":" Type ] "=" Expression ;
 
-TestDecl = "test" [ "async" ] "fn" Identifier "(" ")" Block ;
+TestDecl = "#Test" [ "async" ] "fn" Identifier "(" ")" Block ;
 ```
 
 `:=` appears only directly after `let`, never after `let mut` or `const`, and
@@ -297,8 +297,8 @@ required. A `DestructuringBinding` deconstructs a `struct` with `{ … }` or a
 tuple with `( … )`; the two forms take an initializer of the matching shape
 and nothing else.
 
-A `TestDecl` is a function declaration with a fixed shape: `test` precedes
-`async` and `fn` (never `async test fn`), the parameter list and the return
+A `TestDecl` is a function declaration with a fixed shape: `#Test` precedes
+`async` and `fn` (never `async #Test fn`), the parameter list and the return
 type are absent — the body is an implicit `fn(): Unit` — and it carries no
 `pub`, no generic parameters, and no `where` clause. The identifier is the
 test's identity as a tool reports it, not a name in the value namespace:
@@ -307,6 +307,17 @@ makes the body an `async` context
 ([async-expressions.md](expressions/async-expressions.md)); the declaration's
 checking, inertness, and pass/fail criterion are specified in
 [testing.md](testing.md).
+
+The head token is written exactly `#Test`; the production carries the
+attribute name as a literal, so the test form accepts no other attributes.
+When the token sequence `#Test` `async`? `fn` Identifier `(` `)` Block
+appears at file scope, the declaration is a `TestDecl` and no attribute
+lookup runs. A `#Test` that precedes a `fn` with parameters, a return type,
+generic parameters, a `where` clause, or `pub` does not match `TestDecl`:
+the declaration parses as an ordinary `FnDecl` carrying the attribute, and
+the registry rules of [traits.md](types/traits.md) diagnose it (`E0110` —
+`` attribute `Test` takes the form `#Test [async] fn name() { … }` ``).
+Written on a `struct`, `enum`, `trait`, or `impl`, `#Test` is `E0109`.
 
 ### Component declarations
 

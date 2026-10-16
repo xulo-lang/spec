@@ -40,7 +40,7 @@ The following forms, and only these, MAY appear at file scope:
 | Type alias | `type Name = …` | Transparent alias |
 | Binding | `let x = 1`, `let mut y = 2` | File-scope variables |
 | Constant | `const PI = 3.14` | Compile-time constant |
-| Test | `test fn check() { … }` | Checked like a function body; run only by a test tool ([testing.md](../testing.md)) |
+| Test | `#Test fn check() { … }` | Checked like a function body; run only by a test tool ([testing.md](../testing.md)) |
 
 Order rules:
 
@@ -81,7 +81,7 @@ Declarations fall into two classes with different ordering rules:
 - Module-level `let`, `let mut`, and `const` MUST be declared before they are
   used. Their initializers run in declaration order, so a use that precedes the
   declaration has nothing to read and MUST be an error (`E0101`).
-- A `test` declaration is in neither class: its identifier binds no value — any reference is a compile-time error (`E0107`) — and its body follows the forward-reference rules of a function body ([testing.md](../testing.md)).
+- A `#Test` declaration is in neither class: its identifier binds no value — any reference is a compile-time error (`E0107`) — and its body follows the forward-reference rules of a function body ([testing.md](../testing.md)).
 
 ```xulo
 // forward references: fine, whichever order these appear in

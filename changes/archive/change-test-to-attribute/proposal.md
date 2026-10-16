@@ -1,6 +1,6 @@
 # Change Test to Attribute
 
-**Status:** draft · **Date:** 2026-10-16 · **Affects:** `testing.md`,
+**Status:** accepted · **Date:** 2026-10-16 · **Affects:** `testing.md`,
 `grammar.md`, `lexical-structure.md`, `type-system/errors.md`,
 `type-system/checking-rules.md`, `modules/source-files.md`,
 `types/traits.md`
@@ -31,7 +31,7 @@ ordinary identifier — **not** reserved — exactly as `from` and `import`
 did when the import syntax was retired.
 
 Until this change is accepted, the form is `test [async] fn name() { … }`
-with `test` a keyword ([`../../testing.md`](../../testing.md)), and `#`
+with `test` a keyword ([`../../../testing.md`](../../../testing.md)), and `#`
 carries no test meaning. This change also requires
 [add-declaration-attributes](../add-declaration-attributes/proposal.md) to be
 accepted and folded first: `#Test` is an entry in the attribute registry that

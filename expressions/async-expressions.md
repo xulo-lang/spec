@@ -65,7 +65,7 @@ async fn main() {
   ([`errors.md`](../type-system/errors.md)).
 - The operand is evaluated exactly once, before the suspension it causes.
 - `await` is legal only inside the body of an `async` function, an `async`
-  closure, or a test function marked `async`. Elsewhere it
+  closure, or a `#Test` function marked `async`. Elsewhere it
   is a compile-time error (`E0501`)
   ([`errors.md`](../type-system/errors.md)).
 - `await` is a prefix operator at the unary level of the precedence table
@@ -228,7 +228,7 @@ resource — is done with `spawn`, which is specified in
   a component body — a component is a function whose declared return type is
   `View`, not an `async` function;
 - in an `@Effect` body, which is not declared `async`;
-- in a `test` function that is not marked `async`;
+- in a `#Test` function that is not marked `async`;
 - at the top level of a module: module-level code is not an `async` context;
 - outside any function or closure body;
 - on a value whose type is not `Task<T>`.

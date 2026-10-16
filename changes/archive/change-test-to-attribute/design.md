@@ -5,7 +5,7 @@
 The test declaration becomes `TestDecl = "#Test" [ "async" ] "fn"
 Identifier "(" ")" Block` — a distinct production whose head token is the
 attribute spelling `#Test`. `#Test` is registered in the attribute registry
-([types/traits.md](../../types/traits.md)); it is valid only in the test
+([types/traits.md](../../../types/traits.md)); it is valid only in the test
 form, and a `fn` that carries `#Test` but violates the form's shape is
 diagnosed (`E0110`). `test` leaves the keyword set and is **not** reserved.
 

@@ -1,6 +1,6 @@
 # Tests
 
-A program's tests are declarations in its source: the `test` form marks a
+A program's tests are declarations in its source: the `#Test` form marks a
 function to be checked with the rest of the file and to be executed only by a
 test tool. This chapter specifies the declaration's form, when its body is
 checked, what the `async` marker adds, and what it means for a test to pass or
@@ -13,10 +13,10 @@ this specification ([README §1.1](README.md)).
 The form is `TestDecl` in the grammar ([grammar.md](grammar.md)):
 
 ```text
-TestDecl = "test" [ "async" ] "fn" Identifier "(" ")" Block ;
+TestDecl = "#Test" [ "async" ] "fn" Identifier "(" ")" Block ;
 ```
 
-- A `test` function appears at file scope, among a module's top-level
+- A `#Test` function appears at file scope, among a module's top-level
   declarations ([modules/source-files.md](modules/source-files.md)); it is
   not a statement and appears nowhere else.
 - It carries no `pub`, no parameters, no return type, no generic parameters,
@@ -28,16 +28,18 @@ TestDecl = "test" [ "async" ] "fn" Identifier "(" ")" Block ;
   apart by their positions — but it is never a name in the value namespace
   ([The name](#the-name) below).
 - The optional `async` marker says the body suspends; it is spelled exactly
-  as `async` is spelled on a function, and it follows `test`
-  (`test async fn`, never `async test fn`).
+  as `async` is spelled on a function, and it follows the attribute
+  (`#Test async fn`, never `async #Test fn`).
 
 ```xulo
-test fn map_get_answers_null() {
+#Test
+fn map_get_answers_null() {
   let m = { a: 1 }
   assert(map_get(m, "z") == null, "absent key is null")
 }
 
-test async fn delayed_task_finishes() {
+#Test
+async fn delayed_task_finishes() {
   await Time::sleep(1)
 }
 ```
@@ -59,7 +61,7 @@ test async fn delayed_task_finishes() {
 
 ## The name
 
-A test function's identifier is declared but binds no value:
+A `#Test` function's identifier is declared but binds no value:
 
 - Any reference to it — a call, a value use, a path, or any other mention —
   is a compile-time error (`E0107`)
@@ -102,15 +104,18 @@ A test function's identifier is declared but binds no value:
 ## Example
 
 ```xulo
-test fn await_needs_the_async_marker() {
+#Test
+fn await_needs_the_async_marker() {
   await Time::sleep(1) // error: `await` outside of an `async` context (E0501)
 }
 
-test async fn await_with_the_async_marker() {
+#Test
+async fn await_with_the_async_marker() {
   await Time::sleep(1) // ok: the test passes when its task completes
 }
 
-test fn reference_is_forbidden() {
+#Test
+fn reference_is_forbidden() {
   assert(true, "runs only under a tool")
 }
 
