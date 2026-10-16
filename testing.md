@@ -38,7 +38,7 @@ test fn map_get_answers_null() {
 }
 
 test async fn delayed_task_finishes() {
-  await Time.sleep(1)
+  await Time::sleep(1)
 }
 ```
 
@@ -53,7 +53,7 @@ test async fn delayed_task_finishes() {
   declares no return type, `return` alone is accepted, and `return e` checks
   `e` against `Unit`.
 - The body sees the module exactly as a function body does: the file's
-  imports and its module-level declarations, under the same scope and
+  `use` bindings and its module-level declarations, under the same scope and
   forward-reference rules
   ([modules/source-files.md](modules/source-files.md)).
 
@@ -103,11 +103,11 @@ A test function's identifier is declared but binds no value:
 
 ```xulo
 test fn await_needs_the_async_marker() {
-  await Time.sleep(1) // error: `await` outside of an `async` context (E0501)
+  await Time::sleep(1) // error: `await` outside of an `async` context (E0501)
 }
 
 test async fn await_with_the_async_marker() {
-  await Time.sleep(1) // ok: the test passes when its task completes
+  await Time::sleep(1) // ok: the test passes when its task completes
 }
 
 test fn reference_is_forbidden() {

@@ -16,6 +16,11 @@ The normative grammar is [`grammar.md`](grammar.md); where a downloaded file
 and `grammar.md` disagree, `grammar.md` governs and the difference is a defect
 in the file rather than a defect in the language.
 
+After a change to `grammar.md`, the linked files MUST be regenerated from it
+in the implementation repository; the header and path grammar (`HeaderItem`,
+`ModDecl`, `UseDecl`, `PubUse`, `PathExpr`) is the current shape they must
+reflect.
+
 ---
 
 ## Available Grammar Files

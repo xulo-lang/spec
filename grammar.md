@@ -70,10 +70,11 @@ word is an ordinary identifier unless it is reserved.
 ```text
 Keyword = "and" | "as" | "async" | "await" | "break" | "const"
         | "continue" | "copy" | "defer" | "else" | "enum" | "false" | "fn"
-        | "for" | "from" | "if" | "impl" | "in" | "import" | "is" | "let"
-        | "lock" | "match" | "move" | "mut" | "not" | "null" | "or" | "panic"
-        | "pub" | "return" | "self" | "shared" | "spawn" | "struct" | "test"
-        | "trait" | "true" | "type" | "use" | "where" | "while" ;
+        | "for" | "if" | "impl" | "in" | "is" | "let"
+        | "lock" | "match" | "mod" | "move" | "mut" | "not" | "null" | "or"
+        | "panic" | "pub" | "return" | "self" | "shared" | "spawn" | "struct"
+        | "super" | "test" | "trait" | "true" | "type" | "use" | "where"
+        | "while" ;
 ```
 
 A `ReservedWord` is a word whose spelling appears in the reserved list of
@@ -134,47 +135,77 @@ SymbolOperator =
 Delimiter = "(" | ")" | "{" | "}" | "[" | "]" | "," | ":" | ";" ;
 ```
 
-This is the complete inventory. `::` is the enum-variant path separator and
-`:=` is the mutable-binding sugar of a `let` declaration; the connectives are
-the word operators `and`, `or` and the prefix `!`, and no other language's
-symbolic spellings for them exist. At each position the lexer takes the longest
-token in the inventory.
+This is the complete inventory. `::` is the path separator — packages,
+modules, enum variants, and associated names (`lsp-server::router`,
+`form::validate`, `Theme::Dark`, `Math::PI`) — and `:=` is the
+mutable-binding sugar of a `let` declaration; the connectives are the word
+operators `and`, `or` and the prefix `!`, and no other language's symbolic
+spellings for them exist. At each position the lexer takes the longest token
+in the inventory.
 
 ## Program and modules
 
-A source file is a module, and `Program` is the whole file. Imports MUST
-appear in the file header; `pub use` MAY appear anywhere among the
-declarations ([source-files.md](modules/source-files.md)). Visibility is
-written with `pub`, and the default is private everywhere.
+A source file holds one module body: a header of module declarations, then
+the body's declarations. All three header forms — `mod`, `use`, and
+`pub use` — appear in the header, before any other top-level declaration
+([source-files.md](modules/source-files.md)); a header form written in the
+body is `E0605`. Visibility is written with `pub`, and the default is
+private everywhere.
 
 ```text
-Program     = { ImportDecl } { Declaration } [ Entry ] ;
-Declaration = FnDecl | StructDecl | EnumDecl | TraitDecl | ImplDecl
-            | TypeAlias | LetDecl | ConstDecl | TestDecl | PubUse ;
+Program      = { HeaderItem } { Declaration } [ Entry ] ;
+HeaderItem   = ModDecl | UseDecl | PubUse ;
+Declaration  = FnDecl | StructDecl | EnumDecl | TraitDecl | ImplDecl
+             | TypeAlias | LetDecl | ConstDecl | TestDecl ;
 
-ImportDecl      = "import" ( TypeImport | NamedImport
-                           | NamespaceImport | SideEffectImport ) ;
-TypeImport      = "type" NamedImports "from" StringLiteral ;
-NamedImport     = NamedImports "from" StringLiteral ;
-NamespaceImport = "*" "as" Identifier "from" StringLiteral ;
-SideEffectImport = StringLiteral ;
-NamedImports    = "{" [ ImportEntry { "," ImportEntry } [ "," ] ] "}" ;
-ImportEntry     = Identifier [ "as" Identifier ] ;
+ModDecl      = [ "pub" ] "mod" Identifier ( ModuleBody | ";" ) ;
+ModuleBody   = "{" { HeaderItem } { Declaration } "}" ;
+UseDecl      = "use" [ "type" ] UseTarget ";" ;
+PubUse       = "pub" "use" ( UseTarget | PubUseLocal ) ";" ;
 
-PubUse = "pub" "use" "{" [ Identifier { "," Identifier } [ "," ] ] "}"
-         [ "from" StringLiteral ] ;
+UseTarget    = UsePath | UseGroup | UseGlob ;
+UsePath      = PathHead "::" Identifier { "::" Identifier } [ "as" Identifier ]
+             | PathHead "as" Identifier ;
+UseGroup     = PathHead "::" "{" [ UseEntry { "," UseEntry } [ "," ] ] "}" ;
+UseGlob      = PathHead "::" "*" ;
+UseEntry     = Identifier [ "as" Identifier ] ;
+PubUseLocal  = "{" [ Identifier { "," Identifier } [ "," ] ] "}" ;
+
+PathHead     = PackageName | Identifier | "self" | "super" ;
+Path         = PathHead { "::" Identifier } ;
+PackageName  = Identifier { "-" Identifier } ;
 ```
+
+`UsePath` admits a head-only target only in its second alternative, where
+`as` renames the namespace binding; every other target carries at least one
+segment after its head. `PubUseLocal` re-exports names already in this
+module's scope and takes no `as`: the name is the export. An inline `mod`
+body reuses `{ HeaderItem } { Declaration }`, so a nested module has its own
+header and the header rule does not change with depth.
 
 `Entry` is the entry point of an executable program — a module-level `main`
 with the signature [source-files.md](modules/source-files.md) allows (`fn
-main()`, `fn main(): View`, or `async fn main()`, no parameters). Since
-`FnDecl` derives `main` too, the grammar constrains neither its form nor its
-position; `Entry` names it in the top-level shape of `Program`.
+main()`, `fn main(): View`, or `async fn main()`, no parameters), declared in
+the package's root module. Since `FnDecl` derives `main` too, the grammar
+constrains neither its form nor its position; `Entry` names it in the
+top-level shape of `Program`.
 
 ```text
 Entry      = EntryPoint ;
 EntryPoint = [ "pub" ] [ "async" ] "fn" "main" "(" ")" [ ":" Type ] Block ;
 ```
+
+**Ambiguity note.** The header forms begin only with `mod`, `use`, or `pub`
+followed by `use`, and end with `;` (or, for an inline `mod`, with its own
+block), so `{ HeaderItem } { Declaration }` splits at the first token outside
+that set — a `pub` that begins a declaration continues the split by its
+follower (`pub use` stays in the header; `pub fn` and the rest start the
+body). `UseTarget` alternatives are distinguished by what follows the
+head: `as`, `::`, or nothing (which no alternative allows). In an expression
+or a type, a hyphenated head is part of a path only when it is written
+without surrounding whitespace and followed by `::` — the rule of
+[path-and-access.md](expressions/path-and-access.md) — so
+`total - Math::PI` remains subtraction.
 
 ## Declarations
 
@@ -301,7 +332,7 @@ IntersectionType = PostfixType { "&" PostfixType } ;
 PostfixType      = PrimaryType { "?" } ;
 PrimaryType      = NamedType | "(" Type ")" | TupleType
                  | FunctionType | LiteralType ;
-NamedType        = Identifier [ TypeArgs ] ;
+NamedType        = Path [ TypeArgs ] ;
 LiteralType      = StringLiteral | IntegerLiteral | FloatLiteral
                  | BooleanLiteral ;
 
@@ -383,13 +414,13 @@ postfix reading survives only when the ternary reading fails, so
 `c ? a : b` is never ambiguous with `f()?`.
 
 ```text
-PrimaryExpression = Literal | TemplateLiteral | Identifier | VariantPath
+PrimaryExpression = Literal | TemplateLiteral | Identifier | PathExpr
                   | "(" Expression ")" | TupleLiteral
                   | ListLiteral | MapLiteral
                   | IfExpression | MatchExpression | PanicExpression
                   | ClosureExpression | ComponentCall
                   | SpawnExpression | LockExpression ;
-VariantPath       = Identifier "::" Identifier [ "(" [ ArgumentList ] ")" ] ;
+PathExpr         = Path [ "(" [ ArgumentList ] ")" ] ;
 PanicExpression   = "panic" "(" Expression ")" ;
 Place             = Identifier | Place "." Identifier | Place "." IntegerLiteral
                   | Place "[" Expression "]" | "(" Place ")" ;
@@ -613,12 +644,12 @@ production itself appears exactly once, in its own section.
 | `SourceFile`, `TokenSequence`, `Skipped`, `Whitespace`, `Comment`, `Token`, `Identifier`, `IdentStart`, `IdentPart`, `Letter`, `Digit`, `HexDigit`, `OctDigit`, `Keyword`, `Literal`, `IntegerLiteral`, `FloatLiteral`, `DecInt`, `HexInt`, `BinInt`, `OctInt`, `BooleanLiteral`, `NullLiteral` | [Lexical structure](#lexical-structure) |
 | `StringLiteral`, `StringChar`, `EscapeSeq`, `TemplateLiteral`, `TemplateText`, `TemplateEscape`, `Interpolation` | [Lexical structure](#lexical-structure) |
 | `DQuote`, `SQuote`, `Backslash`, `Backtick`, `Operator`, `WordOperator`, `SymbolOperator`, `Delimiter` | [Lexical structure](#lexical-structure) |
-| `Program`, `Declaration`, `Entry`, `EntryPoint`, `ImportDecl`, `TypeImport`, `NamedImport`, `NamespaceImport`, `SideEffectImport`, `NamedImports`, `ImportEntry`, `PubUse` | [Program and modules](#program-and-modules) |
+| `Program`, `HeaderItem`, `Declaration`, `Entry`, `EntryPoint`, `ModDecl`, `ModuleBody`, `UseDecl`, `PubUse`, `UseTarget`, `UsePath`, `UseGroup`, `UseGlob`, `UseEntry`, `PubUseLocal`, `PathHead`, `Path`, `PackageName` | [Program and modules](#program-and-modules) |
 | `FnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl`, `TestDecl` | [Declarations](#declarations) |
 | `ComponentDecl`, `StateDecl`, `StoreDecl`, `EffectDecl`, `EnvironmentDecl` | [Declarations](#declarations) |
 | `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `LiteralType`, `TypeArgs`, `TypeList`, `TupleType`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
 | `Expression`, `AssignmentExpression`, `TernaryExpression`, `LogicalOrExpression`, `LogicalAndExpression`, `NullishExpression`, `EqualityExpression`, `IsExpression`, `RelationalExpression`, `RangeExpression`, `BitOrExpression`, `BitXorExpression`, `BitAndExpression`, `ShiftExpression`, `AdditiveExpression`, `MultiplicativeExpression`, `PowerExpression`, `UnaryExpression`, `PostfixExpression`, `PostfixOperand` | [Expressions](#expressions) |
-| `PrimaryExpression`, `VariantPath`, `PanicExpression`, `Place`, `ArgumentList`, `Argument`, `ListLiteral`, `ListElement`, `Spread`, `MapLiteral`, `TypedMap`, `BraceMap`, `MapEntry`, `MapField`, `TupleLiteral`, `ClosureExpression`, `FunctionExpression`, `ArrowClosure`, `ArrowParams`, `ClosureParamList`, `ClosureParam` | [Expressions](#expressions) |
+| `PrimaryExpression`, `PathExpr`, `PanicExpression`, `Place`, `ArgumentList`, `Argument`, `ListLiteral`, `ListElement`, `Spread`, `MapLiteral`, `TypedMap`, `BraceMap`, `MapEntry`, `MapField`, `TupleLiteral`, `ClosureExpression`, `FunctionExpression`, `ArrowClosure`, `ArrowParams`, `ClosureParamList`, `ClosureParam` | [Expressions](#expressions) |
 | `Pattern`, `PatternAlt`, `LiteralPattern`, `RangePattern`, `VariantPattern`, `StructPattern`, `TypePattern`, `PatternType`, `PatternList` | [Patterns](#patterns) |
 | `Statement`, `StatementEnd`, `ReturnStmt`, `BreakStmt`, `ContinueStmt`, `DeferStmt`, `Assignment`, `ExpressionStatement`, `Block` | [Statements](#statements) |
 | `IfExpression`, `MatchExpression`, `MatchArmList`, `MatchArm`, `Guard`, `ForStmt`, `WhileStmt` | [Control flow](#control-flow) |

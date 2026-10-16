@@ -225,23 +225,23 @@ async fn fetch_user(id: Int): Result<User, LoadError> {
   is nothing to catch, because no error value exists
   ([`concurrency.md`](concurrency.md)).
 
-### `Task.all` and `Task.race`
+### `Task::all` and `Task::race`
 
 The combinators
 ([`expressions/async-expressions.md`](expressions/async-expressions.md))
 combine results and cancellation the way the operations they describe settle:
 
-- `Task.all` waits until every task of the list has settled, then completes
+- `Task::all` waits until every task of the list has settled, then completes
   with the results in argument order; if any of them settled as cancelled, the
   combined task settles as cancelled.
-- `Task.race` settles as soon as the first task of the list settles: with
+- `Task::race` settles as soon as the first task of the list settles: with
   that task's result when it completed, as cancelled when it was cancelled.
 - Neither combinator cancels the tasks it combines: the others run on and
   their results are discarded when they are not the ones selected.
 
-### `Task.timeout`
+### `Task::timeout`
 
-`Task.timeout(t, ms)` puts a deadline on one task and produces a
+`Task::timeout(t, ms)` puts a deadline on one task and produces a
 `Task<Result<T, Error>>`:
 
 - If `t` settles within `ms` milliseconds, the combined task settles with
@@ -249,7 +249,7 @@ combine results and cancellation the way the operations they describe settle:
   `Result<T, E>` — a task whose body is itself fallible — the two results
   nest as `Ok(Ok(…))` / `Ok(Err(…))`, and the caller unwraps them in order.
 - If the deadline elapses first, `t` is **cancelled** — this combinator,
-  unlike `Task.all` and `Task.race`, cancels the task it wraps — and the
+  unlike `Task::all` and `Task::race`, cancels the task it wraps — and the
   combined task settles immediately with `Result::Err(Error("timed out"))`,
   without waiting for `t` to stop. A result `t` produces afterwards is
   discarded.
@@ -260,7 +260,7 @@ combine results and cancellation the way the operations they describe settle:
 
 ```xulo
 async fn poll_with_deadline(): Result<Int, Error> {
-  await Task.timeout(poll(), 2000)   // Ok(n) in time, Err("timed out") otherwise
+  await Task::timeout(poll(), 2000)   // Ok(n) in time, Err("timed out") otherwise
 }
 ```
 
@@ -278,7 +278,7 @@ operations themselves.
 | Absent map key | reading `m[k]` for a key with no binding | [`expressions/path-and-access.md`](expressions/path-and-access.md) |
 | Division or remainder by zero | `/` or `%` on non-constant operands whose value is zero | [`expressions/operators.md`](expressions/operators.md) |
 | Arithmetic overflow | an `Int` or fixed-bit operation whose result exceeds its type, on non-constant operands | [`types/primitive-types.md`](types/primitive-types.md) |
-| `Math.toFixed` digits out of range | `Math.toFixed` is called with `digits` outside `0...=15` | [`builtins/intrinsic-functions.md`](builtins/intrinsic-functions.md) |
+| `Math::toFixed` digits out of range | `Math::toFixed` is called with `digits` outside `0...=15` | [`builtins/intrinsic-functions.md`](builtins/intrinsic-functions.md) |
 | Unprovided environment key | reading an `@Environment` key no provision supplies | [`components/environment.md`](components/environment.md) |
 | Stack or task exhaustion | recursion depth or the runtime's task limit is exceeded | [`functions.md`](functions.md) |
 

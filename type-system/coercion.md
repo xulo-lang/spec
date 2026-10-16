@@ -66,7 +66,7 @@ type.
   ([`../types/primitive-types.md`](../types/primitive-types.md)).
 - A float literal never adapts to an integer type: `let i: Int = 3.0` is an
   error. Narrowing a `Float` is written with an explicit operation such as
-  `Math.floor` or `Math.trunc`.
+  `Math::floor` or `Math::trunc`.
 - A literal whose value does not fit its default type — an integer literal
   beyond `Int` — is `E0209` in any context.
 - `Int` and `Float` reach `Number` by **union membership, not by coercion**:
@@ -157,7 +157,7 @@ chapter, the conversion does not exist:
 |------------|-------------|--------|-----------------|
 | `Int` (not a literal) | `Float` | `E0201` | `n * 1.0`, or an operation that promotes |
 | `Int` (not a literal) | any fixed-bit integer | `E0201` | an operation on the fixed-bit type itself |
-| `Float` | `Int`, any fixed-bit type | `E0201` | `Math.floor`, `Math.trunc`, `Math.round` |
+| `Float` | `Int`, any fixed-bit type | `E0201` | `Math::floor`, `Math::trunc`, `Math::round` |
 | `Number` | `Int`, `Float` | `E0201` | an explicit check, or `num * 1.0` for `Float` |
 | one fixed-bit type | another fixed-bit type | `E0201` | arithmetic within the target type |
 | `String` | `Int`, `Float`, `Boolean` | `E0201` | nothing converts; produce the value directly |

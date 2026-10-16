@@ -230,10 +230,10 @@ fn Counter(): View {
 | Components | A component is a `fn` whose return type is `View`; the tree comes from `{ }` blocks | Components are a library convention (JSX or framework APIs) | No component model in the language; UI is a library concern |
 | Async model | `async fn` has evaluated type `Task<T>`; `await` unwraps it; `spawn` starts tasks | `async fn` returns a `Promise` run on the host event loop | `async fn` for asynchronous code; effects appear in signatures |
 | Pattern matching | `match` over literals, types, `_`, bindings, deconstruction, and ranges, with guards and `\|` alternatives, checked for exhaustiveness | No pattern matching; `switch` plus type-narrowing checks | `match` over algebraic data types, checked for exhaustiveness |
-| Module system | A file is a module; `pub` marks exports and member visibility; `import { a } from "m"` | ESM `import`/`export` declarations; packages come from a manifest | A file is a module; `pub` controls visibility; packages are toolchain-level |
+| Module system | A package is a declared tree of modules; `pub` marks exports and member visibility; `use m::x` names a member | ESM `import`/`export` declarations; packages come from a manifest | A file is a module; `pub` controls visibility; packages are toolchain-level |
 
 Against JavaScript and TypeScript, Xulo keeps the surface that aids reading —
-`:` type annotations, generics, unions, `import` — and removes the dynamic
+`:` type annotations, generics, unions, `use`-based module names — and removes the dynamic
 base: nothing converts silently, `let` is immutable by default, and the
 logical connectives are the words `and` and `or` rather than chains of `&` or
 `|` characters. Visibility is a single keyword, `pub`, used both for

@@ -122,7 +122,7 @@ serve different purposes — the router is supplied from outside, the theme is
 shared program state:
 
 ```xulo
-import type { Router } from "@xulo/router"
+use type router::Router;
 
 fn NavBar(): View {
   @Environment let router: Router

@@ -294,7 +294,7 @@ A borrow from a call that returns a `Task<U>` — an `async` call, an `async`
 closure call, or a synchronous call whose result type is `Task<U>` — lasts
 until the checker can see that task settle. It can see it where control flow
 reaches a point after an `await` whose operand contains the task's binding:
-`await t`, `await Task.all([t, u])`, and `await Task.timeout(t, ms)` each
+`await t`, `await Task::all([t, u])`, and `await Task::timeout(t, ms)` each
 wait for `t`. When the scope contains no such `await`, the borrow lasts until
 the scope ends.
 
@@ -315,7 +315,7 @@ async fn fill(p: mut List<Int>) {
 async fn main() {
   let mut xs = [0]
   let t = fill(xs)                    // mutable borrow of xs
-  await Task.all([t])                 // ok: the await's operand contains `t`
+  await Task::all([t])                 // ok: the await's operand contains `t`
   xs[0] = 1                           // ok: the borrow has ended
 }
 ```
@@ -418,7 +418,7 @@ condition occurs, and there is no handler for it.
 | Absent map key | reading `m[k]` for a key with no binding | [`expressions/path-and-access.md`](expressions/path-and-access.md) |
 | Division or remainder by zero | `/` or `%` on non-constant operands whose value is zero | [`expressions/operators.md`](expressions/operators.md) |
 | Arithmetic overflow | an `Int` or fixed-bit operation whose result exceeds its type, on non-constant operands | [`types/primitive-types.md`](types/primitive-types.md) |
-| `Math.toFixed` digits out of range | `Math.toFixed` is called with `digits` outside `0...=15` | [`builtins/intrinsic-functions.md`](builtins/intrinsic-functions.md) |
+| `Math::toFixed` digits out of range | `Math::toFixed` is called with `digits` outside `0...=15` | [`builtins/intrinsic-functions.md`](builtins/intrinsic-functions.md) |
 | Unprovided environment key | reading an `@Environment` key no provision supplies | [`components/environment.md`](components/environment.md) |
 | Stack or task exhaustion | recursion depth or the runtime's task limit is exceeded | [`functions.md`](functions.md) |
 
@@ -437,7 +437,7 @@ What this specification fixes, it fixes for every conforming program:
   success value or performs the early return, abandoning the rest of the body
   at that point ([`error-handling.md`](error-handling.md)).
 - Collection order: `Map` entries iterate in insertion order, and
-  `Task.all` yields results in argument order
+  `Task::all` yields results in argument order
   ([`expressions/async-expressions.md`](expressions/async-expressions.md)).
 - Termination of the structural operations: `==` and `copy` halt on cyclic
   values.

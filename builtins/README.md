@@ -22,7 +22,7 @@ prelude and whose signature is that of an intrinsic.
 
 ## Availability
 
-- **No import is required.** A module that imports nothing still has every
+- **No `use` is required.** A module that `use`s nothing still has every
   name of both layers, from its first line to its last.
 - **A module-level declaration MUST NOT bear a prelude or intrinsic name.**
   Declaring `fn print(...)`, `struct Task { … }`, `type Map<K, V> = …`, or
@@ -44,12 +44,12 @@ scopes in order, and the first scope that provides the name wins:
 2. parameters and type parameters of the enclosing function or closure;
 3. the remaining bindings of that function, then the module's own top-level
    declarations;
-4. names brought into the module by `import` and by `pub use`;
+4. names brought into the module by `mod`, `use`, and `pub use`;
 5. the prelude — the built-in type names, the prelude operations, and the
    intrinsics (`print`, `println`, `str`, `Math`, `Time`, `Task`).
 
 A namespace is resolved as an ordinary name *before* member access: in
-`Math.max(a, b)` the leading `Math` is found by the search above, and only
+`Math::max(a, b)` the leading `Math` is found by the search above, and only
 then is `max` looked up as its member. Prelude names are therefore visible
 only when nothing in the earlier scopes matches, which is why a local binding
 of the same name hides them for as long as it is in scope.

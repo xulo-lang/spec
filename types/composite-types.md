@@ -222,7 +222,7 @@ type Wrapper<T> = List<T>
 - An alias is transparent: it denotes exactly the type on its right-hand side and introduces no new type. `User` and `Map<String, String | Int>` are the same type everywhere, and no `impl` block, method, or trait implementation may be declared *for an alias* — implementations attach to the underlying type (see [`traits.md`](traits.md)).
 - An alias MAY be generic: `Wrapper<T>` is used by application, `Wrapper<User>`, with the type argument inferred or written where types are written (see [`generics.md`](generics.md)).
 - An alias declaration that expands, through a chain of aliases, back to itself is a compile-time error (`E0105`; `type A = B` together with `type B = A`). Recursion that passes through a type constructor — `List<T>`, `Map<K, V>`, `Set<T>`, or `T?` — is not an alias cycle and is permitted: `type Json = Null | Boolean | Int | String | List<Json> | Map<String, Json>` is well-formed.
-- An alias is a module-level declaration and MAY be exported with `pub` and imported with `import type` (see [`../modules/README.md`](../modules/README.md)).
+- An alias is a module-level declaration and MAY be exported with `pub` and brought into type positions with `use type` (see [`../modules/README.md`](../modules/README.md)).
 
 ## Tuples
 

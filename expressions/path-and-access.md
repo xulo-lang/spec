@@ -1,10 +1,8 @@
-# Paths and Access
-
 Access expressions name things and reach into them: a bare identifier names a
-binding, `.` reaches a field, method, namespace member, or tuple position, `::`
-names an enum variant, `[]` indexes a collection, and `?.` performs an access
-that tolerates `null`. This chapter defines each form, its type, and its
-errors.
+binding, `::` walks the declaration lane — paths, packages, modules, variants,
+associated names — `.` reaches into a value, `[]` indexes a collection, and
+`?.` performs an access that tolerates `null`. This chapter defines each form,
+its type, and its errors.
 
 ## Identifiers as paths
 
@@ -24,14 +22,12 @@ required, is a compile-time error (`E0101`)
 
 ## Member access `.`
 
-`expr.name` reads a field, invokes a method, or reaches into a namespace.
+`expr.name` reads a field or invokes a method — `.` reaches into a value,
+never into a namespace:
 
 ```xulo
 user.name            // field of a struct, or an entry of a map
 r.area()             // method declared in an `impl` block
-Math.PI              // constant in a built-in namespace
-Task.all(tasks)      // function in a built-in namespace
-Time.now()           // function in a built-in namespace
 getBox().width       // member access through a call result
 ```
 
@@ -42,8 +38,7 @@ result, and then calls it.
 The type of a field access is the declared type of that field. The type of a
 method access is the method's function type with `self` bound to the
 receiver (see [`../functions.md`](../functions.md)); the call itself is
-specified in [`calls.md`](calls.md). The type of a namespace member is its
-declared type.
+specified in [`calls.md`](calls.md).
 
 When the receiver has type `Map<String, V>`, `expr.name` is the **member form
 of a map entry**: it is exactly `expr["name"]` — type `V`, and a missing key
@@ -81,24 +76,46 @@ pair().0        // positional access through a call result
 - The `null`-tolerant form exists too: `p?.0` evaluates to `null` when `p`
   is `null`, and otherwise to the element — optional chaining below.
 
-## Enum variant paths `::`
+## Paths `::`
 
-`Enum::Variant` names an enum variant, and `Enum::Variant(args)` constructs a
-value of that enum with its payload:
+`::` walks names: a path from a head through segments, one syntax for every
+qualified name.
 
 ```xulo
-let theme = Theme::Dark
-let c = Shape::Circle(2)
+Theme::Dark              // enum variant
+form::validate           // module member
+lsp-server::run          // package member
+self::cache              // current module member
+super::fields            // parent module member
+Math::PI                 // built-in namespace member
+Area::area               // explicit trait dispatch
+Shape::Circle(2)         // variant construction: path plus arguments
 ```
 
-`::` separates an enum name from a variant, and is used for nothing else. `.` is
-never used to name a variant — `Theme.Dark` is not well-formed — and `::` is
-never used for fields, methods, or namespace members, which use `.`.
-A variant without a payload denotes a value of the enum type directly; a
-variant with a payload is applied to exactly the arguments its declaration
-requires. The same paths appear in `match` patterns (see
-[`control-flow.md`](control-flow.md)). See
-[`../types/enums.md`](../types/enums.md).
+A path head is a package name (through the manifest mapping), a root module
+of this package, `self`, or `super`; the head and its resolution — including
+the hyphen rule that keeps `lsp-server::run()` a path and
+`total - Math::PI` subtraction — are specified in
+[`../modules/import-export.md`](../modules/import-export.md).
+
+- A variant without a payload denotes a value of the enum type directly; a
+  variant with a payload is applied to exactly the arguments its declaration
+  requires. The same paths appear in `match` patterns (see
+  [`control-flow.md`](control-flow.md))
+  ([`../types/enums.md`](../types/enums.md)).
+- `.` is never used to name a variant, a namespace member, or a module
+  member — `Theme.Dark` and `Math::PI` are not well-formed.
+- **Paths need no prior `use`.** `form::validate(1, 2)` is callable the moment
+  `form` resolves; `use form::validate` exists to bind the short name
+  `validate`, not to grant access. Every segment a path walks must be visible:
+  a private name anywhere in the chain is `E0602`, a missing one `E0601`.
+
+The type of a path expression is the type of what its final segment resolves
+to — a function's type, a constant's type, a variant's enum type, a built-in
+namespace member's declared type. An unresolvable head is `E0607`, an
+unresolvable later segment `E0101` or `E0601` according to whether the
+previous segment was a local name or a module
+([`../modules/import-export.md`](../modules/import-export.md)).
 
 ## Subscript `[]`
 
@@ -155,22 +172,20 @@ as in `session?.refresh()`; the operator is specified in
 
 ## Qualified calls
 
-A call may be written through a path rather than through a bare name. Built-in
-namespaces, imported namespaces, and traits are all called this way:
+A call may be written through a path rather than through a bare name:
 
 ```xulo
-Math.max(a, b)            // built-in namespace
-Task.all(tasks)           // built-in namespace
-Area.area(r)              // explicit trait dispatch
-math.add(1, 2)            // after `import * as math from "…"`
+Math::max(a, b)            // built-in namespace
+Task::all(tasks)           // built-in namespace
+Area::area(r)              // explicit trait dispatch
+form::validate(1, 2)       // module member, no `use` required
+lsp-server::router::run()  // dependency package head
 ```
 
-`Trait.method(receiver)` is the explicit trait dispatch form and is required
+`Trait::method(receiver)` is the explicit trait dispatch form and is required
 where the receiver's type is a generic parameter bounded by that trait; it is
-specified in [`../types/traits.md`](../types/traits.md). Namespace members
-reached through `import * as ns` behave exactly like members of a built-in
-namespace, and the call rules are those of [`calls.md`](calls.md).
-
+specified in [`../types/traits.md`](../types/traits.md). The call rules are
+those of [`calls.md`](calls.md).
 ## Static and instance separation
 
 Xulo has no implicit receiver: there is no `this`, and no expression silently

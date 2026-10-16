@@ -42,6 +42,7 @@ The following are deliberately **not** specified here:
 | Tutorials, guides, and getting-started material | [xulo-website](https://xulo.org), `learn/book` in the implementation repository |
 | The compiler/interpreter implementation, CLI, LSP, and rendering back ends | implementation repository (`xulo`) |
 | Package registry protocol and tooling | xulo-website ecosystem documentation |
+| Projects, workspaces, and the manifest file format itself — the language specifies packages and modules; how a project or workspace composes them, and the TOML file a manifest is, belong to tooling. The compiler consumes only the manifest's name mapping (dependency path name → module path), whose shape is specified in [`modules/import-export.md`](modules/import-export.md) | implementation repository (`xulo`), xulo-website ecosystem documentation |
 | The machine-readable grammar files themselves (`xulo.ebnf`, `xulo.pest`, the tree-sitter grammar) — [`machine-readable.md`](machine-readable.md) links to them and is informative | implementation repository (`xulo`), xulo.org |
 
 Constructs that are absent from the language rather than merely outside this
@@ -165,10 +166,10 @@ normative for the whole specification.
 | **evaluation order** | The order in which subexpressions are evaluated; left-to-right unless stated otherwise. |
 | **immutable binding** | A binding introduced by `let` or `const`; reassignment is a compile-time error (`E0401`). |
 | **impl** | A block that attaches methods to a type — `impl Trait for Type` implements a trait, `impl Type` declares inherent methods — which applies only within the module that contains it. See [`types/traits.md`](types/traits.md). |
-| **intrinsic** | A function or namespace provided directly by the compiler, available without import. See [`builtins/`](builtins/README.md). |
+| **intrinsic** | A function or namespace provided directly by the compiler, available without `use`. See [`builtins/`](builtins/README.md). |
 | **is** | The type test `e is T` and its negation `e is not T`: yields `Boolean` and narrows the branches of an `if`. See [`expressions/control-flow.md`](expressions/control-flow.md). |
 | **map** | An insertion-ordered collection of key–value pairs `Map<K, V>`, written with a brace literal `{ k: v }` or the typed form `Map<K, V>{ … }`. See [`types/composite-types.md`](types/composite-types.md). |
-| **module** | A single source file together with its exported names. |
+| **module** | A body of code — one file or one inline `mod` block — together with its exported names. |
 | **move** | `move b`: a transfer that severs `b` from its value, after which any use of `b` is a compile-time error (`E0403`); its operand MUST be a path naming a binding, and it is accepted only in a `let` initializer, a call argument, or a `return` operand. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **narrowing** | The refinement of a binding's type within one branch — by `is` in an `if` condition, by a `match` arm's pattern, or by matching a union — so that a member-specific operation type-checks there. See [`expressions/control-flow.md`](expressions/control-flow.md). |
 | **optional type** | `T?`, shorthand for `T \| Null`; absence, which is not an error. |

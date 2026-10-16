@@ -120,13 +120,13 @@ An `async` declaration writes the type that the *body* produces; the type of the
 ```xulo
 async fn fetch(url: String): String { url }
 
-fn load(): Task<Int> { Task.resolve(1) }
+fn load(): Task<Int> { Task::resolve(1) }
 
 let a: fn(String): Task<String> = fetch   // async function as a value
 let b: fn(): Task<Int> = load             // sync function returning a task
 ```
 
-- `Task<T>` is a built-in generic type used as the result of an `async` function type; it requires no import. Its built-in utilities (`Task.all`, `Task.race`, `Task.resolve`, `Task.timeout`) are specified in [`../expressions/async-expressions.md`](../expressions/async-expressions.md), and their concurrency model in [`../concurrency.md`](../concurrency.md).
+- `Task<T>` is a built-in generic type used as the result of an `async` function type; it requires no import. Its built-in utilities (`Task::all`, `Task::race`, `Task::resolve`, `Task::timeout`) are specified in [`../expressions/async-expressions.md`](../expressions/async-expressions.md), and their concurrency model in [`../concurrency.md`](../concurrency.md).
 
 ## Function subtyping and higher-order types
 
@@ -174,15 +174,15 @@ impl Area for Rectangle {
 ```
 
 - The receiver is written `self` — an immutable borrow of the receiver — or `mut self`, a mutable borrow; a method that assigns to `self` or its fields MUST declare `mut self`, and the receiver at the call site must be a mutable place (see [`../memory-and-runtime.md`](../memory-and-runtime.md)). The receiver of a trait method and of its implementation MUST use the same form.
-- The receiver counts as the first parameter of the method's function type, and its mode is that parameter's mode: the trait method `Area.area` above corresponds to `fn(Rectangle): Int`, while `grow` — declared `mut self` — corresponds to `fn(mut Rectangle): Unit`. A call `r.area()` evaluates the receiver once, passes it as the receiver argument, and has the method's declared result type.
+- The receiver counts as the first parameter of the method's function type, and its mode is that parameter's mode: the trait method `Area::area` above corresponds to `fn(Rectangle): Int`, while `grow` — declared `mut self` — corresponds to `fn(mut Rectangle): Unit`. A call `r.area()` evaluates the receiver once, passes it as the receiver argument, and has the method's declared result type.
 - **Method references are explicit paths.** The only way to reference a method as a value is the trait-qualified path `Trait.method`. Its type is the trait's method signature with `self` replaced by the receiver type (a `mut self` receiver gives the first parameter its `mut` mode), and the receiver type MUST be determined by the surrounding context — including a visible `impl` for that receiver type:
 
 ```xulo
 fn main() {
-  let measure: fn(Rectangle): Int = Area.area
+  let measure: fn(Rectangle): Int = Area::area
 }
 ```
 
-  An `Area.area` expression whose receiver type cannot be determined from context is a compile-time error (`E0216`).
+  An `Area::area` expression whose receiver type cannot be determined from context is a compile-time error (`E0216`).
 - Member access without a call — `r.area` — denotes a field access; referring to a method that way is a compile-time error (`E0206`). Inherent methods are reached through a call (`r.area()`), trait methods through `Trait.method`.
 - Trait declarations, `impl` blocks, and dispatch are specified in [`traits.md`](traits.md); method declarations and parameter modes in [`../functions.md`](../functions.md).

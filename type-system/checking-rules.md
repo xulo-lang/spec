@@ -343,11 +343,18 @@ that disagree on what they bind are `E0304`.
 - **Type aliases.** Expanding aliases MUST terminate: an alias that expands,
   directly or through a chain, to itself is `E0105`; recursion through a type
   constructor is not a cycle.
-- **Duplicates and visibility.** Two declarations of one name in one scope are
-  `E0103`, and a collision involving an import binding is `E0104`. A `pub`
-  signature MUST NOT mention a non-`pub` type (`E0604`), every import must
-  resolve to an exported name of exactly one module (`E0601`, `E0602`,
-  `E0607`), and the import graph must be acyclic (`E0603`).
+- **Duplicates and visibility.** Two declarations of one name in one scope
+  are `E0103`, and a collision involving a `mod` or `use` binding — two
+  `use` entries, a `use` against a declaration, a glob overlap, a manifest
+  head against a local name — is `E0104`. A `pub` signature MUST NOT
+  mention a type outside the declaring module's interface (`E0604`); every
+  path a header writes must resolve to exactly one target — a member of one
+  module (`E0601`, `E0602`), a package, a `mod` file, or `super` within
+  bounds (`E0607`), a file at most one module declaration (`E0610`) — and
+  header forms (`mod`, `use`, `pub use`) must precede the body's
+  declarations (`E0605`). A path head is resolved by the manifest mapping
+  once for the package, never per asking file, so a program's names do not
+  depend on which module is checked first.
 
 ## Constraint generation and solving
 

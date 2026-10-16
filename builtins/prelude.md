@@ -65,7 +65,7 @@ a program declares them itself; they are not part of the prelude (see
 | `Task` | task combinators `all`, `race`, `resolve`, `timeout` | [`Task` namespace](intrinsic-functions.md#task-namespace) |
 
 Members are selected with `.`, exactly like fields and methods:
-`Math.PI`, `Time.now()`, `Task.all(tasks)`
+`Math::PI`, `Time::now()`, `Task::all(tasks)`
 ([`../expressions/path-and-access.md`](../expressions/path-and-access.md)).
 
 ### Reserved names

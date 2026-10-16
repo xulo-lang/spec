@@ -427,7 +427,7 @@ many run concurrently, and how long a suspension lasts are outside the
 specification, and programs MUST NOT depend on them. Which executor runs a
 mode's segments is fixed ([Executors](#executors)); which thread or process
 instance within that executor is not. What is fixed — evaluation order, scope
-completion, message arrival order, the order of `Task.all` results — is listed
+completion, message arrival order, the order of `Task::all` results — is listed
 under [`memory-and-runtime.md`](memory-and-runtime.md).
 
 ## Runtime failures
@@ -444,9 +444,9 @@ program as a panic ([`error-handling.md`](error-handling.md)).
 
 ## The `Task` utilities
 
-`Task.all`, `Task.race`, `Task.resolve`, and `Task.timeout` combine and produce
+`Task::all`, `Task::race`, `Task::resolve`, and `Task::timeout` combine and produce
 tasks; their signatures are given identically in
 [`expressions/async-expressions.md`](expressions/async-expressions.md) and
 [`builtins/intrinsic-functions.md`](builtins/intrinsic-functions.md). How
-results and cancellation combine through `Task.all`, `Task.race`, and
-`Task.timeout` is specified in [`error-handling.md`](error-handling.md).
+results and cancellation combine through `Task::all`, `Task::race`, and
+`Task::timeout` is specified in [`error-handling.md`](error-handling.md).

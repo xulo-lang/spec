@@ -191,7 +191,7 @@ impl Greet for Person {
 trait Area { fn area(self): Float; fn perimeter(self): Float }
 
 fn first<T>(xs: List<T>): T { xs[0] }
-fn areaOf<T: Area>(shape: T): Float { Area.area(shape) }           // explicit dispatch
+fn areaOf<T: Area>(shape: T): Float { Area::area(shape) }           // explicit dispatch
 fn perimeterOf<T>(shape: T): Float where T: Area { shape.perimeter() }  // member form
 
 let n = first([1, 2, 3])        // T = Int
@@ -220,7 +220,7 @@ Bounds, inference, and nested-angle-bracket spelling are specified in
 
 ```xulo
 async fn doubleAsync(n: Int): Int {
-  await Task.resolve(n * 2)
+  await Task::resolve(n * 2)
 }
 async fn main() { print(await doubleAsync(21)) }   // 42
 ```
@@ -324,7 +324,7 @@ fn fib(n: Int): Int {
   if n <= 1 { n } else { fib(n - 1) + fib(n - 2) }
 }
 
-fn areaOf<T: Area>(shape: T): Float { Area.area(shape) }
+fn areaOf<T: Area>(shape: T): Float { Area::area(shape) }
 fn perimeterOf<T>(shape: T): Float where T: Area { shape.perimeter() }
 
 fn main() {

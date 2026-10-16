@@ -103,8 +103,8 @@ written either inline after the parameter name or in a `where` clause that
 follows the whole signature.
 
 ```xulo
-fn area_of<T: Area>(shape: T): Float { Area.area(shape) }
-fn perimeter_of<T>(shape: T): Float where T: Area { Area.perimeter(shape) }
+fn area_of<T: Area>(shape: T): Float { Area::area(shape) }
+fn perimeter_of<T>(shape: T): Float where T: Area { Area::perimeter(shape) }
 ```
 
 Rules:
@@ -244,7 +244,7 @@ through the bound.
 
 ```xulo
 fn describe<T: Area>(shape: T): Float {
-  shape.area() + Area.area(shape)   // member form and explicit form, one target
+  shape.area() + Area::area(shape)   // member form and explicit form, one target
 }
 ```
 

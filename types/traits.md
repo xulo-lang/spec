@@ -41,8 +41,8 @@ Rules:
 - Remaining parameters are ordinary parameters and MUST be annotated with their
   types.
 - A trait is a module-level declaration. `pub trait Area { … }` exports the
-  trait so that other modules may import it — normally with
-  `import type { Area } from "…"` — and implement it locally; without `pub` the
+  trait so that other modules may use it — normally with a type-only binding,
+  `use type form::Area;` — and implement it locally; without `pub` the
   trait is private to its module. See
   [`../modules/README.md`](../modules/README.md).
 - Trait method signatures are checked for well-formedness when the trait is
@@ -93,7 +93,7 @@ Rules:
   }
 
   impl<T: Area + Scalable> Palette<T> {
-    fn render(self): Float { Area.area(self.shape) }
+    fn render(self): Float { Area::area(self.shape) }
   }
   ```
 
@@ -119,7 +119,7 @@ Rules:
   }
 
   impl<T: Area> Palette<T> {
-    fn render(self): Float { Area.area(self.shape) }
+    fn render(self): Float { Area::area(self.shape) }
   }
 
   let ok = Palette(shape: Rect(w: 3.0, h: 4.0))
@@ -154,8 +154,8 @@ a bound that names, exactly one implementation.
 
 ```xulo
 let r = Rectangle(w: 3.0, h: 4.0)
-let a = Area.area(r)
-let p = Area.perimeter(r)
+let a = Area::area(r)
+let p = Area::perimeter(r)
 ```
 
 - `Trait.method(receiver, …)` resolves directly to the method of the `impl`
@@ -201,7 +201,7 @@ bound declares, and either spelling denotes the same static call:
 
 ```xulo
 fn area_of<T: Area>(shape: T): Float {
-  Area.area(shape)      // explicit static dispatch
+  Area::area(shape)      // explicit static dispatch
 }
 
 fn area_twice<T: Area>(shape: T): Float {
@@ -224,7 +224,7 @@ The language rule for calls that depend on a type parameter is:
 - **Which implementation a bound uses.** The implementation that satisfies a
   bound is the one visible at the point that selects the type argument, and it
   travels with the bound into the generic body: every bound-resolved call
-  there — `Area.area(value)` or `value.area()` alike — uses that same
+  there — `Area::area(value)` or `value.area()` alike — uses that same
   implementation for that instantiation. The module in which the generic was
   declared takes no part in the choice, so a generic written in a module that
   declares no implementation for the trait is usable wherever an instantiation
@@ -289,14 +289,14 @@ impl Area for Circle {
 }
 
 fn describe<T: Area>(shape: T): Float {
-  Area.area(shape) + Area.perimeter(shape)
+  Area::area(shape) + Area::perimeter(shape)
 }
 
 fn main() {
   let r = Rectangle(w: 3.0, h: 4.0)
   let c = Circle(r: 2.0)
-  print(str(Area.area(r)))
-  print(str(Area.perimeter(c)))
+  print(str(Area::area(r)))
+  print(str(Area::perimeter(c)))
   print(str(describe(r)))
   print(str(describe(c)))
 }

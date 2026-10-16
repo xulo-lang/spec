@@ -26,13 +26,14 @@ The following entities are named, each by an identifier:
 | Enum variants | A constructor inside `enum` | Named `Enum::Variant`, never `Enum.Variant` |
 | Type parameters | `<T>` in a signature or a `where` clause | Visible in the signature and the body |
 | Pattern bindings | A `match` arm pattern | Scoped to that arm's guard and body only |
-| Namespaces | `import * as ns from "m"`; built-ins `Math`, `Time`, `Task` | Members are selected with `.` |
+| Namespaces | `mod` declarations, `use … as` aliases; built-ins `Math`, `Time`, `Task` | Members are selected with `::` |
 | Argument labels | Named parameters and component attributes | The label before `:` — `spacing`, `onClick` — is part of a signature, not a separate binding |
 
-A module is identified by its file path, so a file declares no module name of
-its own; only the namespace binding created by `import * as ns` (or by a
-re-export) is an ordinary name. Argument labels are not bindings: they may not
-be referenced as values, and they live in no scope.
+A module's name is the identifier of the `mod` declaration that claims it —
+its identity in paths, while its file decides which module it *is*. Both
+kinds of namespace binding — a `mod` name, an alias a `use` creates — are
+ordinary names in the declaring module's scope. Argument labels are not
+bindings: they may not be referenced as values, and they live in no scope.
 
 `_` names nothing; see [Underscore and Discards](#underscore-and-discards).
 
@@ -95,7 +96,7 @@ the following scope kinds:
 
 | Scope | Introduced by | Names visible |
 |-------|---------------|---------------|
-| Module (file) scope | The file itself | Every top-level declaration, plus every `import` and `pub use` |
+| Module scope | The module body (file or inline `mod` block) | Every top-level declaration, plus every `mod`, `use`, and `pub use` binding |
 | Function scope | A `fn` header | Parameters, and the body that follows |
 | Generic-parameter scope | `<T>` or a `where` clause | The type parameter, in the signature, return type, and body |
 | Block scope | Every `{ ... }` | Declarations made inside the block |
@@ -182,7 +183,7 @@ fn area(s: Shape): Number {
 `_` is therefore never a declaration: it introduces no binding, so nothing can
 be assigned to it, passed on, or read back from it, and it cannot be shadowed
 because there is nothing to shadow. Wherever an ordinary identifier is
-required — a member name, an import entry, a declaration — `_` alone is an
+required — a member name, a use entry, a declaration — `_` alone is an
 error, since it is not an identifier in the sense of
 [lexical-structure.md](lexical-structure.md).
 
@@ -196,15 +197,20 @@ order; the first scope that provides the name wins:
 3. Remaining bindings of the enclosing function, then the module's own
    top-level declarations (functions and types in any order; variables and
    constants in declaration order).
-4. Names brought into the module by `import` and by `pub use` — the module's
-   interface as this file sees it.
+4. Names brought into the module by `mod`, `use`, and `pub use` — the
+   module's structure and its view of the world as this file sees it.
 5. The prelude: the built-in type names and the intrinsics (`print`,
    `println`, `str`, `Math`, `Time`, `Task`), which are visible only when
    nothing above matches.
 
-Namespaces are resolved before member access. In `Math.max(a, b)` the leading
-`Math` is resolved as an ordinary name — an imported namespace or a built-in
-one — and only then is `max` looked up as its member. Enum variants are
+Qualified names are resolved before their members. In `Math::max(a, b)` the
+leading `Math` is resolved as an ordinary name — a `use`-bound namespace or
+a built-in one — and only then is `max` looked up as its member; the same
+holds for every path. The first segment of a path resolves as a dependency
+of this package (through the manifest mapping), then as a root module of
+this package — a spelling that would be both is `E0104`
+([`modules/import-export.md`](modules/import-export.md)). Later
+segments resolve inside what the previous segment reached. Enum variants are
 resolved with `::`: in `Theme::Dark`, `Theme` resolves as a type name and
 `Dark` as a variant of that type. `.` is never used to name a variant, so a
 field named `Dark` and a variant named `Dark` do not collide.

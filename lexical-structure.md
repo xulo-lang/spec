@@ -64,8 +64,9 @@ used as one.
 | | `fn` | Declares a function or a function-typed value |
 | | `impl` | Declares the implementation of a trait for a type |
 | | `let` | Declares a binding; immutable unless preceded by `mut` |
+| | `mod` | Declares a module — a file (`mod form;`) or a block (`mod x { … }`) |
 | | `mut` | Marks a binding or a borrow as mutable |
-| | `self` | The receiver of a method inside an `impl` block |
+| | `self` | The receiver of a method inside an `impl` block; in a path, the current module |
 | | `struct` | Declares a structure type |
 | | `test` | Marks a function as a test: checked with the program, run only by a test tool |
 | | `trait` | Declares a trait |
@@ -82,11 +83,10 @@ used as one.
 | | `panic` | Stops the program with an unrecoverable error |
 | | `return` | Returns a value from the enclosing function |
 | | `while` | Declares a condition-controlled loop |
-| Modules | `as` | Renames an imported or re-exported name |
-| | `from` | Names the module in an `import` declaration |
-| | `import` | Brings names from another module into scope |
-| | `pub` | Marks a declaration or member as publicly visible |
-| | `use` | Re-exports a name from this or another module |
+| Modules | `as` | Renames a used or re-exported name |
+| | `pub` | Marks a declaration, member, module, or use as publicly visible |
+| | `super` | In a path, the parent module of the current one |
+| | `use` | Brings names of a path into scope — singly, grouped, or by glob |
 | Async and concurrency | `async` | Declares an asynchronous function or closure |
 | | `await` | Unwraps a `Task<T>` inside an `async` body |
 | | `lock` | Enters a critical section over `shared` state |
@@ -101,6 +101,10 @@ used as one.
 | | `true` | The `Boolean` literal for truth |
 | Ownership | `copy` | Evaluates an expression and deep-copies the result |
 | | `move` | Transfers ownership of a value out of its binding |
+
+`from` and `import` are no longer keywords: with string specifiers and the
+side-effect form gone, no import mechanism remains to spell. Neither is
+reserved — both are ordinary identifiers.
 
 ## Contextual Keywords
 
@@ -131,92 +135,13 @@ generic global guard init instanceof interface
 isolated iterator lazy library local macro
 meta module new open override package priv
 protocol receiver ref rethrows select sender
-static super switch task this typealias
+static switch task this typealias
 unowned unsafe var virtual void weak with
 yield
 ```
 
-The list excludes every keyword: `move`, `self`, and `spawn` are keywords,
-not reserved words. `_` is neither; it is the wildcard name.
-
-## Literals
-
-A literal denotes a value directly. Spellings are given here; the resulting
-types in [types/primitive-types.md](types/primitive-types.md) and the typing
-of each literal form in [expressions/literals.md](expressions/literals.md).
-
-### Numbers
-
-```text
-NumberLiteral  ::= IntegerLiteral | FloatLiteral
-IntegerLiteral ::= DecInt | HexInt | BinInt | OctInt
-FloatLiteral   ::= DecInt '.' DecInt
-DecInt   ::= Digit { Digit }
-HexInt   ::= '0' ( 'x' | 'X' ) HexDigit { HexDigit }
-BinInt   ::= '0' ( 'b' | 'B' ) BinDigit { BinDigit }
-OctInt   ::= '0' ( 'o' | 'O' ) OctDigit { OctDigit }
-Digit    ::= '0' .. '9'
-HexDigit ::= Digit | 'a' .. 'f' | 'A' .. 'F'
-BinDigit ::= '0' | '1'
-OctDigit ::= '0' .. '7'
-```
-
-Examples: `42`, `3.14`, `0xff`, `0b1010`, `0o77`.
-
-- There are no digit separators (`1_000`), no exponents (`1e5`), no suffixes
-  (`42u8`), no imaginary literals. Once a literal's form is consumed, an
-  immediately following ASCII letter or `_` makes it invalid: `1a`, `1e5`, and
-  `0xfg` are errors.
-- A `.` belongs to a float literal only when a digit follows it: in `1...5`
-  the dots are the range operator, and in `1.foo` the number is `1`. It is
-  also withheld when the number begins immediately after a member-access
-  token: in `p.0.1` the tokens are `p` `.` `0` `.` `1` — two chained
-  positional accesses, never the float `0.1`.
-
-### Strings
-
-```text
-StringLiteral ::= '"' { StringChar | EscapeSeq } '"'
-                | "'" { StringChar | EscapeSeq } "'"
-StringChar    ::= <any character except a line terminator, quote, or backslash>
-EscapeSeq     ::= '\' ( '"' | "'" | '\' | 'n' | 't' | 'r' )
-               | '\u' HexDigit HexDigit HexDigit HexDigit
-               | '\u' '{' HexDigit { HexDigit } '}'
-```
-
-`"` and `'` are interchangeable delimiters. A string literal MUST NOT contain
-a raw line terminator, an unclosed one is a lexical error, and neither
-delimiter interpolates: `${...}` inside `"..."` or `'...'` is literal text.
-
-The escapes are `\"` and `\'` (the quote character), `\\` (backslash), `\n`,
-`\t`, `\r` (line feed, tab, carriage return), `\uXXXX` (exactly four hex
-digits), and `\u{...}` (one to six hex digits in braces). A `\u` escape MUST
-name a valid Unicode scalar value — at most U+10FFFF and never a surrogate in
-U+D800–U+DFFF. Any other escape sequence is a lexical error.
-
-### Template Literals
-
-```text
-TemplateLiteral ::= '`' { TemplateText | EscapeSeq | Interpolation } '`'
-Interpolation   ::= '${' { <tokens> } '}'
-```
-
-- Templates are delimited by backticks and MAY span lines; an unterminated
-  one is a lexical error.
-- `${expr}` interpolates: the material between `${` and the matching `}` is
-  tokenized as ordinary source with braces counted, so calls, operators, and
-  nested templates all work inside an interpolation.
-- In template text `` \` `` produces a backtick and `\$` a literal `$`, so
-  `` `${not interpolation}` `` can be written as text; string escapes are
-  accepted too. Interpolable operand types are given in
-  [expressions/literals.md](expressions/literals.md).
-
-### Booleans and Null
-
-`true`, `false`, and `null` are keywords whose spelling is a literal: the
-first two are boolean literals, `null` the null literal forming optional
-types, and [types/primitive-types.md](types/primitive-types.md) gives their
-types.
+The list excludes every keyword: `mod`, `move`, `self`, `spawn`, and `super`
+are keywords, not reserved words. `_` is neither; it is the wildcard name.
 
 ## Operators and Delimiters
 
@@ -229,8 +154,8 @@ identifiers, and precedence is defined in
 |----------|--------|---------|
 | Grouping | `(` `)` `{` `}` `[` `]` | Call, block, list/map literal, subscript |
 | Separators | `,` `;` | Item separator; optional statement terminator |
-| Type and name separator | `:` `::` | Type/attribute label; enum variant path |
-| Member access | `.` `?.` | Field, method, namespace member, tuple position; optional member |
+| Type and name separator | `:` `::` | Type/attribute label; path separator — packages, modules, variants, associated names |
+| Member access | `.` `?.` | Field, method, map entry, tuple position, on a value; optional member |
 | Assignment | `=` `:=` | Assignment; sugar for a mutable binding |
 | Comparison | `==` `!=` `<` `>` `<=` `>=` | Equality and relational tests |
 | Type test | `is` `not` | Type test and its negation |
@@ -242,11 +167,18 @@ identifiers, and precedence is defined in
 | UI and state | `@` `$` | State declarations; two-way binding prefix |
 | Reserved symbol | `#` | Not part of the language; it MUST NOT appear in source |
 
-`::` names an enum variant and nothing else (`Theme::Dark`); `.` reaches
-fields, methods, and namespace members (`Theme.value`, `Math.max`). `:=` is
-sugar for `let mut`; see
+`::` names every qualified name — a path (`ui::hstack::HStack`), a variant
+(`Theme::Dark`), an associated or namespace name (`Math::PI`) — and nothing
+else. `.` reaches into a value: fields, methods, map member entries, tuple
+positions (`user.name`, `r.area()`, `p.0`); it never names a namespace or a
+module member, which use `::`. `:=` is sugar for `let mut`; see
 [statements/let-and-assignment.md](statements/let-and-assignment.md).
 
+A package segment in a path is written with its hyphens unwspaced
+(`lsp-server`); in an expression or type position the chain is part of a path
+only when `::` follows it, so `lsp-server::run()` is a call and
+`total - Math::PI` is subtraction
+([path-and-access.md](expressions/path-and-access.md)).
 ## Longest Match
 
 At each position the lexer MUST produce the longest token in the inventory

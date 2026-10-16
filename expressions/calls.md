@@ -13,7 +13,7 @@ argument list — `f()` — passes no arguments.
 
 ```xulo
 greet("world")
-math.max(a, b,)
+math::max(a, b,)
 ```
 
 ```text

@@ -27,14 +27,25 @@ interface BaseNode {
 ```typescript
 interface Program extends BaseNode {
   type: 'Program';
-  imports: ImportDeclarationNode[];
+  header: HeaderItemNode[];
   body: DeclarationNode[];
 }
+
+type HeaderItemNode =
+  | ModuleDeclaration
+  | UseDeclaration
+  | PubUseDeclaration;
 ```
 
-This mirrors `Program = { ImportDecl } { Declaration } [ Entry ]`: imports first, then declarations. The grammar's `Entry` is not a separate node — the module's `main` is an ordinary `FnDeclaration` in `body`, and the entry-point signature rule is a checking rule ([`modules/source-files.md`](modules/source-files.md)).
+This mirrors `Program = { HeaderItem } { Declaration } [ Entry ]`: the three
+header forms first, then declarations. The grammar's `Entry` is not a
+separate node — the root module's `main` is an ordinary `FnDeclaration` in
+`body`, and the entry-point signature rule is a checking rule
+([`modules/source-files.md`](modules/source-files.md)).
 
-## Declarations
+`DeclarationNode` loses `PubUseDeclaration`, which moved into
+`HeaderItemNode`; declarations gain nothing — both `mod` forms are header
+items, so `ModuleDeclaration` appears only there:
 
 ```typescript
 type DeclarationNode =
@@ -46,8 +57,16 @@ type DeclarationNode =
   | TypeAlias
   | LetDeclaration
   | ConstDeclaration
-  | TestDeclaration
-  | PubUseDeclaration;
+  | TestDeclaration;
+```
+
+`ModuleDeclaration` with `body: null` is the file-backed form (`mod form;`);
+with a body it is the inline form. A checker recurses into
+`ModuleDeclaration.header` / `ModuleDeclaration.body` exactly as it does
+into `Program.header` / `Program.body` — an inline module is a module like
+any other, one level down.
+
+## Declarations
 
 interface FnDeclaration extends BaseNode {
   type: 'FnDeclaration';
@@ -190,52 +209,77 @@ interface EnvironmentDeclaration extends BaseNode {
 
 `EffectDeclaration.dependencies` is the optional expression written after the `,` — a list literal when the declaration is well-formed, and anything else when it is not, which is the shape `E0708` diagnoses. `EnvironmentDeclaration.varType` is required: the production takes no optional annotation, and a declaration written without one is `E0710`.
 
-### Imports and re-exports
+## Module and use nodes
 
 ```typescript
-type ImportDeclarationNode =
-  | TypeImportDeclaration
-  | NamedImportDeclaration
-  | NamespaceImportDeclaration
-  | SideEffectImportDeclaration;
-
-interface TypeImportDeclaration extends BaseNode {
-  type: 'TypeImportDeclaration';
-  items: ImportItemNode[];
-  source: string;
-}
-
-interface NamedImportDeclaration extends BaseNode {
-  type: 'NamedImportDeclaration';
-  items: ImportItemNode[];
-  source: string;
-}
-
-interface NamespaceImportDeclaration extends BaseNode {
-  type: 'NamespaceImportDeclaration';
-  alias: IdentifierNode;
-  source: string;
-}
-
-interface SideEffectImportDeclaration extends BaseNode {
-  type: 'SideEffectImportDeclaration';
-  source: string;
-}
-
-interface ImportItemNode extends BaseNode {
-  type: 'ImportItem';
+interface ModuleDeclaration extends BaseNode {
+  type: 'ModuleDeclaration';
+  isPub: boolean;
   name: IdentifierNode;
-  alias: IdentifierNode | null;
+  header: HeaderItemNode[];
+  body: DeclarationNode[] | null;
+}
+
+interface UseDeclaration extends BaseNode {
+  type: 'UseDeclaration';
+  isTypeOnly: boolean;
+  target: UseTargetNode;
 }
 
 interface PubUseDeclaration extends BaseNode {
   type: 'PubUseDeclaration';
-  items: IdentifierNode[];
-  source: string | null;
+  target: UseTargetNode | null;   // null: the local form `pub use { a, b }`
+  localNames: IdentifierNode[];   // empty unless the local form
+}
+
+type UseTargetNode = UsePathNode | UseGroupNode | UseGlobNode;
+
+interface UsePathNode extends BaseNode {
+  type: 'UsePath';
+  path: PathNode;
+  alias: IdentifierNode | null;   // the `as` name: a rename of the binding
+}
+
+interface UseGroupNode extends BaseNode {
+  type: 'UseGroup';
+  prefix: PathNode;
+  entries: UseEntryNode[];
+}
+
+interface UseGlobNode extends BaseNode {
+  type: 'UseGlob';
+  prefix: PathNode;
+}
+
+interface UseEntryNode extends BaseNode {
+  type: 'UseEntry';
+  name: IdentifierNode;
+  alias: IdentifierNode | null;
+}
+
+interface PathNode extends BaseNode {
+  type: 'Path';
+  head: PackageNameNode | IdentifierNode | 'self' | 'super';
+  segments: IdentifierNode[];
+}
+
+interface PackageNameNode extends BaseNode {
+  type: 'PackageName';
+  identifiers: IdentifierNode[];  // one per hyphen-separated piece
 }
 ```
 
-`ImportDecl` has four alternatives that differ in what they bind, so the AST gives each one a node instead of folding them into a single record with optional fields: a namespace import binds one name and no entries, a side-effect import binds nothing at all, and `type` marks the entries as type-only. `ImportItemNode.alias` is the local name written after `as`; it renames the local binding only. `PubUseDeclaration` is the re-export — `pub use { … } [from "…"]` — and there is no bare `use` form, so there is no `UseDeclaration` node.
+The old import nodes — `TypeImportDeclaration`,
+`NamedImportDeclaration`, `NamespaceImportDeclaration`,
+`SideEffectImportDeclaration` — and the `source: string` field they shared
+are gone: strings no longer name modules, `type` marks the whole
+`UseDeclaration` rather than a list, and the namespace case is a `UsePath`
+with an alias or a `UseGlob`. `UsePath.path` is a full `Path`, so
+`use form::validate` and `use lsp-server as ls` share one node;
+`PubUseDeclaration.target` distinguishes the path form from the local form,
+whose entries are plain identifiers with no `as` — the export name is the
+binding. Every `header` position (program and inline module) uses the same
+`HeaderItemNode` union.
 
 ## Parameters and Fields
 
@@ -409,7 +453,7 @@ type ExpressionNode =
   | ListExpr
   | MapExpr
   | TupleExpr
-  | VariantPathExpr
+  | PathExpr
   | SpawnExpr
   | LockExpr
   | ComponentExpr;
@@ -567,12 +611,20 @@ interface TupleExpr extends BaseNode {
   elements: ExpressionNode[];
 }
 
-interface VariantPathExpr extends BaseNode {
-  type: 'VariantPathExpr';
-  enumName: IdentifierNode;
-  variantName: IdentifierNode;
+interface PathExpr extends BaseNode {
+  type: 'PathExpr';
+  path: PathNode;
   args: ArgNode[] | null;
 }
+
+`PathExpr` replaces `VariantPathExpr` in the `ExpressionNode` union and in
+the grammar's `PrimaryExpression`: the same node now carries enum variants
+(`Theme::Dark`, `Shape::Circle(2)`), module and package paths
+(`form::validate(1, 2)`, `lsp-server::run()`), and associated names
+(`Math::max(a, b)`, `Area::area(r)`). `PathNode.segments` is the whole chain
+after the head, so a variant path is a two-segment path with `args`.
+Pattern nodes are unchanged: a match pattern's variant spelling keeps its
+own pattern node.
 
 type SpawnExpr = BlockSpawnExpr | ServiceSpawnExpr;
 

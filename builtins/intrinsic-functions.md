@@ -16,7 +16,7 @@ in scope because of the prelude ([`prelude.md`](prelude.md)).
   parameters before the parameter list — `all<T>(tasks: List<Task<T>>): Task<List<T>>`
   — and they are inferred at the call site.
 - Intrinsics are unqualified: `print(...)`, `str(...)`. A namespace member is
-  written `Math.abs`, `Time.now`, `Task.all` — the namespace is an ordinary
+  written `Math::abs`, `Time::now`, `Task::all` — the namespace is an ordinary
   name, `.` selects the member, and the bare name (`abs`, `now`, `all`) is in
   scope nowhere ([`../expressions/path-and-access.md`](../expressions/path-and-access.md)).
 - Every intrinsic has exactly one signature: there is no overloading, and
@@ -132,137 +132,137 @@ assert(list_size(xs) == 4, "not four")     // false: stops with `panic("not four
 ## `Math` namespace
 
 `Math` is a built-in namespace of mathematical constants and functions,
-available without import. Its members are reached with `.` (`Math.PI`,
-`Math.max(a, b)`), and its constants are ordinary `Float` values.
+available without import. Its members are reached with `.` (`Math::PI`,
+`Math::max(a, b)`), and its constants are ordinary `Float` values.
 
 ### Constants
 
 | Member | Type | Value |
 |--------|------|-------|
-| `Math.PI` | `Float` | 3.141592653589793 |
-| `Math.E` | `Float` | 2.718281828459045 |
-| `Math.TAU` | `Float` | 6.283185307179586 |
-| `Math.INFINITY` | `Float` | positive infinity |
-| `Math.NAN` | `Float` | not a number |
+| `Math::PI` | `Float` | 3.141592653589793 |
+| `Math::E` | `Float` | 2.718281828459045 |
+| `Math::TAU` | `Float` | 6.283185307179586 |
+| `Math::INFINITY` | `Float` | positive infinity |
+| `Math::NAN` | `Float` | not a number |
 
 ### Basic functions
 
 | Member | Signature | Meaning |
 |--------|-----------|---------|
-| `Math.abs` | `fn(x: Number): Number` | absolute value |
-| `Math.min` | `fn(a: Number, b: Number): Number` | the smaller of two values |
-| `Math.max` | `fn(a: Number, b: Number): Number` | the larger of two values |
-| `Math.sqrt` | `fn(x: Float): Float` | square root |
-| `Math.cbrt` | `fn(x: Float): Float` | cube root |
-| `Math.pow` | `fn(base: Float, exp: Float): Float` | `base` raised to `exp` |
-| `Math.floor` | `fn(x: Float): Int` | largest integer not above `x` |
-| `Math.ceil` | `fn(x: Float): Int` | smallest integer not below `x` |
-| `Math.round` | `fn(x: Float): Int` | nearest integer to `x` |
-| `Math.trunc` | `fn(x: Float): Int` | integer formed by discarding the fractional part |
+| `Math::abs` | `fn(x: Number): Number` | absolute value |
+| `Math::min` | `fn(a: Number, b: Number): Number` | the smaller of two values |
+| `Math::max` | `fn(a: Number, b: Number): Number` | the larger of two values |
+| `Math::sqrt` | `fn(x: Float): Float` | square root |
+| `Math::cbrt` | `fn(x: Float): Float` | cube root |
+| `Math::pow` | `fn(base: Float, exp: Float): Float` | `base` raised to `exp` |
+| `Math::floor` | `fn(x: Float): Int` | largest integer not above `x` |
+| `Math::ceil` | `fn(x: Float): Int` | smallest integer not below `x` |
+| `Math::round` | `fn(x: Float): Int` | nearest integer to `x` |
+| `Math::trunc` | `fn(x: Float): Int` | integer formed by discarding the fractional part |
 
 ### Formatting
 
 | Member | Signature | Meaning |
 |--------|-----------|---------|
-| `Math.toFixed` | `fn(x: Float, digits: Int): String` | the decimal numeral of `x` with exactly `digits` digits after the decimal point |
+| `Math::toFixed` | `fn(x: Float, digits: Int): String` | the decimal numeral of `x` with exactly `digits` digits after the decimal point |
 
 ### Trigonometric functions
 
 | Member | Signature | Meaning |
 |--------|-----------|---------|
-| `Math.sin` | `fn(x: Float): Float` | sine of an angle in radians |
-| `Math.cos` | `fn(x: Float): Float` | cosine of an angle in radians |
-| `Math.tan` | `fn(x: Float): Float` | tangent of an angle in radians |
-| `Math.asin` | `fn(x: Float): Float` | arcsine, in radians |
-| `Math.acos` | `fn(x: Float): Float` | arccosine, in radians |
-| `Math.atan` | `fn(x: Float): Float` | arctangent, in radians |
-| `Math.atan2` | `fn(y: Float, x: Float): Float` | arctangent of `y / x`, using the signs of both to choose the quadrant |
+| `Math::sin` | `fn(x: Float): Float` | sine of an angle in radians |
+| `Math::cos` | `fn(x: Float): Float` | cosine of an angle in radians |
+| `Math::tan` | `fn(x: Float): Float` | tangent of an angle in radians |
+| `Math::asin` | `fn(x: Float): Float` | arcsine, in radians |
+| `Math::acos` | `fn(x: Float): Float` | arccosine, in radians |
+| `Math::atan` | `fn(x: Float): Float` | arctangent, in radians |
+| `Math::atan2` | `fn(y: Float, x: Float): Float` | arctangent of `y / x`, using the signs of both to choose the quadrant |
 
 ### Logarithmic and exponential functions
 
 | Member | Signature | Meaning |
 |--------|-----------|---------|
-| `Math.log` | `fn(x: Float): Float` | natural logarithm |
-| `Math.log2` | `fn(x: Float): Float` | base-2 logarithm |
-| `Math.log10` | `fn(x: Float): Float` | base-10 logarithm |
-| `Math.exp` | `fn(x: Float): Float` | `e` raised to `x` |
+| `Math::log` | `fn(x: Float): Float` | natural logarithm |
+| `Math::log2` | `fn(x: Float): Float` | base-2 logarithm |
+| `Math::log10` | `fn(x: Float): Float` | base-10 logarithm |
+| `Math::exp` | `fn(x: Float): Float` | `e` raised to `x` |
 
 - Every `Float` parameter and result follows IEEE-754 binary64: an operation
   outside its domain yields `NaN`, an overflow yields the appropriate infinity,
   and the special values propagate through further operations
   ([`../types/primitive-types.md`](../types/primitive-types.md)).
-- `Math.sqrt` of a negative value yields `NaN`; `Math.cbrt` is defined for
+- `Math::sqrt` of a negative value yields `NaN`; `Math::cbrt` is defined for
   every `Float`, negative values included.
-- `Math.log`, `Math.log2`, and `Math.log10` yield `-Infinity` at `0` and `NaN`
-  for a negative argument; `Math.exp` yields `Infinity` once its result
+- `Math::log`, `Math::log2`, and `Math::log10` yield `-Infinity` at `0` and `NaN`
+  for a negative argument; `Math::exp` yields `Infinity` once its result
   overflows.
-- `Math.asin` and `Math.acos` yield `NaN` outside `-1.0...1.0`.
-- `Math.floor`, `Math.ceil`, and `Math.trunc` discard the fractional part
+- `Math::asin` and `Math::acos` yield `NaN` outside `-1.0...1.0`.
+- `Math::floor`, `Math::ceil`, and `Math::trunc` discard the fractional part
   toward negative infinity, toward positive infinity, and toward zero; they
-  return `Int`. `Math.round` returns the nearest `Int`, and a value exactly
+  return `Int`. `Math::round` returns the nearest `Int`, and a value exactly
   halfway between two integers rounds away from zero.
-- `Math.toFixed` rounds at the `digits`-th fractional place using the same
+- `Math::toFixed` rounds at the `digits`-th fractional place using the same
   halfway-away-from-zero rule, keeps trailing zeros — a fixed width is the
   point of the function — and renders the sign exactly as `str` does, so a
   negative zero yields a leading `-`. The special values ignore `digits` and
   render as `NaN`, `Infinity`, and `-Infinity`. A `digits` value outside
   `0...=15` is a runtime failure
   ([`../memory-and-runtime.md`](../memory-and-runtime.md)).
-- `Math.abs`, `Math.min`, and `Math.max` are declared over `Number`, so an
+- `Math::abs`, `Math::min`, and `Math::max` are declared over `Number`, so an
   `Int` or `Float` operand is accepted and a fixed-bit operand is not
   ([`../types/primitive-types.md`](../types/primitive-types.md)).
 
 ```xulo
 let radius = 2.5
-let circumference = 2.0 * Math.PI * radius
+let circumference = 2.0 * Math::PI * radius
 let a = 3.0
 let b = 4.0
-let hypotenuse = Math.sqrt(a * a + b * b)
+let hypotenuse = Math::sqrt(a * a + b * b)
 let value = 120
-let clamped = Math.min(Math.max(value, 0), 100)
-let halfPi = Math.PI / 2
-let whole = Math.floor(3.7)            // 3, of type Int
-print(`price: ${Math.toFixed(3.14159, 2)}`)  // price: 3.14
-print(`${Math.toFixed(2.5, 0)}`)             // 3
-print(`${Math.toFixed(-2.5, 0)}`)            // -3
-print(`${Math.toFixed(3.1, 2)}`)             // 3.10
+let clamped = Math::min(Math::max(value, 0), 100)
+let halfPi = Math::PI / 2
+let whole = Math::floor(3.7)            // 3, of type Int
+print(`price: ${Math::toFixed(3.14159, 2)}`)  // price: 3.14
+print(`${Math::toFixed(2.5, 0)}`)             // 3
+print(`${Math::toFixed(-2.5, 0)}`)            // -3
+print(`${Math::toFixed(3.1, 2)}`)             // 3.10
 ```
 
 ## `Time` namespace
 
-`Time` is a built-in namespace of timestamps and async sleep, available without
-import. Its functions return scalars only: `U64` for the clocks and a task for
+`Time` is a built-in namespace of timestamps and async sleep, available
+without `use`. Its functions return scalars only: `U64` for the clocks and a task for
 the delay.
 
 | Member | Signature | Meaning |
 |--------|-----------|---------|
-| `Time.now` | `fn(): U64` | current Unix time in milliseconds |
-| `Time.now_nanos` | `fn(): U64` | current Unix time in nanoseconds |
-| `Time.monotonic` | `fn(): U64` | current reading of the monotonic clock in milliseconds |
-| `Time.monotonic_nanos` | `fn(): U64` | current reading of the monotonic clock in nanoseconds |
-| `Time.sleep` | `fn(ms: U64): Task<Unit>` | delays for at least `ms` milliseconds |
+| `Time::now` | `fn(): U64` | current Unix time in milliseconds |
+| `Time::now_nanos` | `fn(): U64` | current Unix time in nanoseconds |
+| `Time::monotonic` | `fn(): U64` | current reading of the monotonic clock in milliseconds |
+| `Time::monotonic_nanos` | `fn(): U64` | current reading of the monotonic clock in nanoseconds |
+| `Time::sleep` | `fn(ms: U64): Task<Unit>` | delays for at least `ms` milliseconds |
 
-- `Time.now` and `Time.now_nanos` read the wall clock: milliseconds and
+- `Time::now` and `Time::now_nanos` read the wall clock: milliseconds and
   nanoseconds since the Unix epoch. They are appropriate for timestamps, not
   for measuring how long something took.
-- `Time.monotonic` and `Time.monotonic_nanos` read a clock that never runs
+- `Time::monotonic` and `Time::monotonic_nanos` read a clock that never runs
   backwards and is unaffected by changes to the wall clock. Only differences
   between two readings are meaningful, which makes them the right choice for
   elapsed time, debounce windows, and benchmarks.
-- `Time.sleep` produces a `Task<Unit>` that settles once the delay has elapsed.
-  A `Time.sleep(...)` call MUST be awaited: it is written
-  `await Time.sleep(ms)` inside an `async` body, where it suspends that body
+- `Time::sleep` produces a `Task<Unit>` that settles once the delay has elapsed.
+  A `Time::sleep(...)` call MUST be awaited: it is written
+  `await Time::sleep(ms)` inside an `async` body, where it suspends that body
   for at least `ms` milliseconds and yields `Unit`. `await` is legal only
   inside an `async` body
   ([`../expressions/async-expressions.md`](../expressions/async-expressions.md)).
 
 ```xulo
-let start = Time.monotonic_nanos()
+let start = Time::monotonic_nanos()
 // ... work ...
-let elapsed = Time.monotonic_nanos() - start
+let elapsed = Time::monotonic_nanos() - start
 
 async fn later() {
-  await Time.sleep(1000)
+  await Time::sleep(1000)
   println("1 second later")
 }
 ```
@@ -276,22 +276,22 @@ which also specifies where `await` may appear and how a task is started.
 
 | Member | Signature | Meaning |
 |--------|-----------|---------|
-| `Task.all` | `all<T>(tasks: List<Task<T>>): Task<List<T>>` | completes when every task has completed; results in argument order |
-| `Task.race` | `race<T>(tasks: List<Task<T>>): Task<T>` | completes with the first task to complete |
-| `Task.resolve` | `resolve<T>(value: T): Task<T>` | an already-completed task holding `value` |
-| `Task.timeout` | `timeout<T>(t: Task<T>, ms: U64): Task<Result<T, Error>>` | settles with `t`'s result within `ms`, or fails with `Error("timed out")` |
+| `Task::all` | `all<T>(tasks: List<Task<T>>): Task<List<T>>` | completes when every task has completed; results in argument order |
+| `Task::race` | `race<T>(tasks: List<Task<T>>): Task<T>` | completes with the first task to complete |
+| `Task::resolve` | `resolve<T>(value: T): Task<T>` | an already-completed task holding `value` |
+| `Task::timeout` | `timeout<T>(t: Task<T>, ms: U64): Task<Result<T, Error>>` | settles with `t`'s result within `ms`, or fails with `Error("timed out")` |
 
-`Task.all` and `Task.race` combine tasks that already exist: neither starts any
+`Task::all` and `Task::race` combine tasks that already exist: neither starts any
 work of its own, because a call to an `async` function has already started its
 body ([`../expressions/async-expressions.md`](../expressions/async-expressions.md)).
-`Task.all` settles when every task of the list has settled and yields the
-results in argument order; `Task.race` settles as soon as the first task of the
-list settles and yields that task's result. `Task.resolve` wraps a value that
+`Task::all` settles when every task of the list has settled and yields the
+results in argument order; `Task::race` settles as soon as the first task of the
+list settles and yields that task's result. `Task::resolve` wraps a value that
 is already at hand, producing a task that has already settled: awaiting it
-yields the value immediately. `Task.timeout` starts a deadline of its own:
+yields the value immediately. `Task::timeout` starts a deadline of its own:
 within `ms` milliseconds it settles with the wrapped task's result, and on
 expiry it cancels the wrapped task and settles with
-`Result::Err(Error("timed out"))` — unlike `Task.all` and `Task.race`, it does
+`Result::Err(Error("timed out"))` — unlike `Task::all` and `Task::race`, it does
 cancel what it wraps. Generic type arguments are
 inferred at the call site, and how results and cancellation combine through
 the combined tasks is specified in
@@ -301,15 +301,15 @@ the combined tasks is specified in
 async fn fetchAll(): List<User> {
   let a = fetchUser(1)
   let b = fetchUser(2)
-  await Task.all([a, b])            // the two results, in order
+  await Task::all([a, b])            // the two results, in order
 }
 
 async fn fastest(a: Task<Int>, b: Task<Int>): Int {
-  await Task.race([a, b])           // whichever settles first
+  await Task::race([a, b])           // whichever settles first
 }
 
 async fn cached(): Int {
-  let ready: Task<Int> = Task.resolve(42)
+  let ready: Task<Int> = Task::resolve(42)
   await ready                       // 42, without suspending
 }
 ```
@@ -322,42 +322,42 @@ Constants give their type in place of a signature.
 | Name | Signature | Section |
 |------|-----------|---------|
 | `assert` | `assert(condition: Boolean, message: String): Unit` | [Assertion](#assertion) |
-| `Math.abs` | `fn(x: Number): Number` | [`Math` namespace](#math-namespace) |
-| `Math.acos` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
-| `Math.asin` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
-| `Math.atan` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
-| `Math.atan2` | `fn(y: Float, x: Float): Float` | [`Math` namespace](#math-namespace) |
-| `Math.cbrt` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
-| `Math.ceil` | `fn(x: Float): Int` | [`Math` namespace](#math-namespace) |
-| `Math.cos` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
-| `Math.E` | `Float` (constant) | [`Math` namespace](#math-namespace) |
-| `Math.exp` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
-| `Math.floor` | `fn(x: Float): Int` | [`Math` namespace](#math-namespace) |
-| `Math.INFINITY` | `Float` (constant) | [`Math` namespace](#math-namespace) |
-| `Math.log` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
-| `Math.log10` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
-| `Math.log2` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
-| `Math.max` | `fn(a: Number, b: Number): Number` | [`Math` namespace](#math-namespace) |
-| `Math.min` | `fn(a: Number, b: Number): Number` | [`Math` namespace](#math-namespace) |
-| `Math.NAN` | `Float` (constant) | [`Math` namespace](#math-namespace) |
-| `Math.PI` | `Float` (constant) | [`Math` namespace](#math-namespace) |
-| `Math.pow` | `fn(base: Float, exp: Float): Float` | [`Math` namespace](#math-namespace) |
-| `Math.round` | `fn(x: Float): Int` | [`Math` namespace](#math-namespace) |
-| `Math.sin` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
-| `Math.sqrt` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
-| `Math.tan` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
-| `Math.TAU` | `Float` (constant) | [`Math` namespace](#math-namespace) |
-| `Math.toFixed` | `fn(x: Float, digits: Int): String` | [`Math` namespace](#math-namespace) |
-| `Math.trunc` | `fn(x: Float): Int` | [`Math` namespace](#math-namespace) |
+| `Math::abs` | `fn(x: Number): Number` | [`Math` namespace](#math-namespace) |
+| `Math::acos` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
+| `Math::asin` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
+| `Math::atan` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
+| `Math::atan2` | `fn(y: Float, x: Float): Float` | [`Math` namespace](#math-namespace) |
+| `Math::cbrt` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
+| `Math::ceil` | `fn(x: Float): Int` | [`Math` namespace](#math-namespace) |
+| `Math::cos` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
+| `Math::E` | `Float` (constant) | [`Math` namespace](#math-namespace) |
+| `Math::exp` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
+| `Math::floor` | `fn(x: Float): Int` | [`Math` namespace](#math-namespace) |
+| `Math::INFINITY` | `Float` (constant) | [`Math` namespace](#math-namespace) |
+| `Math::log` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
+| `Math::log10` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
+| `Math::log2` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
+| `Math::max` | `fn(a: Number, b: Number): Number` | [`Math` namespace](#math-namespace) |
+| `Math::min` | `fn(a: Number, b: Number): Number` | [`Math` namespace](#math-namespace) |
+| `Math::NAN` | `Float` (constant) | [`Math` namespace](#math-namespace) |
+| `Math::PI` | `Float` (constant) | [`Math` namespace](#math-namespace) |
+| `Math::pow` | `fn(base: Float, exp: Float): Float` | [`Math` namespace](#math-namespace) |
+| `Math::round` | `fn(x: Float): Int` | [`Math` namespace](#math-namespace) |
+| `Math::sin` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
+| `Math::sqrt` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
+| `Math::tan` | `fn(x: Float): Float` | [`Math` namespace](#math-namespace) |
+| `Math::TAU` | `Float` (constant) | [`Math` namespace](#math-namespace) |
+| `Math::toFixed` | `fn(x: Float, digits: Int): String` | [`Math` namespace](#math-namespace) |
+| `Math::trunc` | `fn(x: Float): Int` | [`Math` namespace](#math-namespace) |
 | `print` | `print<T>(value: T): Unit` | [Output](#output) |
 | `println` | `println<T>(value: T): Unit` | [Output](#output) |
 | `str` | `str(value: Int \| Float \| Boolean \| String \| ToString): String` | [Conversion](#conversion) |
-| `Task.all` | `all<T>(tasks: List<Task<T>>): Task<List<T>>` | [`Task` namespace](#task-namespace) |
-| `Task.race` | `race<T>(tasks: List<Task<T>>): Task<T>` | [`Task` namespace](#task-namespace) |
-| `Task.resolve` | `resolve<T>(value: T): Task<T>` | [`Task` namespace](#task-namespace) |
-| `Task.timeout` | `timeout<T>(t: Task<T>, ms: U64): Task<Result<T, Error>>` | [`Task` namespace](#task-namespace) |
-| `Time.monotonic` | `fn(): U64` | [`Time` namespace](#time-namespace) |
-| `Time.monotonic_nanos` | `fn(): U64` | [`Time` namespace](#time-namespace) |
-| `Time.now` | `fn(): U64` | [`Time` namespace](#time-namespace) |
-| `Time.now_nanos` | `fn(): U64` | [`Time` namespace](#time-namespace) |
-| `Time.sleep` | `fn(ms: U64): Task<Unit>` | [`Time` namespace](#time-namespace) |
+| `Task::all` | `all<T>(tasks: List<Task<T>>): Task<List<T>>` | [`Task` namespace](#task-namespace) |
+| `Task::race` | `race<T>(tasks: List<Task<T>>): Task<T>` | [`Task` namespace](#task-namespace) |
+| `Task::resolve` | `resolve<T>(value: T): Task<T>` | [`Task` namespace](#task-namespace) |
+| `Task::timeout` | `timeout<T>(t: Task<T>, ms: U64): Task<Result<T, Error>>` | [`Task` namespace](#task-namespace) |
+| `Time::monotonic` | `fn(): U64` | [`Time` namespace](#time-namespace) |
+| `Time::monotonic_nanos` | `fn(): U64` | [`Time` namespace](#time-namespace) |
+| `Time::now` | `fn(): U64` | [`Time` namespace](#time-namespace) |
+| `Time::now_nanos` | `fn(): U64` | [`Time` namespace](#time-namespace) |
+| `Time::sleep` | `fn(ms: U64): Task<Unit>` | [`Time` namespace](#time-namespace) |

@@ -102,7 +102,8 @@ never a version number or an implementation detail.
 ## Archived
 
 Accepted and rejected changes leave the index above and are kept in `archive/`
-with their final status; no change has reached either outcome yet.
+with their final status.
 
 | Change | Status | Summary |
 |--------|--------|---------|
+| [archive/change-module-system-to-trees/](archive/change-module-system-to-trees/proposal.md) | accepted | a package is a `mod`-declared tree; `::` paths, manifest package names (one per dependency), verbs `use`/`pub use` replace string specifiers. |
