@@ -1,6 +1,6 @@
 # Add Declaration Attributes
 
-**Status:** draft · **Date:** 2026-10-15 · **Affects:** `lexical-structure.md`,
+**Status:** accepted · **Date:** 2026-10-15 · **Affects:** `lexical-structure.md`,
 `grammar.md`, `types/traits.md`, `ast.md`, `type-system/errors.md`
 
 ## Summary
@@ -23,11 +23,11 @@ registered target is `ToString`: on a `struct` or an `enum`,
 would otherwise write by hand.
 
 Until this change is accepted, `#` is a reserved symbol that MUST NOT appear
-in source ([`../../lexical-structure.md`](../../lexical-structure.md)), no
+in source ([`../../../lexical-structure.md`](../../../lexical-structure.md)), no
 attribute production exists
-([`../../grammar.md`](../../grammar.md)), and every `ToString` impl is
+([`../../../grammar.md`](../../../grammar.md)), and every `ToString` impl is
 written by hand
-([`../../types/traits.md`](../../types/traits.md)). The deltas in
+([`../../../types/traits.md`](../../../types/traits.md)). The deltas in
 [`specs/`](specs/) are the text the chapters gain once the change is
 accepted.
 
@@ -59,7 +59,7 @@ reaches for the hand-written form only when the default is not wanted.
 ### The structural rendering already exists as a language concept
 
 The output rules of
-[`../../builtins/intrinsic-functions.md`](../../builtins/intrinsic-functions.md)
+[`../../../builtins/intrinsic-functions.md`](../../../builtins/intrinsic-functions.md)
 render an enum value structurally — `Enum::Variant`, or `Enum::Variant(p, …)`
 with payloads — with no author cooperation. Derive extends the same idea to
 user types through the one trait that already serves as the string-form hook:
@@ -101,7 +101,7 @@ targets — name no extension point today, only reserved registry slots.
 
 - **Registering `Display` or `Debug`.** Their definitions belong to std/fmt
   — outside this specification
-  ([`../../README.md`](../../README.md), § 1.1) — and their consumers
+  ([`../../../README.md`](../../../README.md), § 1.1) — and their consumers
   (template format specifiers for `Display`, a debug-rendering entry point
   for `Debug`) do not exist yet. The names are reserved in the derive
   registry and rejected with `E0111` until a future change registers them.
@@ -161,7 +161,7 @@ targets — name no extension point today, only reserved registry slots.
       [specs/traits.md](specs/traits.md)
 - [x] AST delta — [specs/ast.md](specs/ast.md)
 - [ ] Registration of `E0108`–`E0112` in
-      [`../../type-system/errors.md`](../../type-system/errors.md), which
+      [`../../../type-system/errors.md`](../../../type-system/errors.md), which
       [design.md](design.md#diagnostics) makes part of acceptance — the codes
       are named by the deltas but belong to no main chapter until the change
       is folded in.

@@ -165,7 +165,7 @@ identifiers, and precedence is defined in
 | Logical and conditional | `!` `?` `??` `and` `or` | Negation, ternary `? :` and postfix propagation, nullish coalescing, connectives |
 | Arrow | `=>` | Match arm body; closure body |
 | UI and state | `@` `$` | State declarations; two-way binding prefix |
-| Reserved symbol | `#` | Not part of the language; it MUST NOT appear in source |
+| Attributes | `#` | Declaration attribute marker |
 
 `::` names every qualified name — a path (`ui::hstack::HStack`), a variant
 (`Theme::Dark`), an associated or namespace name (`Math::PI`) — and nothing
@@ -213,9 +213,9 @@ is the closed-range operator. Both emit the same token.
 
 A source file is lexically conforming when these rules produce a token stream
 that reaches end of input without a lexical error. The lexical errors are: a
-character that cannot start any token (including `#` anywhere, and a BOM away
-from the start), an unterminated block comment, string, or template, an
-invalid escape sequence, and an invalid number literal.
+character that cannot start any token (and a BOM away from the start), an
+unterminated block comment, string, or template, an invalid escape sequence,
+and an invalid number literal.
 
 Keywords, reserved words, and wildcards are produced as their own tokens
 here; using one where an identifier is required is rejected afterwards — by

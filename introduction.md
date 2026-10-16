@@ -134,8 +134,9 @@ language as it grows.
   C on its own ground: memory layout, inline assembly, and bare-metal control
   are outside the language's ambitions.
 - **No macro system in v1.** The language as specified has no macro
-  mechanism, no syntax extension, and no compile-time code generation. `#` is
-  reserved for a possible future use and is not part of the language.
+  mechanism, no syntax extension, and no compile-time code generation;
+  declaration attributes ([`types/traits.md`](types/traits.md)) are a closed
+  registry the checker interprets, never an extension point.
 - **No test framework.** The language contributes exactly two things to
   testing — the `test fn` form and the `assert` intrinsic
   ([`testing.md`](testing.md)) — so that tests are checked and discoverable

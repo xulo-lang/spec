@@ -68,8 +68,16 @@ any other, one level down.
 
 ## Declarations
 
+```typescript
+interface AttributeNode extends BaseNode {
+  type: 'Attribute';
+  name: IdentifierNode;
+  args: IdentifierNode[] | null;
+}
+
 interface FnDeclaration extends BaseNode {
   type: 'FnDeclaration';
+  attributes: AttributeNode[];
   isPub: boolean;
   isAsync: boolean;
   name: IdentifierNode;
@@ -82,6 +90,7 @@ interface FnDeclaration extends BaseNode {
 
 interface StructDeclaration extends BaseNode {
   type: 'StructDeclaration';
+  attributes: AttributeNode[];
   isPub: boolean;
   name: IdentifierNode;
   genericParams: GenericParamNode[];
@@ -90,6 +99,7 @@ interface StructDeclaration extends BaseNode {
 
 interface EnumDeclaration extends BaseNode {
   type: 'EnumDeclaration';
+  attributes: AttributeNode[];
   isPub: boolean;
   name: IdentifierNode;
   genericParams: GenericParamNode[];
@@ -98,6 +108,7 @@ interface EnumDeclaration extends BaseNode {
 
 interface TraitDeclaration extends BaseNode {
   type: 'TraitDeclaration';
+  attributes: AttributeNode[];
   isPub: boolean;
   name: IdentifierNode;
   genericParams: GenericParamNode[];
@@ -114,6 +125,7 @@ interface TraitMethodNode extends BaseNode {
 
 interface ImplDeclaration extends BaseNode {
   type: 'ImplDeclaration';
+  attributes: AttributeNode[];
   genericParams: GenericParamNode[];
   traitName: IdentifierNode | null;
   targetType: TypeNode;
@@ -154,6 +166,10 @@ interface TestDeclaration extends BaseNode {
 }
 ```
 
+`TypeAlias`, `LetDeclaration`, `ConstDeclaration`, `TestDeclaration`, and
+`PubUseDeclaration` carry no `attributes` field: the grammar attaches the
+list to the five item forms only ([`grammar.md`](grammar.md)).
+
 - Visibility is written `pub` on every declaration that has it. There is no `export` keyword, so there is no `isExport` field and no export node ([`grammar.md`](grammar.md), [`modules/visibility.md`](modules/visibility.md)).
 - `impl` is never `pub` — it is never part of an interface — so `ImplDeclaration` carries no visibility flag at all.
 - `TestDeclaration.name` is the test's identity for tools, not a name in the value namespace, so any reference to it is `E0107`, and it carries no `isPub` flag: a test is never part of an interface ([`testing.md`](testing.md)).
@@ -172,7 +188,7 @@ interface DestructuringTargetNode extends BaseNode {
 
 ### Component declarations
 
-`ComponentDecl = StateDecl | StoreDecl | EffectDecl | EnvironmentDecl` is a closed set of four `@` forms, not a general attribute syntax: `grammar.md` admits no other `@` declaration, so the AST has four dedicated nodes rather than an `Attribute` wrapper carrying a name and arguments.
+`ComponentDecl = StateDecl | StoreDecl | EffectDecl | EnvironmentDecl` is a closed set of four `@` forms, not a general attribute syntax: `grammar.md` admits no other `@` declaration, so the AST has four dedicated nodes rather than an `Attribute` wrapper carrying a name and arguments. General declaration attributes are the `#` forms — the `AttributeNode` above — and they appear on no component declaration; neither marker enters the other's territory ([`types/traits.md`](types/traits.md)).
 
 ```typescript
 type ComponentDeclaration =

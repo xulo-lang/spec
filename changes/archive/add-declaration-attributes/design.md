@@ -14,7 +14,7 @@ is in [specs/](specs/); the motivation and the scope are in
 - **Pro:** each marker keeps the territory it already has. `@` introduced
   exactly four component forms — `@State`, `@Store`, `@Effect`,
   `@Environment` — governed by the `E07xx` family, and
-  [`../../ast.md`](../../ast.md) already records that set as closed rather
+  [`../../../ast.md`](../../../ast.md) already records that set as closed rather
   than a general attribute syntax. `#` was reserved with no meaning at all,
   so the split costs nothing and both families stay small and greppable:
   component state is `@`, declaration modifiers are `#`.
@@ -154,7 +154,7 @@ with `S()` for a struct with no fields, and with every `${…}` interpolated by
 the ordinary rules — a base type renders as itself, a type implementing
 `ToString` renders through its `to_string`. The rendering matches what the
 output table of
-[`../../builtins/intrinsic-functions.md`](../../builtins/intrinsic-functions.md)
+[`../../../builtins/intrinsic-functions.md`](../../../builtins/intrinsic-functions.md)
 already gives a map: `User(name: "Alice", age: 30)`.
 
 On an enum `E`, the generated body matches on `self` and renders each variant
@@ -171,7 +171,7 @@ enum Shape { Circle(Float), Rect(Float, Float) }
 
 Payload slots of a named payload are rendered positionally, construction and
 matching being positional throughout
-([`../../types/enums.md`](../../types/enums.md)).
+([`../../../types/enums.md`](../../../types/enums.md)).
 
 ### Checks the expansion implies
 
@@ -206,7 +206,7 @@ hand, remains the route for a generic type.
 ### What derive does not do
 
 - It does not affect `print`. The output table of
-  [`../../builtins/intrinsic-functions.md`](../../builtins/intrinsic-functions.md)
+  [`../../../builtins/intrinsic-functions.md`](../../../builtins/intrinsic-functions.md)
   renders base types, containers, and enum values, and does not consult
   `ToString` (whether `print` of a `ToString` type should is an adjacent gap
   this change does not close). The consumers of the derived impl are the ones
@@ -219,13 +219,13 @@ hand, remains the route for a generic type.
 **Decision.** The derive-target registry is closed in the same way the
 attribute registry is. Version one registers exactly one target, `ToString`,
 whose trait is built into the prelude
-([`../../types/traits.md`](../../types/traits.md)). `Display` and `Debug`
+([`../../../types/traits.md`](../../../types/traits.md)). `Display` and `Debug`
 are **reserved names in this registry**: written as targets they are `E0111`,
 and nothing else in the language is required to know them.
 
 The reservation records an intent without specifying anything: when std/fmt
 defines those traits — their definitions live outside this specification
-([`../../README.md`](../../README.md), § 1.1) and their consumers are
+([`../../../README.md`](../../../README.md), § 1.1) and their consumers are
 template format specifiers for `Display` and a debug-rendering entry point
 for `Debug` — a change registers them as targets, carrying whatever minimum
 signature surface the expansion needs. The constraint that change inherits is
@@ -304,11 +304,11 @@ The chapters named in [proposal.md](proposal.md), and what each gains:
 
 | Chapter | Change |
 |---------|--------|
-| [`../../lexical-structure.md`](../../lexical-structure.md) | `#` leaves the reserved-symbols table, joins the token inventory, and the conformance list of lexical errors loses its `#` clause; see [specs/lexical-structure.md](specs/lexical-structure.md) |
-| [`../../grammar.md`](../../grammar.md) | `#` in `SymbolOperator`, the `Attribute` productions, the attribute list on the five item forms, and the index; see [specs/grammar.md](specs/grammar.md) |
-| [`../../types/traits.md`](../../types/traits.md) | a new **Attributes** section — registry rule, `#Derive`, the expansion and its checks; see [specs/traits.md](specs/traits.md) |
-| [`../../ast.md`](../../ast.md) | `AttributeNode`, an `attributes` field on the five declaration nodes, and the component-family note; see [specs/ast.md](specs/ast.md) |
-| [`../../type-system/errors.md`](../../type-system/errors.md) | `E0108`–`E0112` in the names-and-declarations table, and a footnote reserving `Display` and `Debug`; see [specs/errors.md](specs/errors.md) |
+| [`../../../lexical-structure.md`](../../../lexical-structure.md) | `#` leaves the reserved-symbols table, joins the token inventory, and the conformance list of lexical errors loses its `#` clause; see [specs/lexical-structure.md](specs/lexical-structure.md) |
+| [`../../../grammar.md`](../../../grammar.md) | `#` in `SymbolOperator`, the `Attribute` productions, the attribute list on the five item forms, and the index; see [specs/grammar.md](specs/grammar.md) |
+| [`../../../types/traits.md`](../../../types/traits.md) | a new **Attributes** section — registry rule, `#Derive`, the expansion and its checks; see [specs/traits.md](specs/traits.md) |
+| [`../../../ast.md`](../../../ast.md) | `AttributeNode`, an `attributes` field on the five declaration nodes, and the component-family note; see [specs/ast.md](specs/ast.md) |
+| [`../../../type-system/errors.md`](../../../type-system/errors.md) | `E0108`–`E0112` in the names-and-declarations table, and a footnote reserving `Display` and `Debug`; see [specs/errors.md](specs/errors.md) |
 
 The change touches no part of `modules/`, `components/`, the type-checker
 chapters, or the expression layer: imports and visibility, component bodies
