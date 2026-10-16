@@ -206,10 +206,16 @@ let s = first(["a", "b"])       // T = String
   signature and precedes the body — `where T: Area`. The forms are
   equivalent; a parameter MUST NOT be bounded in both places. Multiple
   bounds on one parameter are joined with `+`.
-- **Call-site inference.** Type arguments are never written at a call site;
-  explicit type arguments such as `first<Int>(…)` are not part of the
-  language. Type arguments are inferred from the arguments and the expected
-  type, and every inferred argument MUST satisfy the parameter's bounds.
+- **Call-site type arguments.** A call MAY write the type arguments of a
+  generic function explicitly, in a list between the callee and the argument
+  list — `first<Int>(…)` — or it MAY write none; there is no partial form.
+  When the list is written it replaces inference for that call: its length
+  MUST equal the declared type-parameter count (`E0808`), every written
+  argument MUST satisfy its parameter's bounds (`E0801`), no expected type may
+  override a written argument, and a list before a callee that declares no
+  type parameters is `E0807`. When the list is omitted, type arguments are
+  inferred from the arguments and the expected type, and every inferred
+  argument MUST satisfy the parameter's bounds.
 - Inside a body bounded by `T: Trait`, values of type `T` expose the members
   the bound declares; `Trait.method(x)` and `x.method()` are both legal.
 

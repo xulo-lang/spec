@@ -21,7 +21,7 @@ diagnostics become. The prose that replaces the chapter text is in
 **The parse problem.** The sequence `IDENT < … > ( … )` has two readings. Read
 as an expression, `x = a < b > (c)` is `(a < b) > (c)` — and since the
 relational operators are non-associative, that reading does not parse in the
-grammar of [`../../expressions/operators.md`](../../expressions/operators.md)
+grammar of [`../../../expressions/operators.md`](../../../expressions/operators.md)
 for the same reason `a < b < c` does not. The type-argument reading,
 `a<b>(c)`, therefore takes no well-formed program away from that shape. The
 one shape in which both readings are well-formed puts a top-level comma inside
@@ -68,7 +68,7 @@ consequences of the token inventory:
   identifier, so it cannot be mistaken for the relational operator.
 - **Con:** overloads `::`, which is the variant path separator in expressions
   and in patterns alike
-  ([`../../types/enums.md`](../../types/enums.md)); allowing it after an
+  ([`../../../types/enums.md`](../../../types/enums.md)); allowing it after an
   ordinary value identifier would give a marker reserved for paths a second,
   unrelated meaning. Rejected.
 
@@ -95,7 +95,7 @@ rules, in order:
 
 1. **Arity.** `m` MUST equal `n`; a longer or shorter list is `E0808`. The
    code is free: the family `E0801`–`E0899` is the trait and generic range of
-   [`../../type-system/errors.md`](../../type-system/errors.md), which
+   [`../../../type-system/errors.md`](../../../type-system/errors.md), which
    assigns `E0801`–`E0806` and no higher code.
 2. **All or nothing.** Every type parameter is written or none is. A partial
    list is not a distinct form that leaves the rest to inference; it is the
@@ -207,7 +207,7 @@ diagnostic model:
   `= note: separate the closing brackets: first<Map<String, Int> >(m)`.
 
 Registration: on acceptance, `E0807` and `E0808` are added to the trait and
-generic errors table of [`../../type-system/errors.md`](../../type-system/errors.md),
+generic errors table of [`../../../type-system/errors.md`](../../../type-system/errors.md),
 whose range `E0801`–`E0899` already covers them.
 
 ## Alternatives rejected
@@ -227,11 +227,11 @@ The chapters named in [proposal.md](proposal.md), and what each gains:
 
 | Chapter | Change |
 |---------|--------|
-| [`../../types/generics.md`](../../types/generics.md) | the inference rules gain the optional written list; see [specs/generics.md](specs/generics.md) |
-| [`../../expressions/calls.md`](../../expressions/calls.md) | the generic-call paragraph: the written list and the rule that decides what `<` starts; see [specs/calls.md](specs/calls.md) |
-| [`../../type-system/checking-rules.md`](../../type-system/checking-rules.md) | a declaration rule for the written list, and the propagation step; see [specs/checking-rules.md](specs/checking-rules.md) |
-| [`../../functions.md`](../../functions.md) | the **Call-site inference** bullet becomes **Call-site type arguments**; see [specs/functions.md](specs/functions.md) |
-| [`../../types/README.md`](../../types/README.md) | the inference-at-a-glance bullet; see [specs/types-README.md](specs/types-README.md) |
+| [`../../../types/generics.md`](../../../types/generics.md) | the inference rules gain the optional written list; see [specs/generics.md](specs/generics.md) |
+| [`../../../expressions/calls.md`](../../../expressions/calls.md) | the generic-call paragraph: the written list and the rule that decides what `<` starts; see [specs/calls.md](specs/calls.md) |
+| [`../../../type-system/checking-rules.md`](../../../type-system/checking-rules.md) | a declaration rule for the written list, and the propagation step; see [specs/checking-rules.md](specs/checking-rules.md) |
+| [`../../../functions.md`](../../../functions.md) | the **Call-site inference** bullet becomes **Call-site type arguments**; see [specs/functions.md](specs/functions.md) |
+| [`../../../types/README.md`](../../../types/README.md) | the inference-at-a-glance bullet; see [specs/types-README.md](specs/types-README.md) |
 | `grammar.md` | `PostfixOperand`, `ComponentCall`, the `CallTypeArgs` rule, and the index; see [specs/grammar.md](specs/grammar.md) |
 
 The change touches no part of `modules/`, `components/`, or the async

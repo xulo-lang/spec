@@ -393,11 +393,12 @@ UnaryExpression      = PostfixExpression
                      | ( "!" | "-" | "~" | "await" | "move" | "copy" )
                        UnaryExpression ;
 PostfixExpression    = PrimaryExpression { PostfixOperand } ;
-PostfixOperand       = "(" [ ArgumentList ] ")"
+PostfixOperand       = [ CallTypeArgs ] "(" [ ArgumentList ] ")"
                      | "[" Expression "]"
                      | "." ( Identifier | IntegerLiteral )
                      | "?." ( Identifier | IntegerLiteral )
                      | "?" ;
+CallTypeArgs         = "<" [ TypeList ] ">" ;
 ```
 
 Relational, range, and type-test operators are non-associative: `a < b < c`,
@@ -412,6 +413,37 @@ whenever a complete ternary parses — it is the ternary operator of
 typing and failure rules are in [error-handling.md](error-handling.md). The
 postfix reading survives only when the ternary reading fails, so
 `c ? a : b` is never ambiguous with `f()?`.
+
+`CallTypeArgs` is recognized only in call position, and only when the
+expression before it ends in an identifier — a bare identifier or a member
+access — so that a callee reached through a subscript, a call, or a closing
+bracket takes no list. Whether a `<` after such a callee starts a
+`CallTypeArgs` is decided by two conditions:
+
+1. the material between that `<` and the matching `>` parses as a
+   comma-separated list of types — the empty material counts as a zero-length
+   list, so `f<>(…)` reaches the arity diagnostic instead of falling back to a
+   comparison; and
+2. the token immediately after the matching `>` is `(`.
+
+If either condition fails, the `<` is the relational operator and the
+expression is a comparison. The scan for the matching `>` counts angle depth
+and skips over `(` `)`, `[` `]`, and `{` `}` groups; it MUST NOT consult name
+resolution, and backtracking from the type-argument reading to the comparison
+reading is allowed whenever the call parse does not complete. Under the rule
+`x = a < b > (c)` reads as the call `a<b>(c)`, and an expression that means two
+comparisons is written `f((a < b), c > (d))`, where the material after `<` no
+longer parses as a type list.
+
+`TypeArgs`, the argument list of a named type, requires at least one element
+and is unchanged; `CallTypeArgs` is a separate production that admits the
+empty list, because a zero-length list at a call must reach the arity
+diagnostic rather than fall back to a comparison. `>>` and `>=` are single
+tokens and never match, so a nested type argument keeps the spacing the
+nested-bracket rule already requires: `first<Map<String, Int> >(m)` is
+well-formed and `first<Map<String, Int>>(m)` is not, the latter failing to
+parse with a note to insert the space. Typing and diagnostics are in
+[expressions/calls.md](expressions/calls.md).
 
 ```text
 PrimaryExpression = Literal | TemplateLiteral | Identifier | PathExpr
@@ -580,11 +612,11 @@ block holds child items, which are not statements
 ([view-syntax.md](components/view-syntax.md)). `ComponentCall` recognizes the
 forms that carry a block, since a trailing block attaches to the invocation and
 cannot be written any other way; an invocation written with an argument list
-and no block — `Text("Hi")` — is parsed as an ordinary call through
-`PostfixOperand`, and the two read the same.
+and no block — `Text("Hi")`, `first<Int>([1, 2, 3])` — is parsed as an
+ordinary call through `PostfixOperand`, and the two read the same.
 
 ```text
-ComponentCall  = Identifier "(" [ ArgumentList ] ")" ComponentBlock
+ComponentCall  = Identifier [ CallTypeArgs ] "(" [ ArgumentList ] ")" ComponentBlock
                | Identifier ComponentBlock ;
 ComponentBlock = "{" { ChildItem } "}" ;
 ChildItem      = Expression | ForStmt ;
@@ -648,7 +680,7 @@ production itself appears exactly once, in its own section.
 | `FnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl`, `TestDecl` | [Declarations](#declarations) |
 | `ComponentDecl`, `StateDecl`, `StoreDecl`, `EffectDecl`, `EnvironmentDecl` | [Declarations](#declarations) |
 | `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `LiteralType`, `TypeArgs`, `TypeList`, `TupleType`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
-| `Expression`, `AssignmentExpression`, `TernaryExpression`, `LogicalOrExpression`, `LogicalAndExpression`, `NullishExpression`, `EqualityExpression`, `IsExpression`, `RelationalExpression`, `RangeExpression`, `BitOrExpression`, `BitXorExpression`, `BitAndExpression`, `ShiftExpression`, `AdditiveExpression`, `MultiplicativeExpression`, `PowerExpression`, `UnaryExpression`, `PostfixExpression`, `PostfixOperand` | [Expressions](#expressions) |
+| `Expression`, `AssignmentExpression`, `TernaryExpression`, `LogicalOrExpression`, `LogicalAndExpression`, `NullishExpression`, `EqualityExpression`, `IsExpression`, `RelationalExpression`, `RangeExpression`, `BitOrExpression`, `BitXorExpression`, `BitAndExpression`, `ShiftExpression`, `AdditiveExpression`, `MultiplicativeExpression`, `PowerExpression`, `UnaryExpression`, `PostfixExpression`, `PostfixOperand`, `CallTypeArgs` | [Expressions](#expressions) |
 | `PrimaryExpression`, `PathExpr`, `PanicExpression`, `Place`, `ArgumentList`, `Argument`, `ListLiteral`, `ListElement`, `Spread`, `MapLiteral`, `TypedMap`, `BraceMap`, `MapEntry`, `MapField`, `TupleLiteral`, `ClosureExpression`, `FunctionExpression`, `ArrowClosure`, `ArrowParams`, `ClosureParamList`, `ClosureParam` | [Expressions](#expressions) |
 | `Pattern`, `PatternAlt`, `LiteralPattern`, `RangePattern`, `VariantPattern`, `StructPattern`, `TypePattern`, `PatternType`, `PatternList` | [Patterns](#patterns) |
 | `Statement`, `StatementEnd`, `ReturnStmt`, `BreakStmt`, `ContinueStmt`, `DeferStmt`, `Assignment`, `ExpressionStatement`, `Block` | [Statements](#statements) |

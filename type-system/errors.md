@@ -238,14 +238,11 @@ reported with the call codes `E0202`, `E0204`, `E0207`, and `E0208`.
 | `E0804` | an impl declares a method the trait does not declare | an extra `extra` in `impl Area for Rect` | `` `impl Area for Rect` declares `extra`, which `Area` does not `` | [checking-rules.md](checking-rules.md) |
 | `E0805` | two impls of one trait for one type in one module | a second `impl Area for Rect` | `` `Area` is already implemented for `Rect` `` | [checking-rules.md](checking-rules.md) |
 | `E0806` | a bound does not name a visible trait | `<T: Int>` | ``bound `Int` is not a trait`` | [generics.md](../types/generics.md) |
+| `E0807` | a type-argument list before a callee that declares no type parameters | `f<Int>(1)` where `f: fn(Int): Int` | `` `f` accepts no type arguments `` | [generics.md](../types/generics.md) |
+| `E0808` | a written type-argument list of the wrong length | `first<Int, String>([1])` for `fn first<T>(…)` | ``expected 1 type argument, found 2`` | [generics.md](../types/generics.md) |
 | `E0809` | a member call `value.method(…)` finds more than one trait method candidate in scope for the receiver's type | `r.grow()` with two traits in scope that both implement `grow` for `Rect` | ``multiple applicable implementations of `grow` for `Rect` `` | [traits.md](../types/traits.md) |
 | `E0810` | a `trait` declaration declares a type parameter list | `trait Convert<T> { fn convert(self): T }` | ``a trait may not declare type parameters`` | [traits.md](../types/traits.md) |
 | `E0811` | a bound applies type arguments to a trait | `<T: Convert<String>>` | ``bound `Convert<String>` applies type arguments; a trait has none`` | [generics.md](../types/generics.md) |
-
-`E0807` and `E0808` are reserved by the pending change
-[`add-explicit-type-arguments`](../changes/add-explicit-type-arguments/proposal.md).
-They are registered only if that change is accepted, so this family skips them
-until then and the numbering here is not contiguous.
 
 ## Warnings
 

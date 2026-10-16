@@ -97,7 +97,6 @@ never a version number or an implementation detail.
 | Change | Status | Summary |
 |--------|--------|---------|
 | [add-declaration-attributes/](add-declaration-attributes/proposal.md) | draft | `#Derive(ToString)` — declarations MAY carry `#Name` attributes from a closed, checker-interpreted registry. |
-| [add-explicit-type-arguments/](add-explicit-type-arguments/proposal.md) | draft | `first<int>(…)` — a call MAY write its type arguments instead of inferring them. |
 
 ## Archived
 
@@ -106,4 +105,5 @@ with their final status.
 
 | Change | Status | Summary |
 |--------|--------|---------|
+| [archive/add-explicit-type-arguments/](archive/add-explicit-type-arguments/proposal.md) | accepted | a call MAY write explicit type arguments — `first<Int>(…)` — which replace inference; `E0807`/`E0808` registered. |
 | [archive/change-module-system-to-trees/](archive/change-module-system-to-trees/proposal.md) | accepted | a package is a `mod`-declared tree; `::` paths, manifest package names (one per dependency), verbs `use`/`pub use` replace string specifiers. |

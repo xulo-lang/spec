@@ -1,6 +1,6 @@
 # Add Explicit Type Arguments
 
-**Status:** draft · **Date:** 2026-10-06 · **Affects:** `types/generics.md`,
+**Status:** accepted · **Date:** 2026-10-06 · **Affects:** `types/generics.md`,
 `types/README.md`, `functions.md`, `expressions/calls.md`,
 `type-system/checking-rules.md`, `grammar.md`
 
@@ -13,11 +13,11 @@ declaration for arity and bounds, and then used directly in place of solving.
 A call that omits the list is checked exactly as it is today.
 
 Until this change is accepted, the chapters named above remain normative and
-`first<Int>(…)` stays ill-formed: [`../../types/generics.md`](../../types/generics.md)
+`first<Int>(…)` stays ill-formed: [`../../../types/generics.md`](../../../types/generics.md)
 states that the language has no syntax for explicit type arguments in a call,
-[`../../expressions/calls.md`](../../expressions/calls.md) states that
-writing one is not well-formed, and [`../../functions.md`](../../functions.md)
-and [`../../types/README.md`](../../types/README.md) repeat the same rule.
+[`../../../expressions/calls.md`](../../../expressions/calls.md) states that
+writing one is not well-formed, and [`../../../functions.md`](../../../functions.md)
+and [`../../../types/README.md`](../../../types/README.md) repeat the same rule.
 The deltas in
 [`specs/generics.md`](specs/generics.md) are the text that replaces those
 passages once the change is accepted.
@@ -171,7 +171,7 @@ downstream diagnostics disappear with it.
       [specs/types-README.md](specs/types-README.md), and
       [specs/grammar.md](specs/grammar.md)
 - [ ] Registration of the two new diagnostic codes `E0807` and `E0808` in
-      [`../../type-system/errors.md`](../../type-system/errors.md), which
+      [`../../../type-system/errors.md`](../../../type-system/errors.md), which
       [design.md](design.md#diagnostics) makes part of acceptance — the codes
       are named by the deltas but belong to no main chapter until the change
       is folded in.

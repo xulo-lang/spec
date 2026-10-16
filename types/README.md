@@ -59,7 +59,7 @@ TypeList        = Type { "," Type } ;
 - A binding without an annotation takes the type of its initializer: `let x = 42` infers `Int`, `let s = "hi"` infers `String`, `let xs = [1, 2]` infers `List<Int>`.
 - Literals default by form: integer forms (including `0xff`, `0b1010`, `0o77`) default to `Int`, float forms to `Float` (see [`primitive-types.md`](primitive-types.md)).
 - Parameter types of a declared `fn` are never inferred; they MUST be annotated. The return type is declared or omitted, in which case it is `Unit`. A closure MAY omit annotations that the expected type or its body determines (see [`type-relations.md`](type-relations.md)).
-- Generic type arguments are inferred at each call site; the language has no explicit type arguments at call sites (see [`generics.md`](generics.md)).
+- Generic type arguments are inferred at each call site; a call MAY instead write them explicitly, in a list between the callee and the argument list — `first<Int>(…)`, `Map<String, Int>(…)` — which takes the place of inference for that call (see [`generics.md`](generics.md)).
 - An annotation supplies context outward: `let w: U32 = 800` checks `800` as `U32` and coerces it (see [`../type-system/coercion.md`](../type-system/coercion.md)).
 - The complete rules for checking, compatibility, and subtyping are in [`type-relations.md`](type-relations.md).
 
