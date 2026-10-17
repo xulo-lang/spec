@@ -96,6 +96,7 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
+| [add-test-title/](add-test-title/proposal.md) | draft | `#Test("parse test") fn …` — a test MAY carry a parenthesized string title; the identifier stays the identity, bare `#Test` stays canonical. |
 
 ## Archived
 
