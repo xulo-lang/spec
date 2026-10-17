@@ -275,6 +275,11 @@ trait names with an optional trailing comma.
 struct User { name: String, age: Int }
 ```
 
+An attribute on its own line, directly above the declaration it marks, is
+**RECOMMENDED**; a shared line — `#Derive(ToString) struct User { … }` — is
+equally well-formed, the grammar being newline-insensitive
+([lexical-structure.md](../lexical-structure.md)).
+
 - The attribute form is generic; the names the checker interprets form a
   **closed registry**. An attribute whose name is not in the registry is
   `E0108`. There are no inert attributes: every attribute written in source

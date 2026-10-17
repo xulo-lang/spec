@@ -44,6 +44,12 @@ async fn delayed_task_finishes() {
 }
 ```
 
+The examples write `#Test` on its own line directly above `fn`, and that
+placement is **RECOMMENDED**: the attribute marks the whole declaration and
+reads better apart from the signature. The grammar is newline-insensitive
+([lexical-structure.md](lexical-structure.md)), so `#Test fn name() { … }` on
+one line is equally well-formed.
+
 ## Checking
 
 - The body is checked exactly as a function body is checked: every rule that
