@@ -35,18 +35,18 @@ TestDecl = "#Test" [ "(" [ StringLiteral ] ")" ] [ "async" ] "fn"
 
 ```xulo
 #Test("parse test")
-fn test_parse() {
-  assert(parse_ok(), "parses")
+fn testParse() {
+  assert(parseOk(), "parses")
 }
 
 #Test
-fn map_get_answers_null() {
+fn mapGetAnswersNull() {
   let m = { a: 1 }
   assert(map_get(m, "z") == null, "absent key is null")
 }
 
 #Test()
-async fn delayed_task_finishes() {
+async fn delayedTaskFinishes() {
   await Time::sleep(1)
 }
 ```

@@ -10,17 +10,17 @@ between the attribute and the signature — `#Test("parse test")`:
 
 ```xulo
 #Test("parse test")
-fn test_parse() {
-  assert(parse_ok(), "parses")
+fn testParse() {
+  assert(parseOk(), "parses")
 }
 
 #Test
-fn map_get_answers_null() {
+fn mapGetAnswersNull() {
   assert(true, "runs only under a tool")
 }
 
 #Test()
-async fn delayed_task_finishes() {
+async fn delayedTaskFinishes() {
   await Time::sleep(1)
 }
 ```
@@ -43,7 +43,7 @@ gain once the change is accepted.
 
 Function identifiers follow the casing conventions of
 [`../../names.md`](../../names.md) — snake_case, no spaces, no punctuation.
-"parse test" cannot be an identifier, and `test_parse` is a different thing:
+"parse test" cannot be an identifier, and `testParse` is a different thing:
 the machine name a tool keys on, not the phrase a human reads in a report.
 The title separates the two, exactly as `test('parse test', …)` does in Jest
 and `test('name', …)` in Dart.
