@@ -96,6 +96,7 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
+| [align-intrinsic-casing/](align-intrinsic-casing/proposal.md) | draft | Rename the multi-word prelude intrinsics and `to_string` to lowerCamelCase (`mapGet`, `setInsert`, `listRemove`, `toString`), matching names.md. |
 | [add-test-title/](add-test-title/proposal.md) | draft | `#Test("parse test") fn …` — a test MAY carry a parenthesized string title; the identifier stays the identity, bare `#Test` stays canonical. |
 
 ## Archived
