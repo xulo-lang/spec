@@ -17,7 +17,7 @@ A component is declared with `fn` like any other function; the declared return
 type `View` is the only thing that makes it a component.
 
 ```xulo
-fn Greeting(name: String): View {
+fn Greeting(name: string): View {
   Text(`Hello, ${name}`)
 }
 ```
@@ -60,7 +60,7 @@ Name { children }       // invocation with children, no arguments
 ```
 
 The items of a block are component invocations, `if` and `for` control flow,
-bare strings (text nodes), and expressions of type `View`, `String`, or
+bare strings (text nodes), and expressions of type `View`, `string`, or
 `List<View>` — anything else in a block is a compile-time error (`E0702`). Arguments in
 `( )` configure the component; children in `{ }` are the `View`s it embeds.
 Blocks, nesting, flattening, and expression children are specified in
@@ -72,7 +72,7 @@ Four declarations are specific to component bodies:
 
 ```xulo
 fn Counter(): View {
-  @State let count: Int = 0
+  @State let count: int = 0
   @Effect fn() { print("mounted") }
 
   VStack {

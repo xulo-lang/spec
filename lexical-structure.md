@@ -53,7 +53,7 @@ Digit      ::= '0' .. '9'
 
 ## Keywords
 
-The language has exactly the following closed set of 41 keywords; every other
+The language has exactly the following closed set of 58 keywords; every other
 word is an ordinary identifier unless it is reserved below. No keyword MAY be
 used as one.
 
@@ -92,14 +92,31 @@ used as one.
 | | `shared` | Declares state that may be shared between tasks |
 | | `spawn` | Starts a task, thread, process, or pooled job |
 | Literals and operators | `and` | Logical conjunction (word operator) |
-| | `false` | The `Boolean` literal for falsity |
+| | `false` | The `bool` literal for falsity |
 | | `is` | Type test (word operator) |
 | | `not` | Negated type test (word operator) |
-| | `null` | The null literal; an optional with no content |
 | | `or` | Logical disjunction (word operator) |
-| | `true` | The `Boolean` literal for truth |
+| | `true` | The `bool` literal for truth |
 | Ownership | `copy` | Evaluates an expression and deep-copies the result |
 | | `move` | Transfers ownership of a value out of its binding |
+| Primitive types | `bool` | The two-valued boolean type |
+| | `string` | The immutable UTF-8 text type |
+| | `number` | The numeric union type `int \| float` |
+| | `int` | 64-bit signed integer type |
+| | `float` | 64-bit IEEE-754 binary64 type |
+| | `i8` | 8-bit signed integer type |
+| | `i16` | 16-bit signed integer type |
+| | `i32` | 32-bit signed integer type |
+| | `i64` | 64-bit signed integer type |
+| | `u8` | 8-bit unsigned integer type |
+| | `u16` | 16-bit unsigned integer type |
+| | `u32` | 32-bit unsigned integer type |
+| | `u64` | 64-bit unsigned integer type |
+| | `f32` | 32-bit IEEE-754 binary32 type |
+| | `f64` | 64-bit IEEE-754 binary64 type |
+| | `null` | The null literal; the type of `null` |
+| | `unit` | The unit type |
+| | `unknown` | The top type |
 
 `from` and `import` are no longer keywords: with string specifiers and the
 side-effect form gone, no import mechanism remains to spell. Neither is

@@ -13,32 +13,44 @@ this specification ([README §1.1](README.md)).
 The form is `TestDecl` in the grammar ([grammar.md](grammar.md)):
 
 ```text
-TestDecl = "#Test" [ "async" ] "fn" Identifier "(" ")" Block ;
+TestDecl = "#Test" [ "(" [ StringLiteral ] ")" ] [ "async" ] "fn"
+           Identifier "(" ")" Block ;
 ```
 
 - A `#Test` function appears at file scope, among a module's top-level
   declarations ([modules/source-files.md](modules/source-files.md)); it is
   not a statement and appears nowhere else.
 - It carries no `pub`, no parameters, no return type, no generic parameters,
-  and no `where` clause: the body is an implicit `fn(): Unit`, and the
+  and no `where` clause: the body is an implicit `fn(): unit`, and the
   declaration is never part of an interface
   ([modules/visibility.md](modules/visibility.md)).
 - The identifier is the test's identity as a tool reports it. It need not be
   unique across a module — two tests MAY share a name, and a tool tells them
-  apart by their positions — but it is never a name in the value namespace
-  ([The name](#the-name) below).
+  apart by their positions or their titles — but it is never a name in the
+  value namespace ([The name](#the-name) below).
+- An optional parenthesized string between the attribute and the signature —
+  `#Test("parse test")` — is the test's **title**: metadata the declaration
+  carries for a tool's reporting. It is not a name in any namespace, it
+  binds nothing, and it need not be unique. An empty group `#Test()` and the
+  bare form both mean no title; the bare form is **RECOMMENDED** when no
+  title is wanted.
 - The optional `async` marker says the body suspends; it is spelled exactly
-  as `async` is spelled on a function, and it follows the attribute
-  (`#Test async fn`, never `async #Test fn`).
+  as `async` is spelled on a function, and it follows the attribute and its
+  optional title group (`#Test("…") async fn`, never `async #Test fn`).
 
 ```xulo
-#Test
-fn mapGetAnswersNull() {
-  let m = { a: 1 }
-  assert(map_get(m, "z") == null, "absent key is null")
+#Test("parse test")
+fn testParse() {
+  assert(parseOk(), "parses")
 }
 
 #Test
+fn mapGetAnswersNull() {
+  let m = { a: 1 }
+  assert(mapGet(m, "z") == null, "absent key is null")
+}
+
+#Test()
 async fn delayedTaskFinishes() {
   await Time::sleep(1)
 }
@@ -53,13 +65,13 @@ one line is equally well-formed.
 ## Checking
 
 - The body is checked exactly as a function body is checked: every rule that
-  applies to the body of `fn(): Unit` applies unchanged — types,
+  applies to the body of `fn(): unit` applies unchanged — types,
   exhaustiveness, mutability, the statement-value rule, and the diagnostics
   they carry. The body is checked whether or not any tool ever runs it, so a
   file whose tests do not check is rejected like any other file.
-- The body is the body of an implicit nullary function returning `Unit`: it
+- The body is the body of an implicit nullary function returning `unit`: it
   declares no return type, `return` alone is accepted, and `return e` checks
-  `e` against `Unit`.
+  `e` against `unit`.
 - The body sees the module exactly as a function body does: the file's
   `use` bindings and its module-level declarations, under the same scope and
   forward-reference rules
@@ -74,6 +86,9 @@ A `#Test` function's identifier is declared but binds no value:
   ([type-system/errors.md](type-system/errors.md)). This includes a
   self-reference inside the test's own body: a recursive check is written as
   an ordinary helper function, which the test calls.
+- The title, when written, is not a name either — it lives in metadata
+  position and cannot be referenced; every rule above is about the
+  identifier.
 - The declaration is still well-formed without any reference: the name
   exists for the tool's discovery and reporting, and for nothing else.
 - The restriction is the declaration's inertness in one rule — no execution
@@ -86,7 +101,7 @@ A `#Test` function's identifier is declared but binds no value:
   it is a compile-time error (`E0501`)
   ([type-system/errors.md](type-system/errors.md)).
 - With the marker, the body is an `async` context exactly as the body of
-  `async fn(): Unit` is: `await` is legal, and when a tool runs the test the
+  `async fn(): unit` is: `await` is legal, and when a tool runs the test the
   body starts as its own task.
 
 ## Running

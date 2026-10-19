@@ -13,7 +13,7 @@ resulting tree are specified in [`layout.md`](layout.md).
 the render tree.
 
 ```xulo
-fn Greeting(name: String): View {
+fn Greeting(name: string): View {
   Text(`Hello, ${name}`)
 }
 ```
@@ -40,7 +40,7 @@ A component is declared with `fn`, a parameter list, and the return type
 
 ```xulo
 fn Counter(): View {
-  @State let count: Int = 0
+  @State let count: int = 0
 
   VStack(spacing: 8) {
     Text(`count = ${count}`)
@@ -79,7 +79,7 @@ The signature of `main` decides how a program runs:
   ([`../modules/source-files.md`](../modules/source-files.md),
   [`layout.md`](layout.md)).
 - A plain `fn main()`, whose declared return type is omitted and is therefore
-  `Unit`, runs **headlessly**: the body is executed, and nothing is laid out or
+  `unit`, runs **headlessly**: the body is executed, and nothing is laid out or
   painted. A program that is never rendered still declares components, and they
   still construct `View` values — those values are simply never measured.
 
@@ -155,7 +155,7 @@ A component block may contain:
 | Item | Form | Contributes |
 |------|------|-------------|
 | Component invocation | `Name(args) { … }` | one child |
-| String | `"…"`, `'…'`, `` `…` `` | a text node |
+| string | `"…"`, `'…'`, `` `…` `` | a text node |
 | `if` / `else` | `if cond { … } else { … }` | the children of the selected branch |
 | `for` | `for x in xs { … }` | one child per element |
 | Expression of type `View` | `makeRow(item)` | one child |
@@ -164,7 +164,7 @@ A component block may contain:
 Anything else in a component block is a compile-time error (`E0702`)
 ([`../type-system/errors.md`](../type-system/errors.md)). In particular, a
 binding declaration, an assignment, a `return`, or an expression of any other
-type — `Int`, `Boolean`, `List<Int>`, `Map<K, V>` — MUST NOT appear as a child
+type — `int`, `bool`, `List<int>`, `Map<K, V>` — MUST NOT appear as a child
 item.
 
 Component-block items are child items, not expression statements: they
@@ -178,10 +178,10 @@ each item attach to that item alone.
 
 ## Expression children
 
-An expression written as a child item MUST have type `String`, `View`, or
+An expression written as a child item MUST have type `string`, `View`, or
 `List<View>`; no other type is admissible.
 
-- A `String` child becomes a text node. A template literal is interpolated
+- A `string` child becomes a text node. A template literal is interpolated
   before it becomes a text node, so `` VStack { `total: ${n}` } `` contributes
   one text node containing the rendered total (templates are specified in
   [`../expressions/literals.md`](../expressions/literals.md)).
@@ -205,7 +205,7 @@ An expression written as a child item MUST have type `String`, `View`, or
   [`../type-system/checking-rules.md`](../type-system/checking-rules.md)).
 
 ```xulo
-fn Row(label: String, value: Int): View {
+fn Row(label: string, value: int): View {
   HStack {
     Text(label)
     Text(str(value))
@@ -214,7 +214,7 @@ fn Row(label: String, value: Int): View {
 
 fn Summary(rows: List<View>, heading: View): View {
   VStack(spacing: 4) {
-    "Summary"                      // String: a text node
+    "Summary"                      // string: a text node
     heading                        // View: an expression child
     rows                           // List<View>: flattened in place
     Row(label: "Total", value: 42) // component invocation: one child
@@ -230,7 +230,7 @@ They are the same constructs that shape ordinary computation
 are evaluated when the component's body runs.
 
 ```xulo
-fn Banner(loggedIn: Boolean): View {
+fn Banner(loggedIn: bool): View {
   VStack {
     if loggedIn {
       Text("Welcome back!")
@@ -246,7 +246,7 @@ fn Banner(loggedIn: Boolean): View {
 ```
 
 - An `if` in a block selects between child sets: the condition MUST have type
-  `Boolean`, exactly one branch is evaluated, and the items of that branch's
+  `bool`, exactly one branch is evaluated, and the items of that branch's
   block are contributed in place of the `if`. An `if` without an `else`
   contributes its children when the condition is `true` and **no** children
   when it is `false`.
@@ -298,7 +298,7 @@ The table summarizes the compile-time errors defined by this chapter.
 
 | Construct | Condition | Result |
 |-----------|-----------|--------|
-| Child item | Type other than `String`, `View`, or `List<View>` | error |
+| Child item | Type other than `string`, `View`, or `List<View>` | error |
 | Child item | Binding, assignment, or `return` written in a block | error |
 | Component block | Written after a call to a function that does not declare `View` | error |
 | `@State` / `@Store` / `@Effect` / `@Environment` | Written outside the top level of a component body | error |
@@ -310,7 +310,7 @@ The table summarizes the compile-time errors defined by this chapter.
 | Component invocation | Callee not declared, or not visible at the call site | error |
 | `await` | Written in a component body or an `@Effect` body | error |
 | Expression child | Optional value (`View?`) used without narrowing to `View` | error |
-| `if` in a block | Condition not of type `Boolean` | error |
+| `if` in a block | Condition not of type `bool` | error |
 | `for` in a block | Iterable not of a supported iterable type | error |
 
 Errors of this kind are reported as ordinary compile-time diagnostics; the

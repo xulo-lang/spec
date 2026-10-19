@@ -32,7 +32,7 @@ The following forms, and only these, MAY appear at file scope:
 | Module declaration | `mod form;`, `mod tests { … }` | Claims a file, or nests a module in this one; `pub mod` exports the namespace |
 | Use | `use form::validate;` | Binds names of a path in this file's scope |
 | Re-export | `pub use ui::HStack;` | Binds a path and adds it to the module's interface |
-| Function | `fn f(x: Int): Int` | A function whose return type is `View` is a component |
+| Function | `fn f(x: int): int` | A function whose return type is `View` is a component |
 | Struct | `struct User { … }` | Introduces a nominal type |
 | Enum | `enum Theme { … }` | Introduces a nominal type and its variants |
 | Trait | `trait Area { … }` | Signature-only capability declaration |
@@ -65,9 +65,9 @@ use ui::{HStack, Button};
 use type ui::User;
 pub use ui::hstack::HStack;
 
-pub struct Account { owner: User, balance: Int }
+pub struct Account { owner: User, balance: int }
 
-pub fn deposit(a: Account, amount: Int): Int { a.balance }
+pub fn deposit(a: Account, amount: int): int { a.balance }
 ```
 
 ## Declaration order and forward references
@@ -85,19 +85,19 @@ Declarations fall into two classes with different ordering rules:
 
 ```xulo
 // forward references: fine, whichever order these appear in
-fn area(r: Rectangle): Float { r.w * r.h }
+fn area(r: Rectangle): float { r.w * r.h }
 
-struct Rectangle { w: Float, h: Float }
+struct Rectangle { w: float, h: float }
 
-fn describe(r: Rectangle): String {
+fn describe(r: Rectangle): string {
   `${name()} rectangle`
 }
 
-fn name(): String { "large" }
+fn name(): string { "large" }
 ```
 
 ```xulo
-fn total(): Int { running + 1 }   // error: `running` used before its declaration
+fn total(): int { running + 1 }   // error: `running` used before its declaration
 let running = 0
 ```
 
@@ -115,18 +115,18 @@ library module and declares no entry point.
 Allowed signatures:
 
 ```xulo
-fn main() { … }            // ordinary program: returns Unit
+fn main() { … }            // ordinary program: returns unit
 fn main(): View { … }       // renderable program: returns View
-async fn main() { … }       // asynchronous program: returns Task<Unit>
+async fn main() { … }       // asynchronous program: returns Task<unit>
 ```
 
 - `main` MUST take no parameters and MUST be declared at the root module's
   file scope.
-- Its declared return type MUST be omitted (which means `Unit`) or MUST be
+- Its declared return type MUST be omitted (which means `unit`) or MUST be
   `View`; the two signatures are the headless and the renderable program of
   [`../components/view-syntax.md`](../components/view-syntax.md).
 - `main` MAY be declared `async`, in which case its declared return type
-  denotes `Task<Unit>` or `Task<View>` as usual
+  denotes `Task<unit>` or `Task<View>` as usual
   ([`../expressions/async-expressions.md`](../expressions/async-expressions.md)).
 - `main` MAY be marked `pub`.
 - A program whose root module declares no `main` is `E0608`, and a `main`
@@ -150,8 +150,8 @@ bindings (`let`, `let mut`, `const`), parameters, loop variables, `match`
 arm bindings, and any **nested `fn`**:
 
 ```xulo
-fn outer(n: Int): Int {
-  fn double(v: Int): Int { v * 2 }   // nested function: a local declaration
+fn outer(n: int): int {
+  fn double(v: int): int { v * 2 }   // nested function: a local declaration
   double(n) + double(n)
 }
 ```

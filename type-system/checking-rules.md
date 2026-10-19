@@ -45,19 +45,19 @@ Each literal has a default type, which an expected type may adapt exactly as
 
 | Literal | Default type | Checked against an expected type `T` |
 |---------|--------------|--------------------------------------|
-| `42`, `0xff`, `0b1010`, `0o77` | `Int` | adapts to a numeric `T` containing the value; otherwise `E0209` |
-| `3.14` | `Float` | adapts to `Float`, `F32`, `F64`, or `Number` when in range |
-| `"ok"`, `'ok'` | `String` | takes the matching member when `T` is a union of string-literal types |
-| `` `…${e}…` `` | `String` | always `String`; each `e` must be a base type or `ToString` (`E0212`) |
-| `true`, `false` | `Boolean` | checks only if `Boolean ≼ T` |
-| `null` | `Null` | checks only against an optional `T?` or `Unknown` |
+| `42`, `0xff`, `0b1010`, `0o77` | `int` | adapts to a numeric `T` containing the value; otherwise `E0209` |
+| `3.14` | `float` | adapts to `float`, `f32`, `f64`, or `number` when in range |
+| `"ok"`, `'ok'` | `string` | takes the matching member when `T` is a union of string-literal types |
+| `` `…${e}…` `` | `string` | always `string`; each `e` must be a base type or `ToString` (`E0212`) |
+| `true`, `false` | `bool` | checks only if `bool ≼ T` |
+| `null` | `null` | checks only against an optional `T?` or `unknown` |
 | `[e₁, …]` | `List<C>`, `C` the join of the element types | each element checks against the expected element type |
 | `[]`, `{}` | none | requires an expected type or an annotation; else `E0216` |
-| `{ k: v, … }` | `Map<String, C>`, `C` the join of the value types | every value checks against the expected value type, and the expected key type must admit `String` (`E0201`) |
+| `{ k: v, … }` | `Map<string, C>`, `C` the join of the value types | every value checks against the expected value type, and the expected key type must admit `string` (`E0201`) |
 | `(e₁, …)` | `(T₁, …, Tₙ)` with `Tᵢ` the element types | with an expected `(U₁, …, Uₙ)` each `eᵢ` checks against `Uᵢ` and the arities must match (`E0201`) |
 
 A negative number is not part of a literal — it is unary `-` applied to one.
-No literal has type `Unknown`: `Unknown` is written, never inferred.
+No literal has type `unknown`: `unknown` is written, never inferred.
 
 The typed map literal `Map<K, V>{ … }` supplies its own type, so where an
 expected type `Map<K, V>` is in scope — after alias expansion — and every key
@@ -76,8 +76,8 @@ annotation.
   `E0101`.
 - `Γ ⊢ e.m : U` when `e : T` and `T` (after alias expansion) declares member
   `m` of type `U`; unknown member → `E0102`, a non-`pub` member examined
-  outside its module → `E0602`. When `e : Map<String, V>`, `e.m` reads the
-  entry `e["m"]` with `U = V`; on `e : Unknown` there is no member at all, so
+  outside its module → `E0602`. When `e : Map<string, V>`, `e.m` reads the
+  entry `e["m"]` with `U = V`; on `e : unknown` there is no member at all, so
   `e.m` is `E0102`. Method resolution is inherent `impl` methods
   first, then trait methods in scope, with explicit `Trait.method(recv)` always
   available; a method used without a call has its function type
@@ -96,8 +96,8 @@ payload is a constructor whose call must supply exactly the declared payload
 arguments (`E0202`, `E0207`, `E0208`). `::` is used only for variants, in
 expressions and patterns alike.
 
-For `a[i]`: `a : List<T>` requires `i : Int` and yields `T`;
-`a : Map<K, V>` requires `i : K` and yields `V`; any other type — `String`
+For `a[i]`: `a : List<T>` requires `i : int` and yields `T`;
+`a : Map<K, V>` requires `i : K` and yields `V`; any other type — `string`
 included — is `E0215`. The read adds no optional: an out-of-range index or
 absent key is a runtime error. As an assignment target the subscript is a
 place, so its base must be mutable and its value assignable to the element type.
@@ -107,7 +107,7 @@ place, so its base must be mutable and its value assignable to the element type.
 - The callee must have a function or component type; anything else is `E0204`.
   Positional arguments come first; once a named argument appears all following
   arguments MUST be named and named arguments MAY be reordered.
-  Unknown or duplicate label, or a positional argument after a named one, is
+  An unknown or duplicate label, or a positional argument after a named one, is
   `E0208`. Every required parameter receives exactly one argument: missing,
   excess, or skipped-but-not-defaulted parameters are `E0207`; defaults are
   evaluated where omitted, and an omitted `T?` parameter binds `null`.
@@ -126,28 +126,28 @@ Operand and result types, in summary; precedence and associativity are in
 | Operators | Operands | Result |
 |-----------|----------|--------|
 | `+ - * / % **`, unary `-` | numeric, per the promotion table of [`../types/primitive-types.md`](../types/primitive-types.md) | the promoted type; constant division or remainder by zero is `E0210` |
-| `+` | `String` with `String`; `List` with `List` of a common element type | `String`; that element type |
+| `+` | `string` with `string`; `List` with `List` of a common element type | `string`; that element type |
 | `& \| ^ ~ << >>` | integers of one and the same type (shift amount a non-negative integer) | that type |
-| `< > <= >=` | both numeric (same promotion) or both `String` | `Boolean` |
-| `== !=` | a common type (below) | `Boolean` |
-| `is`, `is not` | an expression of type `S`; a testable type `T` with `T ≼ S` (`E0222`) | `Boolean` |
-| `and`, `or`, unary `!` | `Boolean` | `Boolean` |
+| `< > <= >=` | both numeric (same promotion) or both `string` | `bool` |
+| `== !=` | a common type (below) | `bool` |
+| `is`, `is not` | an expression of type `S`; a testable type `T` with `T ≼ S` (`E0222`) | `bool` |
+| `and`, `or`, unary `!` | `bool` | `bool` |
 | `..< ...` | one identical numeric type on both sides | `Range<T>` |
-| `=` | a mutable place and a value assignable to it | `Unit` |
-| `?:` | `Boolean` condition; branches with a common type | that common type |
+| `=` | a mutable place and a value assignable to it | `unit` |
+| `?:` | `bool` condition; branches with a common type | that common type |
 | `??` | left `T?`; right `T` or `U` | `T`, or `T \| U` |
 | `?` | `T?` or `Result<T, E>`, in a function with a declared return type that admits the failure value (`E0217` otherwise) | the success type `T` |
 | `await` | `Task<T>`, inside an `async` body | `T` |
 
-Mixing distinct fixed-bit types, or a fixed-bit type with `Int`, `Float`, or
-`Number`, is `E0201` unless one side is a literal that adapts; `Int + Float`
-promotes to `Float` in arithmetic only, never in assignment.
+Mixing distinct fixed-bit types, or a fixed-bit type with `int`, `float`, or
+`number`, is `E0201` unless one side is a literal that adapts; `int + float`
+promotes to `float` in arithmetic only, never in assignment.
 
-An `Unknown` operand is accepted only by `==` and `!=` (their common type is
-then `Unknown`), by the type test `is`, and as a `match` scrutinee: every
+An `unknown` operand is accepted only by `==` and `!=` (their common type is
+then `unknown`), by the type test `is`, and as a `match` scrutinee: every
 other operator requires the operand types its row declares, so applying one
-to `Unknown` is `E0201`, and
-member access — written `.` or `?.` — on `Unknown` is `E0102`.
+to `unknown` is `E0201`, and
+member access — written `.` or `?.` — on `unknown` is `E0102`.
 
 If `a : T?` and `T` has a member of type `U`, then `a?.b : U?`,
 step by step through a chain; when `a` is `null` the chain yields `null`
@@ -162,35 +162,35 @@ chosen by the first applicable rule:
 1. if all `Tᵢ` are equal, `C` is that type;
 2. if one `Tᵢ` is assignable to every other, `C` is that `Tᵢ`;
 3. if one operand is `null` and the others share a type `T`, `C` is `T?`;
-4. if every `Tᵢ` is one of `Int`, `Float`, `Number`, `C` is `Number`;
+4. if every `Tᵢ` is one of `int`, `float`, `number`, `C` is `number`;
 5. if the context supplies an expected type `E` and every `Tᵢ ≼ E`, `C` is `E`;
 6. otherwise the operands have **no common type** and the position is `E0211`.
 
-The checker never forms a fresh union: `Int` and `String` have no common type
-unless the expected type already is `Int | String`. The exception is the list
+The checker never forms a fresh union: `int` and `string` have no common type
+unless the expected type already is `int | string`. The exception is the list
 literal ([`../types/composite-types.md`](../types/composite-types.md)).
 
 ### `if`, `match`, `for`, and `?:`
 
 - The condition of `if`, of `?:`, and of a `match` arm's guard must be
-  `Boolean` (`E0201`); there is no truthiness. With an `else` branch both
+  `bool` (`E0201`); there is no truthiness. With an `else` branch both
   branches check against their common type, which is the type of the `if`;
-  without `else` the type is `Unit`.
+  without `else` the type is `unit`.
 - When the condition of an `if` is `x is T` or `x is not T`, with `x` an
   identifier of type `S` in `Γ`, `T` a testable type, and `T ≼ S` (`E0222`
   otherwise), each branch checks in `Γ` extended with a narrowed type for
   `x`: with `x is T` the then branch gets `x : T` and the else branch gets
   `x` at the union of the members of `S` that `T` does not cover —
-  `Unknown` for `S = Unknown`, `Int` for `S = String | Int` with
-  `T = String`, `Null` for `S = String?` with `T = String`. When every member
+  `unknown` for `S = unknown`, `int` for `S = string | int` with
+  `T = string`, `null` for `S = string?` with `T = string`. When every member
   is covered — `S = T` — the else branch never runs; `is not` swaps the two
   branch types. An assignment to `x` inside a branch drops the extension from
-  that point on. In every other `Boolean` position — `?:`, `while`, a `match`
+  that point on. In every other `bool` position — `?:`, `while`, a `match`
   guard, the operands of `and` and `or`, under `!` — `is` is an ordinary test
   with no extension
   ([`../expressions/control-flow.md`](../expressions/control-flow.md)).
 - `match` checks its scrutinee `e : T`, each pattern against `T`
-  ([Pattern typing](#pattern-typing)), each guard as a `Boolean` expression
+  ([Pattern typing](#pattern-typing)), each guard as a `bool` expression
   in `Γ` extended with that arm's pattern bindings (`E0201`), then the arm
   bodies: in expression
   position all arm bodies must have a common type (`E0211`); in statement
@@ -199,7 +199,7 @@ literal ([`../types/composite-types.md`](../types/composite-types.md)).
 - The iterable of a `for` must be `List<T>`, `Map<K, V>` (iterating keys),
   `Set<T>`, or `Range<T>` — anything else is `E0213`. The loop
   variable is a fresh immutable binding of the element type, added to `Γ` for
-  the body; the loop itself has type `Unit`.
+  the body; the loop itself has type `unit`.
 
 ### Closures, `await`, templates, spread
 
@@ -217,10 +217,10 @@ literal ([`../types/composite-types.md`](../types/composite-types.md)).
 - The identifier of a `#Test` function binds no value; any reference to it —
   a call, a value use, or a path — is `E0107`
   ([`../testing.md`](../testing.md)).
-- Every `${e}` in a template requires `e : Int | Float | Boolean | String` or a
+- Every `${e}` in a template requires `e : int | float | bool | string` or a
   type implementing the built-in `ToString` trait; anything else is `E0212`
   ([`../expressions/literals.md`](../expressions/literals.md)). A template
-  literal always has type `String`.
+  literal always has type `string`.
 - Prefix `...e` is well-formed only as a list-literal element (`e` a `List`) or
   a map-literal entry (`e` a `Map`); a wrong operand type is `E0201`, and
   elsewhere `...` is not part of the expression grammar.
@@ -257,12 +257,12 @@ Exhaustiveness: an arm **covers** a type when it is a wildcard, a binding, or
 a type pattern of that exact type; the alternatives of an or-pattern cover
 together, and a guarded arm never covers. A `match` MUST be exhaustive for the
 scrutinee's type: an `enum` — every variant, by a variant pattern possibly
-nested, or a covering arm; `Boolean` — `true` and `false`, or a covering arm;
+nested, or a covering arm; `bool` — `true` and `false`, or a covering arm;
 a union — every member, by a type pattern of it, by its literal pattern when
 the member is a literal type, by `true` and `false` when the member is
-`Boolean`, or by a covering arm, plus a covering arm whenever a member is not
+`bool`, or by a covering arm, plus a covering arm whenever a member is not
 testable; any other type — a covering arm, because literals, ranges, and type
-patterns cannot cover it (`Unknown` included: concrete type patterns never
+patterns cannot cover it (`unknown` included: concrete type patterns never
 exhaust it). Failure is `E0301`; an arm that can never be selected is
 `E0302`; a pattern that names a type that is not testable, or whose type is
 not assignable to the scrutinee's type, is `E0303`; or-pattern alternatives
@@ -287,7 +287,7 @@ that disagree on what they bind are `E0304`.
   [`../statements/let-and-assignment.md`](../statements/let-and-assignment.md).
 - **The statement-value rule.**
 
-  > An expression statement that is not `Unit` is an error, EXCEPT when it is a
+  > An expression statement that is not `unit` is an error, EXCEPT when it is a
   > control-flow construct (`if`, `match`, `for`, `while`) whose value is
   > discarded, or a `send` whose `Task<R>` is discarded.
 
@@ -295,7 +295,7 @@ that disagree on what they bind are `E0304`.
   unrelated types; expression position requires a common type. A violation is
   `E0218` ([`errors.md`](errors.md)).
 - **`return`.** Inside a function with declared return type `R`, `return e`
-  checks `e ⇐ R` (`E0203`), and a bare `return` requires `R` to be `Unit`. In
+  checks `e ⇐ R` (`E0203`), and a bare `return` requires `R` to be `unit`. In
   an `async` body `e ⇐ T`, the declared type denoting `Task<T>` (`E0503`).
   `return` outside any function, and `break`/`continue` outside a loop, are
   `E0214`; the latter two take no operand.
@@ -307,8 +307,8 @@ that disagree on what they bind are `E0304`.
   success type, and — on failure — performs the enclosing function's early
   return, which needs a declared return type admitting `null` or that
   `Result<T, E>`; any other operand, context, or mismatch is `E0217`.
-  `panic(m)` checks `m ⇐ String` (`E0201` otherwise) and may be given any type
-  the context requires — in statement position it is checked against `Unit`.
+  `panic(m)` checks `m ⇐ string` (`E0201` otherwise) and may be given any type
+  the context requires — in statement position it is checked against `unit`.
   Both are specified in
   [`../error-handling.md`](../error-handling.md).
 
@@ -317,7 +317,7 @@ that disagree on what they bind are `E0304`.
 - **Inference boundary.** Every parameter of a module-level `fn` (and of a
   nested `fn`) MUST be annotated, and the return type MUST be declared whenever
   the function produces a value — `pub` functions always; an omitted return
-  type means `Unit` and the body is checked against `Unit`. Missing annotations
+  type means `unit` and the body is checked against `unit`. Missing annotations
   are `E0216` ([`../functions.md`](../functions.md)).
 - **Bounds.** Every type argument — inferred at a call or written in a type
   application — MUST satisfy its parameter's bounds (`E0801`); a bound that is
@@ -347,11 +347,11 @@ that disagree on what they bind are `E0304`.
     nothing back into the written arguments.
 
   A list written before a callee that declares no type parameters is `E0807`,
-  including a value of function type (`f<Int>(…)` where `f: fn(Int): Int`) and
+  including a value of function type (`f<int>(…)` where `f: fn(int): int`) and
   a `struct` or `enum` constructor. The rule applies wherever the callee ends
-  in an identifier — a method (`r.first<Int>(xs)`), a trait static
-  (`Trait.method<Int>(x)`), a namespace member (`Task.all<Int>(…)`), or a
-  component (`Counter<Int>() { … }`).
+  in an identifier — a method (`r.first<int>(xs)`), a trait static
+  (`Trait.method<int>(x)`), a namespace member (`Task.all<int>(…)`), or a
+  component (`Counter<int>() { … }`).
 - **Type applications.** Every type application MUST be well-formed: the
   argument count equals the declaration's type-parameter count, a generic
   name never appears without its arguments, and a type parameter is never
@@ -422,21 +422,21 @@ programs these rules define and diagnoses exactly the rest.
 fn first<T>(items: List<T>): T { items[0] }
 
 fn main() {
-  let n: Int = first([1, 2, 3])          // T = Int
-  let name = first(["a", "b"])           // T = String
-  let label = n > 0 ? "positive" : "no"  // common type: String
+  let n: int = first([1, 2, 3])          // T = int
+  let name = first(["a", "b"])           // T = string
+  let label = n > 0 ? "positive" : "no"  // common type: string
 }
 ```
 
-`[1, 2, 3]` has type `List<Int>`; unifying `List<T>` with `List<Int>` gives
-`T = Int`, satisfying the parameter's empty bound set, and the annotation
-receives the result. The ternary's branches are both `String`, so rule 1 gives
-the common type `String`.
+`[1, 2, 3]` has type `List<int>`; unifying `List<T>` with `List<int>` gives
+`T = int`, satisfying the parameter's empty bound set, and the annotation
+receives the result. The ternary's branches are both `string`, so rule 1 gives
+the common type `string`.
 
 **An argument fails.**
 
 ```xulo
-fn greet(name: String): String { "Hello, " + name }
+fn greet(name: string): string { "Hello, " + name }
 
 fn main() {
   greet(42)   // error[E0202]
@@ -448,11 +448,11 @@ error[E0202] semantic: argument type mismatch
  --> app.xulo:4:9
   │
 4 │   greet(42)
-  │         ^^ expected `String`, found `Int`
+  │         ^^ expected `string`, found `int`
   │
  --> app.xulo:1:10
   │
-1 │ fn greet(name: String): String { "Hello, " + name }
+1 │ fn greet(name: string): string { "Hello, " + name }
   │          ---- parameter declared here
   = note: convert the value with `str(42)` before passing it
 ```

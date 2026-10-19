@@ -14,7 +14,7 @@ level of a component body:
 
 ```xulo
 fn Counter(): View {
-  @State let count: Int = 0
+  @State let count: int = 0
 
   @Effect fn() { print("mounted") }
 
@@ -27,8 +27,8 @@ fn Counter(): View {
 
 - The form is `@Effect fn() { … }`: a closure written in expression position,
   with no name — an effect binds nothing, so it draws from no name pool. The
-  value of the declaration MUST be a function of type `fn(): Unit`; a closure
-  that declares any other return type — `@Effect fn(): Int { … }` — is `E0709`.
+  value of the declaration MUST be a function of type `fn(): unit`; a closure
+  that declares any other return type — `@Effect fn(): int { … }` — is `E0709`.
 - An effect runs **after the run completes**: after the component's body has
   produced the `View` for that pass and that tree has been committed. Effects
   never contribute children and never change what the run produced.
@@ -49,8 +49,8 @@ An effect MAY be given a dependency list: a list literal of expressions,
 written after a comma following the effect's closure.
 
 ```xulo
-fn UserProfile(id: String): View {
-  @State let profile: String = ""
+fn UserProfile(id: string): View {
+  @State let profile: string = ""
 
   @Effect fn() { fetchProfile(id) }, [id]
 
@@ -80,7 +80,7 @@ fn UserProfile(id: String): View {
   component, mount included.
 
 ```xulo
-fn Search(query: String): View {
+fn Search(query: string): View {
   @Effect fn() { print(`searching: ${query}`) }, [query]
   @Effect fn() { print("this runs on every re-run") }
 
@@ -94,7 +94,7 @@ An effect body may return a function. Doing so registers that function as the
 effect's **cleanup**:
 
 ```xulo
-fn UserProfile(id: String): View {
+fn UserProfile(id: string): View {
   @Effect fn() {
     setupSubscription(id)
     return fn() { cleanupSubscription() }
@@ -104,7 +104,7 @@ fn UserProfile(id: String): View {
 ```
 
 - When an effect body evaluates to a function, that function MUST have type
-  `fn(): Unit`, and it is registered as the effect's **cleanup**. Every other
+  `fn(): unit`, and it is registered as the effect's **cleanup**. Every other
   value of the body is discarded, so a body that ends in a call — or in a value
   of any other type — registers no cleanup.
 - Registering **replaces** the cleanup registered by the effect's previous run:
@@ -177,7 +177,7 @@ This rule is normative and has no exceptions.
 | `@Effect` | Written outside the top level of a component body | error |
 | `@Effect` body | Written with `await` | error |
 | Dependency list | Not a list literal | error |
-| Effect body | Value is a function whose type is not `fn(): Unit` | error |
+| Effect body | Value is a function whose type is not `fn(): unit` | error |
 
 Several effects MAY be declared in one body, in any order relative to the
 other top-level items; their relative order is what orders their invocation and

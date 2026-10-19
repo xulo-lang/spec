@@ -15,7 +15,7 @@ and where the four declarations are legal.
 
 ```xulo
 fn Counter(): View {
-  @State let count: Int = 0
+  @State let count: int = 0
 
   VStack(spacing: 8) {
     Text(`count = ${count}`)
@@ -28,7 +28,7 @@ fn Counter(): View {
 - The form is `@State let name: T = expression`, or `@State let name =
   expression` when the type is inferable.
 - The type annotation is optional when the initializer determines the type:
-  `@State let count = 0` declares `count: Int`. When the initializer does not
+  `@State let count = 0` declares `count: int`. When the initializer does not
   determine the type — an empty list literal, for example — the annotation is
   REQUIRED ([`../statements/let-and-assignment.md`](../statements/let-and-assignment.md)).
 - Once declared, the binding reads exactly like an ordinary variable: `count`
@@ -64,7 +64,7 @@ For the purpose of rendering, an `@State` binding behaves as a signal:
 
 ```xulo
 fn Counter(): View {
-  @State let count: Int = 0
+  @State let count: int = 0
 
   HStack(spacing: 4) {
     Button("-", onClick: fn() { count = count - 1 })
@@ -213,7 +213,7 @@ not a snapshot of their values at capture time
 
 ```xulo
 fn Counter(): View {
-  @State let count: Int = 0
+  @State let count: int = 0
 
   let bump = fn() {
     count = count + 1
@@ -241,7 +241,7 @@ instance's current state.
 
 ```xulo
 fn Counter(): View {
-  @State let count: Int = 0
+  @State let count: int = 0
 
   VStack(spacing: 8) {
     Text(`count = ${count}`)
@@ -254,13 +254,13 @@ fn Counter(): View {
 
 ```xulo
 struct Todo {
-  title: String
-  done: Boolean
+  title: string
+  done: bool
 }
 
 fn TodoList(): View {
   @State let todos: List<Todo> = []
-  @State let draft: String = ""
+  @State let draft: string = ""
 
   VStack(spacing: 8) {
     Input(value: $draft, placeholder: "What needs doing?")

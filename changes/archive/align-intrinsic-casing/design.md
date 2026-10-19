@@ -4,7 +4,7 @@
 
 Every multi-word prelude intrinsic and the `ToString` method are spelled in
 lowerCamelCase, matching the convention table in
-[`../../names.md`](../../names.md): `mapGet`, `setInsert`, `listRemove`,
+[`../../../names.md`](../../../names.md): `mapGet`, `setInsert`, `listRemove`,
 `toString`. The rename is spelling-only.
 
 ## Alternatives considered
@@ -43,7 +43,7 @@ glance; accepted as-is.
 ### Reservation shifts with the spelling
 
 The prelude reserves its names by reference to its declarations, not by a
-frozen list ([`../../builtins/prelude.md`](../../builtins/prelude.md),
+frozen list ([`../../../builtins/prelude.md`](../../../builtins/prelude.md),
 Reserved names; `E0106`). After the rename, `map_get` is an ordinary legal
 module-scope name and `mapGet` is the reserved one. No wording change is
 needed; the reservation rule is already "whatever the prelude declares".

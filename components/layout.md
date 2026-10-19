@@ -52,7 +52,7 @@ Each accepts a number, or one of the size literals:
 
 | Form | Example | Meaning |
 |------|---------|---------|
-| Number | `width: 200` | An exact size, in logical pixels |
+| number | `width: 200` | An exact size, in logical pixels |
 | `"auto"` | `height: "auto"` | The content's size: the node is sized by what it contains |
 | `"fill"` | `height: "fill"` | Take the remaining space offered along that axis |
 | Percentage | `width: "100%"` | That share of the parent's size along that axis |
@@ -97,11 +97,11 @@ container:
 
 | Attribute | Applies to | Type | Meaning |
 |-----------|-----------|------|---------|
-| `padding` | any node | `Number` | Inner spacing: room between the node's own edge and its content |
-| `margin` | any node | `Number` | Outer spacing: room outside the node, between it and its neighbors |
-| `spacing` | stack containers | `Number` | Gap between adjacent children along the main axis |
-| `alignment` | stack containers | `String` | Cross-axis placement of children |
-| `justify` | stack containers | `String` | Main-axis distribution of children |
+| `padding` | any node | `number` | Inner spacing: room between the node's own edge and its content |
+| `margin` | any node | `number` | Outer spacing: room outside the node, between it and its neighbors |
+| `spacing` | stack containers | `number` | Gap between adjacent children along the main axis |
+| `alignment` | stack containers | `string` | Cross-axis placement of children |
+| `justify` | stack containers | `string` | Main-axis distribution of children |
 
 The values of `alignment` and `justify` are strings, and the values defined
 here are `start`, `center`, `end`, and `space-between`:
@@ -137,19 +137,19 @@ ones:
 
 | Attribute | Type | Meaning |
 |-----------|------|---------|
-| `color` | `String` | Text color |
-| `bg` | `String` | Background **color** |
-| `bgImage` | `String` | Background **image URL** |
-| `border` | `String` | Border color |
-| `size` | `Number` | Text size, in logical pixels |
-| `weight` | `String` | Text weight, e.g. `"bold"` |
-| `radius` | `Number` | Corner radius |
-| `opacity` | `Number` | Opacity, from `0.0` to `1.0` |
-| `alignment` | `String` | Cross-axis alignment of children |
-| `justify` | `String` | Main-axis distribution of children |
-| `width`, `height` | `Number` or `String` | Size, as specified in *Size properties* |
-| `padding` | `Number` | Inner spacing |
-| `margin` | `Number` | Outer spacing |
+| `color` | `string` | Text color |
+| `bg` | `string` | Background **color** |
+| `bgImage` | `string` | Background **image URL** |
+| `border` | `string` | Border color |
+| `size` | `number` | Text size, in logical pixels |
+| `weight` | `string` | Text weight, e.g. `"bold"` |
+| `radius` | `number` | Corner radius |
+| `opacity` | `number` | Opacity, from `0.0` to `1.0` |
+| `alignment` | `string` | Cross-axis alignment of children |
+| `justify` | `string` | Main-axis distribution of children |
+| `width`, `height` | `number` or `string` | Size, as specified in *Size properties* |
+| `padding` | `number` | Inner spacing |
+| `margin` | `number` | Outer spacing |
 
 - **`bg` and `bgImage` are strictly separate.** `bg` accepts colors only and
   `bgImage` accepts image URLs only; an image URL written as `bg`, or a color

@@ -52,7 +52,7 @@ let c = 3; let d = 4; print(c + d)   // semicolons separate one-line statements
 
 ## The Statement-Value Rule
 
-> An expression statement that is not `Unit` is an error (`E0218`), EXCEPT when
+> An expression statement that is not `unit` is an error (`E0218`), EXCEPT when
 > it is a control-flow construct (`if`, `match`, `for`, `while`) whose value is
 > discarded, or a `send` whose `Task<R>` is discarded.
 
@@ -65,9 +65,9 @@ leading-`{` restriction below and the error code — is in
 ```xulo
 if c { print("a") } else { print("b") }   // legal: value discarded
 match half(3) { Result::Ok(v) => str(v) Result::Err(e) => e }  // legal: value discarded
-a + b              // error: not Unit, and neither exception applies
+a + b              // error: not unit, and neither exception applies
 worker.send(cmd)   // legal: a send's Task may be discarded
-print("hi")        // legal: Unit-returning call
+print("hi")        // legal: unit-returning call
 let x = a + b      // legal in expression position: value initializes x
 ```
 
@@ -78,7 +78,7 @@ must appear in statement-like position.
 ## Blocks and Scope
 
 A block `{ … }` is both a value and a scope: its type is the type of its
-final expression (or `Unit` when there is none), and every statement inside
+final expression (or `unit` when there is none), and every statement inside
 introduces bindings visible from their declaration to the end of the block.
 Blocks, returns, defers, and implicit return are specified in
 [`return-and-block.md`](return-and-block.md); scoping and shadowing in

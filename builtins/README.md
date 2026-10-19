@@ -55,12 +55,12 @@ only when nothing in the earlier scopes matches, which is why a local binding
 of the same name hides them for as long as it is in scope.
 
 ```xulo
-fn report(total: Int): Unit {
+fn report(total: int): unit {
   let str = "label"            // hides the intrinsic in this scope only
   print(str)
 }
 
-fn remaining(): String {
+fn remaining(): string {
   str(42)                      // "42": no shadowing here, so `str` is intrinsic
 }
 ```

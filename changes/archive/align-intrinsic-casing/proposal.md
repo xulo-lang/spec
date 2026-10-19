@@ -1,6 +1,6 @@
 # Align Intrinsic Casing
 
-**Status:** draft · **Date:** 2026-10-17 · **Affects:** `builtins/prelude.md`,
+**Status:** accepted · **Date:** 2026-10-17 · **Affects:** `builtins/prelude.md`,
 `builtins/intrinsic-functions.md`, `types/traits.md`, `testing.md`
 
 ## Summary
@@ -71,7 +71,7 @@ replaces functions (`m[k]`, `+`); converting the operations to methods.
 The rename is a source-level break for any program using the old spellings;
 the replacement is mechanical. The prelude's reserved names are reserved by
 reference to its declarations
-([`../../builtins/prelude.md`](../../builtins/prelude.md), Reserved names), so the
+([`../../../builtins/prelude.md`](../../../builtins/prelude.md), Reserved names), so the
 reserved set shifts with the rename automatically: `map_get` becomes an
 ordinary legal name and `mapGet` becomes reserved. No diagnostic message
 quotes an intrinsic name, and no rule other than spelling changes.

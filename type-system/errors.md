@@ -34,11 +34,11 @@ error[E0202] semantic: argument type mismatch
  --> app.xulo:4:9
   │
 4 │   greet(42)
-  │         ^^ expected `String`, found `Int`
+  │         ^^ expected `string`, found `int`
   │
  --> app.xulo:1:10
   │
-1 │ fn greet(name: String): String { "Hello, " + name }
+1 │ fn greet(name: string): string { "Hello, " + name }
   │          ---- parameter declared here
   = note: convert the value with `str(42)` before passing it
 ```
@@ -83,7 +83,7 @@ message alone. Every code in the tables below is therefore `semantic`.
 ## Message style guide
 
 - A mismatch message reads `expected <type>, found <type>`, with both types in
-  backticks: ``expected `String`, found `Int` ``.
+  backticks: ``expected `string`, found `int` ``.
 - A name appears in backticks exactly as written in the source, and a type is
   named the way its declaration names it.
 - Messages are lowercase, contain no trailing period, and fit one line; the
@@ -135,36 +135,36 @@ or payload type with no string form is `E0801`.
 
 | Code | Trigger | Example | Message shape | Specified in |
 |------|---------|---------|---------------|--------------|
-| `E0201` | a value is not assignable to a type that is known: an annotation or annotated initializer, a condition, a list element, an assignment, mixed fixed-bit operands, an operator applied to an `Unknown` operand | `let s: String = 42` | ``expected `String`, found `Int` `` | [checking-rules.md](checking-rules.md) |
-| `E0202` | an argument is not assignable to its parameter | `greet(42)` | ``expected `String`, found `Int` `` | [calls.md](../expressions/calls.md) |
-| `E0203` | a `return` operand or a final expression differs from the declared return type | `fn f(): Int { "x" }` | ``expected `Int`, found `String` `` | [return-and-block.md](../statements/return-and-block.md) |
-| `E0204` | a callee has no function or component type | `let n = 1` then `n()` | `` `Int` is not callable `` | [calls.md](../expressions/calls.md) |
+| `E0201` | a value is not assignable to a type that is known: an annotation or annotated initializer, a condition, a list element, an assignment, mixed fixed-bit operands, an operator applied to an `unknown` operand | `let s: string = 42` | ``expected `string`, found `int` `` | [checking-rules.md](checking-rules.md) |
+| `E0202` | an argument is not assignable to its parameter | `greet(42)` | ``expected `string`, found `int` `` | [calls.md](../expressions/calls.md) |
+| `E0203` | a `return` operand or a final expression differs from the declared return type | `fn f(): int { "x" }` | ``expected `int`, found `string` `` | [return-and-block.md](../statements/return-and-block.md) |
+| `E0204` | a callee has no function or component type | `let n = 1` then `n()` | `` `int` is not callable `` | [calls.md](../expressions/calls.md) |
 | `E0205` | a required field is absent from an initializer | `User(name: "A")` with `age` required | ``missing field `age` in initializer of `User` `` | [composite-types.md](../types/composite-types.md) |
 | `E0206` | a field does not exist on the type — in a read, an initializer, or a destructuring | `u.namee`, `let { age } = u` | `` `User` has no field `age` `` | [checking-rules.md](checking-rules.md) |
-| `E0207` | the number of arguments is wrong | `f(1, 2)` for `fn f(a: Int)` | ``expected 1 argument, found 2`` | [calls.md](../expressions/calls.md) |
+| `E0207` | the number of arguments is wrong | `f(1, 2)` for `fn f(a: int)` | ``expected 1 argument, found 2`` | [calls.md](../expressions/calls.md) |
 | `E0208` | an argument label is unknown, duplicated, or a positional argument follows a named one | `f(on: 1)` | ``unknown argument label `on` `` | [calls.md](../expressions/calls.md) |
-| `E0209` | a literal does not fit the type it is given — its default type or a type it is coerced into | `let b: U8 = 300` | ``literal `300` does not fit in `U8` `` | [literals.md](../expressions/literals.md) |
+| `E0209` | a literal does not fit the type it is given — its default type or a type it is coerced into | `let b: u8 = 300` | ``literal `300` does not fit in `u8` `` | [literals.md](../expressions/literals.md) |
 | `E0210` | constant arithmetic divides by zero, takes a remainder by zero, or overflows its type | `const H = 1 / 0` | ``division by zero in constant expression`` | [operators.md](../expressions/operators.md) |
-| `E0211` | operands, branches, or arms have no common type | `flag ? 1 : "x"` | `` `Int` and `String` have no common type `` | [checking-rules.md](checking-rules.md) |
+| `E0211` | operands, branches, or arms have no common type | `flag ? 1 : "x"` | `` `int` and `string` have no common type `` | [checking-rules.md](checking-rules.md) |
 | `E0212` | a value has no string form, in `${…}` or in `str` | `` `${user}` `` without `ToString` | `` `User` has no string form; implement `ToString` `` | [traits.md](../types/traits.md) |
-| `E0213` | the iterable of a `for` loop is not a supported type | `for x in 42` | `` `Int` is not iterable `` | [control-flow.md](../expressions/control-flow.md) |
+| `E0213` | the iterable of a `for` loop is not a supported type | `for x in 42` | `` `int` is not iterable `` | [control-flow.md](../expressions/control-flow.md) |
 | `E0214` | `break`, `continue`, or `return` is written outside its context | `return` at file scope | `` `return` outside of a function `` | [return-and-block.md](../statements/return-and-block.md) |
-| `E0215` | a subscript is applied to a type that is not a `List` or `Map` | `"abc"[0]` | `` `String` cannot be indexed `` | [checking-rules.md](checking-rules.md) |
+| `E0215` | a subscript is applied to a type that is not a `List` or `Map` | `"abc"[0]` | `` `string` cannot be indexed `` | [checking-rules.md](checking-rules.md) |
 | `E0216` | a type cannot be determined: an empty collection, a bare `null`, an unannotated closure, an unsolved generic argument | `let xs = []` | `type annotations needed` | [checking-rules.md](checking-rules.md) |
-| `E0217` | a `?` propagation is ill-formed: its operand is neither `T?` nor `Result<T, E>`; it appears outside a function or in one with no declared return type; or the early return's value does not fit the declared return type | `fn f(): Int { half(3)? }` | ``cannot propagate `?` to return type `Int``` | [error-handling.md](../error-handling.md) |
-| `E0218` | an expression statement in statement position has a type other than `Unit` and is neither an excepted control-flow construct nor a `send` whose task is discarded | `a + b` with `a: Int` | ``expected `Unit`, found `Int``` | [expression-statements.md](../statements/expression-statements.md) |
-| `E0219` | a tuple destructuring's initializer is not a tuple type, or the name count differs from the tuple's arity | `let (a, b) = 42` | ``expected a tuple of 2 elements, found `Int` `` | [composite-types.md](../types/composite-types.md) |
-| `E0220` | a positional access has a non-tuple receiver, or the position is at or past the arity | `p.2` for `p: (Int, Int)` | `` `(Int, Int)` has no element `.2` `` | [path-and-access.md](../expressions/path-and-access.md) |
-| `E0221` | a typed map literal repeats a type an expected `Map<K, V>` already gives, with identifier keys or no entries | `let m: Map<String, Int> = Map<String, Int>{}` | ``literal `Map<String, Int>{ … }` repeats the expected type`` | [composite-types.md](../types/composite-types.md) |
-| `E0222` | the right operand of `is` is not a testable type, or is not assignable to the left operand's type | `data is List<Int>` | ``type `List<Int>` is not testable`` | [control-flow.md](../expressions/control-flow.md) |
+| `E0217` | a `?` propagation is ill-formed: its operand is neither `T?` nor `Result<T, E>`; it appears outside a function or in one with no declared return type; or the early return's value does not fit the declared return type | `fn f(): int { half(3)? }` | ``cannot propagate `?` to return type `int``` | [error-handling.md](../error-handling.md) |
+| `E0218` | an expression statement in statement position has a type other than `unit` and is neither an excepted control-flow construct nor a `send` whose task is discarded | `a + b` with `a: int` | ``expected `unit`, found `int``` | [expression-statements.md](../statements/expression-statements.md) |
+| `E0219` | a tuple destructuring's initializer is not a tuple type, or the name count differs from the tuple's arity | `let (a, b) = 42` | ``expected a tuple of 2 elements, found `int` `` | [composite-types.md](../types/composite-types.md) |
+| `E0220` | a positional access has a non-tuple receiver, or the position is at or past the arity | `p.2` for `p: (int, int)` | `` `(int, int)` has no element `.2` `` | [path-and-access.md](../expressions/path-and-access.md) |
+| `E0221` | a typed map literal repeats a type an expected `Map<K, V>` already gives, with identifier keys or no entries | `let m: Map<string, int> = Map<string, int>{}` | ``literal `Map<string, int>{ … }` repeats the expected type`` | [composite-types.md](../types/composite-types.md) |
+| `E0222` | the right operand of `is` is not a testable type, or is not assignable to the left operand's type | `data is List<int>` | ``type `List<int>` is not testable`` | [control-flow.md](../expressions/control-flow.md) |
 | `E0223` | one map literal writes the same key twice directly | `{ a: 1, a: 2 }` | ``duplicate key `a` in map literal`` | [composite-types.md](../types/composite-types.md) |
-| `E0224` | a `Map` key type is not hashable — it is not one of `String`, `Int`, `Float`, `Boolean`, or a payload-free `enum` | `Map<List<Int>, Int>{}` | ``key type `List<Int>` is not hashable`` | [composite-types.md](../types/composite-types.md) |
-| `E0225` | a `Set` element type is not hashable — the same set of types admitted as map keys | `Set<List<Int>>` | ``element type `List<Int>` is not hashable`` | [composite-types.md](../types/composite-types.md) |
+| `E0224` | a `Map` key type is not hashable — it is not one of `string`, `int`, `float`, `bool`, or a payload-free `enum` | `Map<List<int>, int>{}` | ``key type `List<int>` is not hashable`` | [composite-types.md](../types/composite-types.md) |
+| `E0225` | a `Set` element type is not hashable — the same set of types admitted as map keys | `Set<List<int>>` | ``element type `List<int>` is not hashable`` | [composite-types.md](../types/composite-types.md) |
 | `E0226` | an intersection `&` has an operand that is not a trait type | `User & Area` | ``intersection operand `User` is not a trait`` | [composite-types.md](../types/composite-types.md) |
-| `E0227` | an operand of `+` is a `String` and the other is not | `"count=" + 1` | ``cannot add `Int` to `String` `` | [operators.md](../expressions/operators.md) |
-| `E0228` | a parameter's default value does not fit the parameter's declared type | `fn f(name: String = 42)` | ``expected `String`, found `Int` `` | [calls.md](../expressions/calls.md) |
+| `E0227` | an operand of `+` is a `string` and the other is not | `"count=" + 1` | ``cannot add `int` to `string` `` | [operators.md](../expressions/operators.md) |
+| `E0228` | a parameter's default value does not fit the parameter's declared type | `fn f(name: string = 42)` | ``expected `string`, found `int` `` | [calls.md](../expressions/calls.md) |
 | `E0229` | `return`, `break`, `continue`, or `?` appears in a `defer` operand | `defer { return }` | ``cannot transfer control out of a `defer` operand`` | [return-and-block.md](../statements/return-and-block.md) |
-| `E0230` | a type application is ill-formed: the argument count differs from the declared type-parameter count, a generic name is written without its arguments, a non-generic name is given arguments, or the head is a type parameter | `Map<String>` | `` `Map` expects 2 type arguments, found 1 `` | [generics.md](../types/generics.md) |
+| `E0230` | a type application is ill-formed: the argument count differs from the declared type-parameter count, a generic name is written without its arguments, a non-generic name is given arguments, or the head is a type parameter | `Map<string>` | `` `Map` expects 2 type arguments, found 1 `` | [generics.md](../types/generics.md) |
 
 ### Pattern errors
 
@@ -172,8 +172,8 @@ or payload type with no string form is `E0801`.
 |------|---------|---------|---------------|--------------|
 | `E0301` | a `match` does not cover every variant, both booleans, or every testable member of a union without a covering arm | `match c { Color::Red => 0 }` | `` `match` does not cover every variant of `Color` (missing `Blue`) `` | [control-flow.md](../expressions/control-flow.md) |
 | `E0302` | an arm can never be selected | an arm after `_ =>` | ``this arm is unreachable`` | [control-flow.md](../expressions/control-flow.md) |
-| `E0303` | a pattern does not fit the scrutinee's type, or names a type that cannot be tested | `Color::Red` against `Int`, `List<Int> xs` anywhere | ``pattern `Color::Red` does not match `Int` `` | [control-flow.md](../expressions/control-flow.md) |
-| `E0304` | the alternatives of an or-pattern bind different names, or a name at different types | `Int x \| String y` | ``or-pattern alternatives must bind the same names at the same types`` | [control-flow.md](../expressions/control-flow.md) |
+| `E0303` | a pattern does not fit the scrutinee's type, or names a type that cannot be tested | `Color::Red` against `int`, `List<int> xs` anywhere | ``pattern `Color::Red` does not match `int` `` | [control-flow.md](../expressions/control-flow.md) |
+| `E0304` | the alternatives of an or-pattern bind different names, or a name at different types | `int x \| string y` | ``or-pattern alternatives must bind the same names at the same types`` | [control-flow.md](../expressions/control-flow.md) |
 
 ### Place and assignment errors
 
@@ -201,8 +201,8 @@ or payload type with no string form is `E0801`.
 | Code | Trigger | Example | Message shape | Specified in |
 |------|---------|---------|---------------|--------------|
 | `E0501` | `await` is written outside an `async` context: in a non-`async` function or closure body, in a component body, in an `@Effect` body, at module top level, or in a `#Test` function that is not marked `async` | `await t` in a plain `fn` | `` `await` outside of an `async` context `` | [async-expressions.md](../expressions/async-expressions.md) |
-| `E0502` | the operand of `await` is not a `Task<T>` | `await 3` | ``cannot await `Int`; expected `Task<T>` `` | [async-expressions.md](../expressions/async-expressions.md) |
-| `E0503` | an `async` body returns a value that differs from its declared type | returning `Task<Int>` from `async fn f(): Int` | ``expected `Int`, found `Task<Int>` `` | [async-expressions.md](../expressions/async-expressions.md) |
+| `E0502` | the operand of `await` is not a `Task<T>` | `await 3` | ``cannot await `int`; expected `Task<T>` `` | [async-expressions.md](../expressions/async-expressions.md) |
+| `E0503` | an `async` body returns a value that differs from its declared type | returning `Task<int>` from `async fn f(): int` | ``expected `int`, found `Task<int>` `` | [async-expressions.md](../expressions/async-expressions.md) |
 
 ### Module and visibility errors
 
@@ -215,7 +215,7 @@ or payload type with no string form is `E0801`.
 | `E0606` | a type-only binding — declared by `use type`, or propagated through a `pub use` chain — is used where a value is required | `let u = User` after `use type ui::User` | `` `User` is a type-only binding and is not a value `` | [import-export.md](../modules/import-export.md) |
 | `E0607` | a path head resolves to nothing: an unknown package name, a missing `mod` file, `super` above the package root | `mod shapes;` with no `shapes.xulo` | ``cannot resolve `shapes` `` | [import-export.md](../modules/import-export.md) |
 | `E0608` | the package's root module declares no `main` | a root module without `main` | ``entry module does not declare `main` `` | [source-files.md](../modules/source-files.md) |
-| `E0609` | `main` has parameters or any return type but `Unit` or `View` | `fn main(argc: Int)` | `` `main` must take no parameters `` | [source-files.md](../modules/source-files.md) |
+| `E0609` | `main` has parameters or any return type but `unit` or `View` | `fn main(argc: int)` | `` `main` must take no parameters `` | [source-files.md](../modules/source-files.md) |
 | `E0610` | a `mod` declaration resolves to a file that is already the body of another module, or to the file that declares it | root `form.xulo` declaring `mod form;` | ``file `form.xulo` is the body of more than one module`` | [import-export.md](../modules/import-export.md) |
 | `E0611` | a file-scope initializer directly reads a file-scope `let` of a module that initializes after it, or directly calls a function declared in such a module | `let snap = config::N` in `stats.xulo`, with `mod config` ordered after `mod stats` | `` `config::N` is used before `config` initializes `` | [visibility.md](../modules/visibility.md) |
 
@@ -229,14 +229,14 @@ prevent an order from existing, and the number is never reused
 | Code | Trigger | Example | Message shape | Specified in |
 |------|---------|---------|---------------|--------------|
 | `E0701` | `@State`, `@Store`, `@Effect`, or `@Environment` is not a top-level item of a component body | `@State` in an ordinary `fn` | `` `@State` is only valid at the top level of a component body `` | [components/README.md](../components/README.md) |
-| `E0702` | a child item is not a `String`, `View`, or `List<View>` — including an un-narrowed `View?`, a binding, an assignment, or a `return` | `Row { count }` | ``child of type `Int` is not a `View` `` | [view-syntax.md](../components/view-syntax.md) |
+| `E0702` | a child item is not a `string`, `View`, or `List<View>` — including an un-narrowed `View?`, a binding, an assignment, or a `return` | `Row { count }` | ``child of type `int` is not a `View` `` | [view-syntax.md](../components/view-syntax.md) |
 | `E0703` | `$` is written outside an argument position, or on a name that is not a bindable state place of the enclosing component body | `$tally` with no `@State tally` | `` `$tally` does not name a state declaration `` | [binding.md](../components/binding.md) |
-| `E0704` | a component body's trailing expression is not a `View` | `fn Panel(): View { 42 }` | ``expected `View`, found `Int` `` | [view-syntax.md](../components/view-syntax.md) |
+| `E0704` | a component body's trailing expression is not a `View` | `fn Panel(): View { 42 }` | ``expected `View`, found `int` `` | [view-syntax.md](../components/view-syntax.md) |
 | `E0705` | a component block follows a call to a function that does not declare `View` | `greet("Ada") { … }` | `` `greet` does not return `View`, so it takes no component block `` | [checking-rules.md](checking-rules.md) |
 | `E0706` | `await` in a component body or an `@Effect` body | `await load()` inside a component | `` `await` is not allowed in a component body `` | [effect.md](../components/effect.md) |
 | `E0707` | a component invocation has neither an argument list nor a block | `Counter` used where a call is required | ``component invocation requires an argument list or a block`` | [view-syntax.md](../components/view-syntax.md) |
 | `E0708` | the dependency list of an `@Effect` is not a list literal | `@Effect fn() { … }, count` | ``the dependency list of `@Effect` must be a list literal`` | [effect.md](../components/effect.md) |
-| `E0709` | the value of an `@Effect` declaration is not a `fn(): Unit` | `@Effect fn(): Int { … }` | `` `@Effect` requires a function of type `fn(): Unit` `` | [effect.md](../components/effect.md) |
+| `E0709` | the value of an `@Effect` declaration is not a `fn(): unit` | `@Effect fn(): int { … }` | `` `@Effect` requires a function of type `fn(): unit` `` | [effect.md](../components/effect.md) |
 | `E0710` | an `@Environment` declaration omits its type annotation | `@Environment let router` | `` `@Environment` requires a type annotation `` | [environment.md](../components/environment.md) |
 | `E0711` | `$` is written in an argument to something that is not a component | `print($count)` | `` `$count` may only be passed to a component `` | [binding.md](../components/binding.md) |
 | `E0712` | a `$` place is a field path or otherwise not a single state cell | `Input(value: $user.name)` | `` `$user.name` is not a single state binding `` | [binding.md](../components/binding.md) |
@@ -251,15 +251,15 @@ reported with the call codes `E0202`, `E0204`, `E0207`, and `E0208`.
 |------|---------|---------|---------------|--------------|
 | `E0801` | a type argument satisfies no bound, or an explicit `Trait.method(…)` finds no impl | `perimeter(Triangle)` for a type without `Area` | `` `Triangle` does not implement `Area` `` | [checking-rules.md](checking-rules.md) |
 | `E0802` | a trait impl omits a method of the trait | `impl Area for Rect` without `area` | `` `impl Area for Rect` is missing `area` `` | [checking-rules.md](checking-rules.md) |
-| `E0803` | an impl method's signature differs from the trait's | `fn area(self, k: Int)` for `fn area(self)` | ```method `area` has an incompatible signature``` | [checking-rules.md](checking-rules.md) |
+| `E0803` | an impl method's signature differs from the trait's | `fn area(self, k: int)` for `fn area(self)` | ```method `area` has an incompatible signature``` | [checking-rules.md](checking-rules.md) |
 | `E0804` | an impl declares a method the trait does not declare | an extra `extra` in `impl Area for Rect` | `` `impl Area for Rect` declares `extra`, which `Area` does not `` | [checking-rules.md](checking-rules.md) |
 | `E0805` | two impls of one trait for one type in one module | a second `impl Area for Rect` | `` `Area` is already implemented for `Rect` `` | [checking-rules.md](checking-rules.md) |
-| `E0806` | a bound does not name a visible trait | `<T: Int>` | ``bound `Int` is not a trait`` | [generics.md](../types/generics.md) |
-| `E0807` | a type-argument list before a callee that declares no type parameters | `f<Int>(1)` where `f: fn(Int): Int` | `` `f` accepts no type arguments `` | [generics.md](../types/generics.md) |
-| `E0808` | a written type-argument list of the wrong length | `first<Int, String>([1])` for `fn first<T>(…)` | ``expected 1 type argument, found 2`` | [generics.md](../types/generics.md) |
+| `E0806` | a bound does not name a visible trait | `<T: int>` | ``bound `int` is not a trait`` | [generics.md](../types/generics.md) |
+| `E0807` | a type-argument list before a callee that declares no type parameters | `f<int>(1)` where `f: fn(int): int` | `` `f` accepts no type arguments `` | [generics.md](../types/generics.md) |
+| `E0808` | a written type-argument list of the wrong length | `first<int, string>([1])` for `fn first<T>(…)` | ``expected 1 type argument, found 2`` | [generics.md](../types/generics.md) |
 | `E0809` | a member call `value.method(…)` finds more than one trait method candidate in scope for the receiver's type | `r.grow()` with two traits in scope that both implement `grow` for `Rect` | ``multiple applicable implementations of `grow` for `Rect` `` | [traits.md](../types/traits.md) |
 | `E0810` | a `trait` declaration declares a type parameter list | `trait Convert<T> { fn convert(self): T }` | ``a trait may not declare type parameters`` | [traits.md](../types/traits.md) |
-| `E0811` | a bound applies type arguments to a trait | `<T: Convert<String>>` | ``bound `Convert<String>` applies type arguments; a trait has none`` | [generics.md](../types/generics.md) |
+| `E0811` | a bound applies type arguments to a trait | `<T: Convert<string>>` | ``bound `Convert<string>` applies type arguments; a trait has none`` | [generics.md](../types/generics.md) |
 
 ## Warnings
 

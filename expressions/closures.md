@@ -17,8 +17,8 @@ function type.
 name:
 
 ```xulo
-let double = fn(x: Int): Int { x * 2 }
-let one = fn(): Int { 1 }
+let double = fn(x: int): int { x * 2 }
+let one = fn(): int { 1 }
 
 print(double(21))          // 42
 print(one())               // 1
@@ -28,10 +28,10 @@ print(one())               // 1
 and a body that is either an expression or a block:
 
 ```xulo
-let double = (x: Int) => x * 2                // result type inferred: Int
-let add: fn(Int, Int): Int = (x, y) => x + y  // types from the expected type
+let double = (x: int) => x * 2                // result type inferred: int
+let add: fn(int, int): int = (x, y) => x + y  // types from the expected type
 let nothing = () => print("hi")               // no parameters: `()` is required
-let classify = (n: Int): String => {          // block body
+let classify = (n: int): string => {          // block body
   if n > 0 { "positive" } else { "not positive" }
 }
 ```
@@ -45,10 +45,10 @@ let classify = (n: Int): String => {          // block body
   the operand of a typed `return`. The expected parameter types are used for
   the parameters.
 - Parameter type annotations are REQUIRED when no expected type is available,
-  as in `let double = (x: Int) => x * 2`.
+  as in `let double = (x: int) => x * 2`.
 - The result annotation `: R` is optional. When it is present it MUST agree
   with the type of the body; when it is omitted, the result type is the type of
-  the body's trailing expression, or `Unit` if the block has none.
+  the body's trailing expression, or `unit` if the block has none.
 - A `return` operand inside a closure body returns from the closure and MUST
   have the closure's result type.
 - The `async` variants are `async fn(x: T): U { ... }` and
@@ -61,11 +61,11 @@ The type of a closure is an ordinary function type `fn(A, B): R` (see
 function with the same parameters and result are interchangeable:
 
 ```xulo
-fn apply(f: fn(Int): Int, x: Int): Int {
+fn apply(f: fn(int): int, x: int): int {
   f(x)
 }
 
-print(apply(fn(x: Int): Int { x * 3 }, 7))   // 21
+print(apply(fn(x: int): int { x * 3 }, 7))   // 21
 ```
 
 - Parameter and result types are taken from the annotations and from the
@@ -105,13 +105,13 @@ binding's storage instead of copying the value.
   other (see [`control-flow.md`](control-flow.md)).
 
 ```xulo
-fn makeAdder(n: Int): fn(Int): Int {
-  (v: Int) => v + n            // read capture of `n`
+fn makeAdder(n: int): fn(int): int {
+  (v: int) => v + n            // read capture of `n`
 }
 
-fn makeCounter(): fn(): Int {
+fn makeCounter(): fn(): int {
   let mut count = 0
-  fn(): Int {
+  fn(): int {
     count = count + 1          // mutable capture of `count`
     count
   }
@@ -144,14 +144,14 @@ Xulo has exactly two capture modes, chosen by the captured binding itself:
   closure may read it, but assigning through the capture is `E0401`.
 
 ```xulo
-struct Counter { value: Int }
+struct Counter { value: int }
 
-fn broken(p: mut Counter): fn(): Unit {
-  fn(): Unit { p.value = p.value + 1 }   // error[E0401]: `p` is not declared `let mut`
+fn broken(p: mut Counter): fn(): unit {
+  fn(): unit { p.value = p.value + 1 }   // error[E0401]: `p` is not declared `let mut`
 }
 
-fn ok(p: Counter): fn(): Int {
-  fn(): Int { p.value }                  // ok: read capture
+fn ok(p: Counter): fn(): int {
+  fn(): int { p.value }                  // ok: read capture
 }
 ```
 
@@ -178,7 +178,7 @@ A closure may be invoked at the point where it is written. The closure is
 parenthesized before the call:
 
 ```xulo
-let n = ((x: Int): Int => x + 1)(41)    // 42
+let n = ((x: int): int => x + 1)(41)    // 42
 ```
 
 Parenthesization makes the extent of the closure explicit; without it the call
@@ -200,7 +200,7 @@ fn map<T, U>(xs: List<T>, f: fn(T): U): List<U> {
   out
 }
 
-fn filter<T>(xs: List<T>, keep: fn(T): Boolean): List<T> {
+fn filter<T>(xs: List<T>, keep: fn(T): bool): List<T> {
   let mut out: List<T> = []
   for x in xs {
     if keep(x) {
@@ -231,7 +231,7 @@ fn compose<A, B, C>(f: fn(A): B, g: fn(B): C): fn(A): C {
   (a: A) => g(f(a))
 }
 
-let transform = compose((x: Int) => x + 1, (x: Int) => x * 2)
+let transform = compose((x: int) => x + 1, (x: int) => x * 2)
 print(transform(20))    // 42
 ```
 
@@ -253,7 +253,7 @@ An `async` closure is written by prefixing either form with `async`:
 
 ```xulo
 async fn main() {
-  let work = async (x: Int): Int => x * 2
+  let work = async (x: int): int => x * 2
   print(await work(21))    // 42
 }
 ```

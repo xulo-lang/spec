@@ -24,24 +24,24 @@ let x = {
   expression is expected — as a binding initializer, an operand, an
   argument, a `return` operand, an arm body, or the trailing expression of
   an enclosing block.
-- A block with no final expression has type `Unit`.
+- A block with no final expression has type `unit`.
 - **The final expression MUST NOT be followed by `;` if its value is
   wanted.** A trailing `;` turns the expression into an expression
-  statement, which discards the value; for a non-`Unit` expression that is
+  statement, which discards the value; for a non-`unit` expression that is
   itself an error under the statement-value rule
   ([`README.md`](README.md)).
 
 ```xulo
-fn f(): Int {
+fn f(): int {
   42           // legal: 42 is the trailing expression
 }
 
-fn g(): Int {
+fn g(): int {
   42;          // error: the trailing `;` discards the value
 }
 
 fn h() {
-  print("hi")  // legal: the trailing expression has type Unit
+  print("hi")  // legal: the trailing expression has type unit
 }
 ```
 
@@ -64,13 +64,13 @@ let y = {
 
 ## Block typing
 
-The type of a block is the type of its final expression, or `Unit` when the
+The type of a block is the type of its final expression, or `unit` when the
 block has none. When a block is the body of a function, that rule becomes
 the return rule:
 
 - the final expression of a function body is the function's return value,
   unless a `return` statement executes first;
-- a body whose final expression has type `Unit` returns `Unit`;
+- a body whose final expression has type `unit` returns `unit`;
 - when the function declares a return type, the final expression MUST have
   that type; a mismatch is a compile-time error (`E0203`)
   ([`../type-system/errors.md`](../type-system/errors.md)).
@@ -78,13 +78,13 @@ the return rule:
 ## `return`
 
 ```xulo
-fn subtract(a: Int, b: Int): Int {
+fn subtract(a: int, b: int): int {
   return a - b
 }
 
-fn log(message: String) {
+fn log(message: string) {
   print(message)
-  return            // legal: the declared return type is Unit
+  return            // legal: the declared return type is unit
 }
 ```
 
@@ -92,7 +92,7 @@ fn log(message: String) {
 - The type of `expr` MUST match the declared return type of the enclosing
   function; a mismatch is a compile-time error (`E0203`).
 - `return` without an expression is valid **only** when the declared return
-  type is `Unit`. Writing a bare `return` in a function that declares any
+  type is `unit`. Writing a bare `return` in a function that declares any
   other return type is an error (`E0203`).
 - `return` outside a function or closure body is a compile-time error (`E0214`).
 - `return` MAY appear inside a final expression. When the executed branch
@@ -100,7 +100,7 @@ fn log(message: String) {
   expression is not evaluated:
 
 ```xulo
-fn classify(n: Int): Int {
+fn classify(n: int): int {
   let doubled = if n < 0 { return 0 } else { n * 2 }
   doubled + 1
 }
@@ -116,16 +116,16 @@ fn classify(n: Int): Int {
 ## Implicit return
 
 ```xulo
-fn add(a: Int, b: Int): Int {
+fn add(a: int, b: int): int {
   a + b            // trailing expression: the return value
 }
 
-fn greet(name: String) {
-  print("hello " + name)   // trailing expression is Unit
+fn greet(name: string) {
+  print("hello " + name)   // trailing expression is unit
 }
 
-fn bad(): Int {
-  print("x")       // error: trailing expression is Unit, declared return is Int
+fn bad(): int {
+  print("x")       // error: trailing expression is unit, declared return is int
 }
 ```
 
@@ -133,10 +133,10 @@ fn bad(): Int {
   this is implicit return. It is equivalent to writing `return` before that
   expression.
 - A body that ends in a statement — a binding, an assignment, a loop — has
-  no trailing expression and returns `Unit`.
+  no trailing expression and returns `unit`.
 - When a return type is declared, the trailing expression MUST match it.
-  When no return type is declared, the function returns `Unit`, and the
-  trailing expression, if any, MUST have type `Unit`.
+  When no return type is declared, the function returns `unit`, and the
+  trailing expression, if any, MUST have type `unit`.
 
 ## Early exit patterns
 
@@ -144,7 +144,7 @@ Guard-style `return`s at the top of a body handle the exceptional cases
 first, leaving the common path as the trailing expression:
 
 ```xulo
-fn clamp(n: Int, lo: Int, hi: Int): Int {
+fn clamp(n: int, lo: int, hi: int): int {
   if lo > hi { return lo }
   if n < lo { return lo }
   if n > hi { return hi }
@@ -152,7 +152,7 @@ fn clamp(n: Int, lo: Int, hi: Int): Int {
 }
 ```
 
-- Each guard is an `if` with a `Boolean` condition whose then-branch is a
+- Each guard is an `if` with a `bool` condition whose then-branch is a
   `return`; the guards are statements, so their values are discarded.
 - The pattern keeps the common path short and makes the exceptional path
   explicit. It is a convention, not a special form: any mix of `return` and
@@ -161,7 +161,7 @@ fn clamp(n: Int, lo: Int, hi: Int): Int {
 ## `defer`
 
 ```xulo
-fn handle(path: String) {
+fn handle(path: string) {
   let f = open(path)
   defer close(f)          // runs when this block exits
   process(f)
@@ -219,7 +219,7 @@ A block is accepted wherever the corresponding construct accepts a body:
 |---------|------------|-------|
 | `if` / `else if` / `else` | `{ … }` | branch value is the block's value ([`../expressions/control-flow.md`](../expressions/control-flow.md)) |
 | `match` arm | `{ … }` or a bare expression | arm body ([`../expressions/control-flow.md`](../expressions/control-flow.md)) |
-| `for` / `while` | `{ … }` | loop body; the loop itself has type `Unit` |
+| `for` / `while` | `{ … }` | loop body; the loop itself has type `unit` |
 | Function body | `{ … }` | final expression is the return value |
 | Closure body | `{ … }` or a bare expression | specified in [`../expressions/closures.md`](../expressions/closures.md) |
 | Component children | `{ … }` | trailing block of a component invocation ([`../components/view-syntax.md`](../components/view-syntax.md)) |

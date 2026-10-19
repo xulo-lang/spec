@@ -40,10 +40,10 @@ method access is the method's function type with `self` bound to the
 receiver (see [`../functions.md`](../functions.md)); the call itself is
 specified in [`calls.md`](calls.md).
 
-When the receiver has type `Map<String, V>`, `expr.name` is the **member form
+When the receiver has type `Map<string, V>`, `expr.name` is the **member form
 of a map entry**: it is exactly `expr["name"]` — type `V`, and a missing key
 is the same runtime error as the subscript read of that key. On a map whose
-key type is not `String` no member form exists
+key type is not `string` no member form exists
 ([`../types/composite-types.md`](../types/composite-types.md)).
 
 A member that does not exist on the receiver's type is a compile-time error (`E0102`)
@@ -126,7 +126,7 @@ xs[0]          // list element
 counts[key]    // map value
 ```
 
-The index type follows the collection: a `List<T>` is indexed by `Int` and
+The index type follows the collection: a `List<T>` is indexed by `int` and
 yields `T`; a `Map<K, V>` is indexed by `K` and yields `V`. Strings are not
 indexable (see [`../types/primitive-types.md`](../types/primitive-types.md));
 select a character by other means, such as the built-in string intrinsics.
@@ -165,7 +165,7 @@ inner chain is never evaluated, the result is `null`, and `??` supplies
 test applies to it. If `a` has type `T?` and `T` has a member of type `U`,
 then `a?.b` has type `U?`, so an optional chain is always consumed with `??`,
 a ternary, a `null` test, or a context that admits `null`. The same holds for
-a position: if `q` has type `(Int, String)?`, then `q?.0` has type `Int?`.
+a position: if `q` has type `(int, string)?`, then `q?.0` has type `int?`.
 Optional chaining combines with `??` exactly this way, and with method calls
 as in `session?.refresh()`; the operator is specified in
 [`operators.md`](operators.md).
@@ -195,7 +195,7 @@ method was called on:
 
 ```xulo
 impl Rectangle {
-  fn area(self): Float {
+  fn area(self): float {
     self.w * self.h
   }
 }

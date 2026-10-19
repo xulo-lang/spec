@@ -96,9 +96,6 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
-| [lowercase-primitive-keywords/](lowercase-primitive-keywords/proposal.md) | draft | Primitive value types become lowercase keywords (`bool`, `string`, `int`, `i8`…`f64`, `unit`, `unknown`); `View`, `Range<T>`, composites, and user types stay UpperCamelCase; 41 → 58 keywords. |
-| [align-intrinsic-casing/](align-intrinsic-casing/proposal.md) | draft | Rename the multi-word prelude intrinsics and `to_string` to lowerCamelCase (`mapGet`, `setInsert`, `listRemove`, `toString`), matching names.md. |
-| [add-test-title/](add-test-title/proposal.md) | draft | `#Test("parse test") fn …` — a test MAY carry a parenthesized string title; the identifier stays the identity, bare `#Test` stays canonical. |
 
 ## Archived
 
@@ -109,5 +106,8 @@ with their final status.
 |--------|--------|---------|
 | [archive/add-declaration-attributes/](archive/add-declaration-attributes/proposal.md) | accepted | `#Derive(ToString)` — declarations MAY carry `#Name` attributes from a closed, checker-interpreted registry; `E0108`–`E0112` registered. |
 | [archive/add-explicit-type-arguments/](archive/add-explicit-type-arguments/proposal.md) | accepted | a call MAY write explicit type arguments — `first<Int>(…)` — which replace inference; `E0807`/`E0808` registered. |
+| [archive/add-test-title/](archive/add-test-title/proposal.md) | accepted | `#Test("parse test") fn …` — a test MAY carry a parenthesized string title; the identifier stays the identity, bare `#Test` stays canonical. |
+| [archive/align-intrinsic-casing/](archive/align-intrinsic-casing/proposal.md) | accepted | Rename the multi-word prelude intrinsics and `to_string` to lowerCamelCase (`mapGet`, `setInsert`, `listRemove`, `toString`), matching names.md. |
 | [archive/change-module-system-to-trees/](archive/change-module-system-to-trees/proposal.md) | accepted | a package is a `mod`-declared tree; `::` paths, manifest package names (one per dependency), verbs `use`/`pub use` replace string specifiers. |
 | [archive/change-test-to-attribute/](archive/change-test-to-attribute/proposal.md) | accepted | the test declaration is `#Test [async] fn name() { … }` from the attribute registry; `test` leaves the keyword set (42 → 41). |
+| [archive/lowercase-primitive-keywords/](archive/lowercase-primitive-keywords/proposal.md) | accepted | Primitive value types become lowercase keywords (`bool`, `string`, `int`, `i8`…`f64`, `unit`, `unknown`); `View`, `Range<T>`, composites, and user types stay UpperCamelCase; 41 → 58 keywords. |

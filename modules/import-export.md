@@ -230,11 +230,11 @@ Two families of forms put names into a module's interface.
 and so does a module:
 
 ```xulo
-pub fn add(a: Int, b: Int): Int { a + b }
-pub struct User { pub name: String, age: Int }
+pub fn add(a: int, b: int): int { a + b }
+pub struct User { pub name: string, age: int }
 pub enum Status { Active, Inactive }
-pub trait Shape { fn area(self): Float }
-pub type Score = Int
+pub trait Shape { fn area(self): float }
+pub type Score = int
 pub const PI = 3.14
 pub let appName = "xulo"
 pub mod form;             // the namespace and its pub members
@@ -388,7 +388,7 @@ statement that binds it. A warning never rejects a program
 ```xulo
 use math::{add, sqrt};    // `add` is never used: W0102
 
-fn norm(x: Float, y: Float): Float {
+fn norm(x: float, y: float): float {
   sqrt(x * x + y * y)
 }
 ```

@@ -1,6 +1,6 @@
 # Add Test Title
 
-**Status:** draft · **Date:** 2026-10-16 · **Affects:** `grammar.md`,
+**Status:** accepted · **Date:** 2026-10-16 · **Affects:** `grammar.md`,
 `testing.md`, `types/traits.md`, `ast.md`
 
 ## Summary
@@ -32,7 +32,7 @@ bare `#Test` stays the canonical, **RECOMMENDED** form when no title is
 wanted; `#Test()` is an accepted synonym meaning no title.
 
 Until this change is accepted, `TestDecl` has no parenthesized group
-([`../../testing.md`](../../testing.md)): `#Test("…") fn` does not parse, and
+([`../../../testing.md`](../../../testing.md)): `#Test("…") fn` does not parse, and
 `#Test() fn` parses as an ordinary `fn` carrying the attribute and is
 diagnosed `E0110`. The deltas in [`specs/`](specs/) are the text the chapters
 gain once the change is accepted.
@@ -42,7 +42,7 @@ gain once the change is accepted.
 ### An identifier cannot hold a title
 
 Function identifiers follow the casing conventions of
-[`../../names.md`](../../names.md) — snake_case, no spaces, no punctuation.
+[`../../../names.md`](../../../names.md) — snake_case, no spaces, no punctuation.
 "parse test" cannot be an identifier, and `testParse` is a different thing:
 the machine name a tool keys on, not the phrase a human reads in a report.
 The title separates the two, exactly as `test('parse test', …)` does in Jest

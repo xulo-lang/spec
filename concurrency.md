@@ -48,7 +48,7 @@ spawn.process Type { FieldInit , … }
 | `spawn async { … }` | on the default task scheduler |
 | `spawn.thread async { … }` | on an operating-system thread |
 | `spawn.process async { … }` | in a separate process |
-| `spawn.on(pool) async { … }` where `pool` has type `fn(fn(): Unit): Unit` | where `pool` decides |
+| `spawn.on(pool) async { … }` where `pool` has type `fn(fn(): unit): unit` | where `pool` decides |
 | `spawn.process Type { … }` | as a service of type `Type` ([Services](#services)) |
 
 - The `async` keyword is required in the block forms, and the block is an
@@ -62,7 +62,7 @@ spawn.process Type { FieldInit , … }
   identical in every mode.
 - `spawn` is an ordinary expression: it may appear in a synchronous or an
   `async` body, in any expression position its type permits.
-- A `spawn` expression is not `Unit`, so it may not stand alone as an
+- A `spawn` expression is not `unit`, so it may not stand alone as an
   expression statement ([`statements/README.md`](statements/README.md)).
   Bind it, `await` it, or pass it on.
 
@@ -90,8 +90,8 @@ more after each `await` in the block completes.
   hands it over returns; the `spawn` expression itself yields the `Task`
   without waiting for any segment to finish.
 - The result of the block is carried by the `Task` itself, never through the
-  executor: the `fn(): Unit` a pool receives runs one segment and returns
-  `Unit`, and the value the block produces is stored in the task when it
+  executor: the `fn(): unit` a pool receives runs one segment and returns
+  `unit`, and the value the block produces is stored in the task when it
   settles.
 - For `spawn.on(pool)`, each ready transition calls `pool` with one segment
   thunk. The pool MAY run it immediately, queue it, or hand it to a thread.
@@ -135,7 +135,7 @@ Capture is decided when the `spawn` expression is evaluated, before the body
 runs, so what a block receives never changes while it executes:
 
 ```xulo
-fn upload_files(): Task<Unit> {
+fn upload_files(): Task<unit> {
   let config = load_config()
   let data = gather()
   let job = spawn.thread async {
@@ -259,16 +259,16 @@ lock state { Block }             // a critical section
   a runtime failure defined in [Runtime failures](#runtime-failures).
 
 ```xulo
-struct AppState { total_online: Int, names: List<String> }
+struct AppState { total_online: int, names: List<string> }
 
-fn join(state: shared AppState, name: String) {
+fn join(state: shared AppState, name: string) {
   lock state {
     state.total_online = state.total_online + 1
     state.names = state.names + [name]
   }
 }
 
-fn report(state: shared AppState): Int {
+fn report(state: shared AppState): int {
   lock state { state.total_online }
 }
 ```
@@ -332,10 +332,10 @@ A **service** is an actor: a struct with an `on_message` method, running in
 its own process, reached only by sending messages.
 
 ```xulo
-struct Tally { total: Int }
+struct Tally { total: int }
 
 impl Tally {
-  fn on_message(mut self, cmd: Int) {
+  fn on_message(mut self, cmd: int) {
     self.total = self.total + cmd
     reply(self.total)
   }
@@ -359,7 +359,7 @@ async fn main() {
   or `mut self`) and exactly one message parameter of some type `M`; it MAY be
   declared `async`.
 - The spawn evaluates to a **service handle**: a value of the structural type
-  `{ send: fn(M): Task<R>, stop: fn(): Unit }`, whose `send` member takes a
+  `{ send: fn(M): Task<R>, stop: fn(): unit }`, whose `send` member takes a
   value of `M` and whose `stop` member ends the service
   ([Service lifetime and `stop`](#service-lifetime-and-stop)).
 - `handle.send(m)` copies the message value into a message, queues it for the
@@ -385,7 +385,7 @@ async fn main() {
   message begins.
 - `reply(e)` may be called only inside `on_message`. The reply type `R` is the
   common type of the `reply` operands in the method (`E0211` if they have
-  none), or `Unit` when the method never calls `reply`. The send's task
+  none), or `unit` when the method never calls `reply`. The send's task
   settles when `on_message` returns, carrying the operand of the `reply` the
   executed path performed — or, when that path performed none although the
   method contains `reply` calls, settling as cancelled.

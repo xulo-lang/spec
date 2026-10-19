@@ -57,7 +57,7 @@ argument appears, every following argument MUST be named as well. Mixing is
 therefore one-directional:
 
 ```xulo
-fn render(text: String, size: Int, bold: Boolean): View {
+fn render(text: string, size: int, bold: bool): View {
   Text(text)
 }
 
@@ -85,14 +85,14 @@ specified in [`../components/binding.md`](../components/binding.md).
 A parameter MAY declare a default with `=`.
 
 ```xulo
-fn greet(name: String = "stranger"): String {
+fn greet(name: string = "stranger"): string {
   "Hello, " + name
 }
 ```
 
 A default value is evaluated at each call that omits the argument, not once at
 declaration, so a default may depend on values computed at call time. The
-parameter's type MUST admit the default value: `name: String = 42` is a
+parameter's type MUST admit the default value: `name: string = 42` is a
 compile-time error (`E0228`).
 
 Any parameter MAY have a default. An omitted argument MUST be supplied by name
@@ -108,7 +108,7 @@ A parameter whose type is optional (`T?`) MAY be omitted at the call site, in
 which case it is bound to `null`.
 
 ```xulo
-fn greet(name: String?): String {
+fn greet(name: string?): string {
   if name != null { "Hello, " + name } else { "Hello, stranger" }
 }
 
@@ -117,7 +117,7 @@ greet("Ada")
 ```
 
 An optional parameter without a default accepts `null` explicitly as well, so
-`greet(Null)` and `greet()` are equivalent. Optional and defaulted parameters
+`greet(null)` and `greet()` are equivalent. Optional and defaulted parameters
 follow the same positional-trailing or named rule stated above.
 
 ## Method calls
@@ -153,9 +153,9 @@ fn first<T>(items: List<T>): T {
   items[0]
 }
 
-let n: Int = first([1, 2, 3])    // T is Int, inferred
-let t = first<Int>([1, 2, 3])    // T is Int, written
-let s = first(["a", "b"])        // T is String, inferred
+let n: int = first([1, 2, 3])    // T is int, inferred
+let t = first<int>([1, 2, 3])    // T is int, written
+let s = first(["a", "b"])        // T is string, inferred
 ```
 
 Whether a `<` after a callee begins such a list is decided by a purely
@@ -176,8 +176,8 @@ The rule is scoped to an identifier in call position: a callee reached through
 a subscript or any other postfix that does not end in an identifier takes no
 list, and a call through a value of function type has no type parameters and
 accepts none. `>>` and `>=` are single tokens, so the nested-bracket spacing
-rule applies — `first<Map<String, Int> >(m)` is well-formed and
-`first<Map<String, Int>>(m)` is not. The production is given in
+rule applies — `first<Map<string, int> >(m)` is well-formed and
+`first<Map<string, int>>(m)` is not. The production is given in
 [grammar.md](../grammar.md).
 
 Arity, bounds, substitution without inference, and the interaction with an
@@ -197,7 +197,7 @@ double(21)
 xs[0](10)
 getFn()(x)
 (f)(5)
-(fn(x: Int): Int { x })(1)
+(fn(x: int): int { x })(1)
 ```
 
 The callee is evaluated first, then the arguments left-to-right. A call made

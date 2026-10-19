@@ -64,17 +64,18 @@ formed first, then classified as keyword, reserved word, or identifier.
 
 ### Keywords
 
-The language has exactly the following closed set of 42 keywords; every other
+The language has exactly the following closed set of 58 keywords; every other
 word is an ordinary identifier unless it is reserved.
 
 ```text
-Keyword = "and" | "as" | "async" | "await" | "break" | "const"
-        | "continue" | "copy" | "defer" | "else" | "enum" | "false" | "fn"
-        | "for" | "if" | "impl" | "in" | "is" | "let"
-        | "lock" | "match" | "mod" | "move" | "mut" | "not" | "null" | "or"
-        | "panic" | "pub" | "return" | "self" | "shared" | "spawn" | "struct"
-        | "super" | "trait" | "true" | "type" | "use" | "where"
-        | "while" ;
+Keyword = "and" | "as" | "async" | "await" | "bool" | "break" | "const"
+        | "continue" | "copy" | "defer" | "else" | "enum" | "f32" | "f64"
+        | "false" | "float" | "fn" | "for" | "i8" | "i16" | "i32" | "i64"
+        | "if" | "impl" | "in" | "int" | "is" | "let" | "lock" | "match"
+        | "mod" | "move" | "mut" | "not" | "number" | "null" | "or" | "panic"
+        | "pub" | "return" | "self" | "shared" | "spawn" | "string" | "struct"
+        | "super" | "trait" | "true" | "type" | "u8" | "u16" | "u32" | "u64"
+        | "unit" | "unknown" | "use" | "where" | "while" ;
 ```
 
 A `ReservedWord` is a word whose spelling appears in the reserved list of
@@ -287,7 +288,8 @@ IdentifierList       = Identifier { "," Identifier } [ "," ] ;
 
 ConstDecl = [ "pub" ] "const" Identifier [ ":" Type ] "=" Expression ;
 
-TestDecl = "#Test" [ "async" ] "fn" Identifier "(" ")" Block ;
+TestDecl = "#Test" [ "(" [ StringLiteral ] ")" ] [ "async" ] "fn"
+           Identifier "(" ")" Block ;
 ```
 
 `:=` appears only directly after `let`, never after `let mut` or `const`, and
@@ -298,26 +300,31 @@ tuple with `( … )`; the two forms take an initializer of the matching shape
 and nothing else.
 
 A `TestDecl` is a function declaration with a fixed shape: `#Test` precedes
-`async` and `fn` (never `async #Test fn`), the parameter list and the return
-type are absent — the body is an implicit `fn(): Unit` — and it carries no
-`pub`, no generic parameters, and no `where` clause. The identifier is the
-test's identity as a tool reports it, not a name in the value namespace:
-referencing it is a compile-time error (`E0107`). The optional `async` marker
-makes the body an `async` context
+its optional title group, `async`, and `fn` (never `async #Test fn`), the
+parameter list and the return type are absent — the body is an implicit
+`fn(): unit` — and it carries no `pub`, no generic parameters, and no
+`where` clause. The identifier is the test's identity as a tool reports it,
+not a name in the value namespace: referencing it is a compile-time error
+(`E0107`). The optional `async` marker makes the body an `async` context
 ([async-expressions.md](expressions/async-expressions.md)); the declaration's
 checking, inertness, and pass/fail criterion are specified in
 [testing.md](testing.md).
 
 The head token is written exactly `#Test`; the production carries the
-attribute name as a literal, so the test form accepts no other attributes.
-When the token sequence `#Test` `async`? `fn` Identifier `(` `)` Block
-appears at file scope, the declaration is a `TestDecl` and no attribute
-lookup runs. A `#Test` that precedes a `fn` with parameters, a return type,
-generic parameters, a `where` clause, or `pub` does not match `TestDecl`:
-the declaration parses as an ordinary `FnDecl` carrying the attribute, and
-the registry rules of [traits.md](types/traits.md) diagnose it (`E0110` —
-`` attribute `Test` takes the form `#Test [async] fn name() { … }` ``).
-Written on a `struct`, `enum`, `trait`, or `impl`, `#Test` is `E0109`.
+attribute name as a literal, so the test form accepts no other attributes,
+and its optional parenthesized group carries a `StringLiteral` title — an
+absent group and an empty group `()` both mean no title. When the token
+sequence `#Test` `("(" StringLiteral? ")")?` `async`? `fn` Identifier `(` `)`
+Block appears at file scope, the declaration is a `TestDecl` and no
+attribute lookup runs. A `#Test` whose group holds an identifier parses as
+an ordinary `FnDecl` carrying the attribute, and the registry rules of
+[traits.md](types/traits.md) diagnose it (`E0110` —
+`` attribute `Test` takes the form `#Test ("…")? [async] fn name() { … }` ``);
+a group holding anything else — a numeral, for instance — is a syntax error.
+A `#Test` that precedes a `fn` with parameters, a return type, generic
+parameters, a `where` clause, or `pub` does not match `TestDecl` and is the
+same `E0110`. Written on a `struct`, `enum`, `trait`, or `impl`, `#Test` is
+`E0109`.
 
 ### Component declarations
 
@@ -338,26 +345,32 @@ EnvironmentDecl = "@" "Environment" "let" Identifier ":" Type ;
 `@State` and `@Store` take an initializer; `@Environment` takes a REQUIRED
 type annotation and none; `@Effect` takes a value plus an optional dependency
 list after a `,`. The two `@Effect` operands are written as plain expressions
-so that a wrong shape — `@Effect fn(): Int { … }`, `@Effect fn() { … }, count`
+so that a wrong shape — `@Effect fn(): int { … }`, `@Effect fn() { … }, count`
 — parses and is rejected by the checker (`E0709`, `E0708`) rather than
 failing the parse. None of the four accepts `mut`, `pub`, or `:=`.
 
 ## Types
 
 `?` binds tighter than `&`, which binds tighter than `|`, and parentheses group
-([types/README.md](types/README.md)). Primitive type names — `Boolean`,
-`String`, `Number`, `Int`, `Float`, the fixed-bit numerics, `Null`, `Unit`,
-`Unknown`, `View` — are ordinary identifiers written through `NamedType`, listed
-in [primitive-types.md](types/primitive-types.md).
+([types/README.md](types/README.md)). The primitive value types — `bool`,
+`string`, `number`, `int`, `float`, the fixed-bit numerics, `null`, `unit`,
+`unknown` — are keywords written through `PrimitiveType`; every other type
+name — `View`, the built-in composites, and every user-declared name — is an
+ordinary identifier written through `NamedType`. The primitives are listed in
+[primitive-types.md](types/primitive-types.md).
 
 ```text
 Type             = UnionType ;
 UnionType        = IntersectionType { "|" IntersectionType } ;
 IntersectionType = PostfixType { "&" PostfixType } ;
 PostfixType      = PrimaryType { "?" } ;
-PrimaryType      = NamedType | "(" Type ")" | TupleType
+PrimaryType      = NamedType | PrimitiveType | "(" Type ")" | TupleType
                  | FunctionType | LiteralType ;
 NamedType        = Path [ TypeArgs ] ;
+PrimitiveType    = "bool" | "string" | "number" | "int" | "float"
+                 | "i8" | "i16" | "i32" | "i64"
+                 | "u8" | "u16" | "u32" | "u64"
+                 | "f32" | "f64" | "null" | "unit" | "unknown" ;
 LiteralType      = StringLiteral | IntegerLiteral | FloatLiteral
                  | BooleanLiteral ;
 
@@ -427,7 +440,7 @@ CallTypeArgs         = "<" [ TypeList ] ">" ;
 ```
 
 Relational, range, and type-test operators are non-associative: `a < b < c`,
-`0..<1..<2`, and `x is Int is String` are not well-formed
+`0..<1..<2`, and `x is int is string` are not well-formed
 ([operators.md](expressions/operators.md)).
 `move` and `copy` are prefix operators whose operand and position are
 restricted by [memory-and-runtime.md](memory-and-runtime.md).
@@ -465,8 +478,8 @@ and is unchanged; `CallTypeArgs` is a separate production that admits the
 empty list, because a zero-length list at a call must reach the arity
 diagnostic rather than fall back to a comparison. `>>` and `>=` are single
 tokens and never match, so a nested type argument keeps the spacing the
-nested-bracket rule already requires: `first<Map<String, Int> >(m)` is
-well-formed and `first<Map<String, Int>>(m)` is not, the latter failing to
+nested-bracket rule already requires: `first<Map<string, int> >(m)` is
+well-formed and `first<Map<string, int>>(m)` is not, the latter failing to
 parse with a note to insert the space. Typing and diagnostics are in
 [expressions/calls.md](expressions/calls.md).
 
@@ -544,7 +557,8 @@ RangePattern   = ( IntegerLiteral | FloatLiteral ) ( "..<" | "..." )
 VariantPattern = Identifier "::" Identifier [ "(" [ PatternList ] ")" ] ;
 StructPattern  = Identifier "(" [ PatternList ] ")" ;
 TypePattern    = PatternType ( "_" | Identifier ) ;
-PatternType    = Identifier [ "?" ] { "|" Identifier [ "?" ] } ;
+PatternType    = PatternDesignator [ "?" ] { "|" PatternDesignator [ "?" ] } ;
+PatternDesignator = PrimitiveType | Identifier ;
 PatternList    = Pattern { "," Pattern } [ "," ] ;
 ```
 
@@ -552,13 +566,13 @@ PatternList    = Pattern { "," Pattern } [ "," ] ;
 wildcard and a binding of the same spelling are one alternative. Enum variants
 use `::` in patterns exactly as in expressions, and the operands of a range
 pattern are numeric literals. A type pattern is a type designator followed by
-a binder — `String s`, `Unknown _`, `String? p` — and the designator admits no
+a binder — `string s`, `unknown _`, `string? p` — and the designator admits no
 type-argument list
 ([control-flow.md](expressions/control-flow.md)).
 
 `|` does double duty: it joins the designators of a union type pattern and
 separates the alternatives of an or-pattern. The designator chain is read
-first when a binder follows it — `String | Int v` is one union type pattern,
+first when a binder follows it — `string | int v` is one union type pattern,
 as before — and `|` separates alternatives when no binder follows: `0 | 1`,
 `A | B`, `Shape::Circle(_) | Shape::Dot(_)`. Parentheses group a single
 alternative and settle the remaining case: `(A) | B c` is two alternatives,
@@ -637,7 +651,7 @@ block holds child items, which are not statements
 ([view-syntax.md](components/view-syntax.md)). `ComponentCall` recognizes the
 forms that carry a block, since a trailing block attaches to the invocation and
 cannot be written any other way; an invocation written with an argument list
-and no block — `Text("Hi")`, `first<Int>([1, 2, 3])` — is parsed as an
+and no block — `Text("Hi")`, `first<int>([1, 2, 3])` — is parsed as an
 ordinary call through `PostfixOperand`, and the two read the same.
 
 ```text
@@ -656,7 +670,7 @@ error, and those restrictions are typing rules stated in
 
 ```xulo
 fn Counter(): View {
-  @State let count: Int = 0
+  @State let count: int = 0
   VStack(spacing: 8) {
     Text(str(count))
     Button("Inc", onClick: fn() { count = count + 1 })
@@ -704,10 +718,10 @@ production itself appears exactly once, in its own section.
 | `Program`, `HeaderItem`, `Declaration`, `Entry`, `EntryPoint`, `ModDecl`, `ModuleBody`, `UseDecl`, `PubUse`, `UseTarget`, `UsePath`, `UseGroup`, `UseGlob`, `UseEntry`, `PubUseLocal`, `PathHead`, `Path`, `PackageName` | [Program and modules](#program-and-modules) |
 | `Attribute`, `AttributeArgs`, `AttributeArg`, `AttributeList`, `FnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl`, `TestDecl` | [Declarations](#declarations) |
 | `ComponentDecl`, `StateDecl`, `StoreDecl`, `EffectDecl`, `EnvironmentDecl` | [Declarations](#declarations) |
-| `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `LiteralType`, `TypeArgs`, `TypeList`, `TupleType`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
+| `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `PrimitiveType`, `LiteralType`, `TypeArgs`, `TypeList`, `TupleType`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
 | `Expression`, `AssignmentExpression`, `TernaryExpression`, `LogicalOrExpression`, `LogicalAndExpression`, `NullishExpression`, `EqualityExpression`, `IsExpression`, `RelationalExpression`, `RangeExpression`, `BitOrExpression`, `BitXorExpression`, `BitAndExpression`, `ShiftExpression`, `AdditiveExpression`, `MultiplicativeExpression`, `PowerExpression`, `UnaryExpression`, `PostfixExpression`, `PostfixOperand`, `CallTypeArgs` | [Expressions](#expressions) |
 | `PrimaryExpression`, `PathExpr`, `PanicExpression`, `Place`, `ArgumentList`, `Argument`, `ListLiteral`, `ListElement`, `Spread`, `MapLiteral`, `TypedMap`, `BraceMap`, `MapEntry`, `MapField`, `TupleLiteral`, `ClosureExpression`, `FunctionExpression`, `ArrowClosure`, `ArrowParams`, `ClosureParamList`, `ClosureParam` | [Expressions](#expressions) |
-| `Pattern`, `PatternAlt`, `LiteralPattern`, `RangePattern`, `VariantPattern`, `StructPattern`, `TypePattern`, `PatternType`, `PatternList` | [Patterns](#patterns) |
+| `Pattern`, `PatternAlt`, `LiteralPattern`, `RangePattern`, `VariantPattern`, `StructPattern`, `TypePattern`, `PatternType`, `PatternDesignator`, `PatternList` | [Patterns](#patterns) |
 | `Statement`, `StatementEnd`, `ReturnStmt`, `BreakStmt`, `ContinueStmt`, `DeferStmt`, `Assignment`, `ExpressionStatement`, `Block` | [Statements](#statements) |
 | `IfExpression`, `MatchExpression`, `MatchArmList`, `MatchArm`, `Guard`, `ForStmt`, `WhileStmt` | [Control flow](#control-flow) |
 | `ComponentCall`, `ComponentBlock`, `ChildItem` | [Components and UI](#components-and-ui) |

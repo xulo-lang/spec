@@ -71,21 +71,25 @@ follow every rule on this page.
 
 Two groups of names are built in rather than declared:
 
-- **Built-in type names** — `String`, `Number`, `Boolean`, `List`, `Map`,
-  `Set`, `Unit`, `Unknown`, `Task`, `Range`, `View`, together with `Int`,
-  `Float`, and the fixed-bit numeric names — SHOULD NOT be shadowed.
-- **Intrinsic names** — `print`, `println`, `str`, `Math`, `Time` (and the
-  namespace `Task`) — SHOULD NOT be shadowed. Intrinsics are described in the
+- **Primitive type keywords** — `bool`, `string`, `number`, `int`,
+  `float`, `i8`…`u64`, `f32`, `f64`, `null`, `unit`, `unknown` — are
+  keywords: no declaration MAY bear their spelling, and there is nothing to
+  shadow.
+- **Built-in (non-primitive) type names** — `List`, `Map`, `Set`, `Task`,
+  `Range`, `View`, `Result`, `Error` — and **intrinsic names** — `print`,
+  `println`, `str`, `Math`, `Time` (and the namespace `Task`) — SHOULD NOT
+  be shadowed. Intrinsics are described in the
   [builtins chapter](builtins/README.md).
 
-Shadowing a built-in type name means precisely this: a declaration introduces
-an ordinary binding whose spelling is the built-in type name, in a scope where
-that type was visible, and from that declaration to the end of the enclosing
-scope the name denotes only the new binding. The built-in type is hidden: a
-use of the name in type position inside that scope — an annotation, a type
-argument, a bound — no longer resolves to a type and is an error (`E0101`). Likewise,
-shadowing an intrinsic hides it: calls to the intrinsic inside that scope no
-longer reach the intrinsic. Shadowing is what makes `let print = 0` legal and
+Shadowing a built-in type name means precisely this: a declaration
+introduces an ordinary binding whose spelling is one of the non-primitive
+built-in type names, in a scope where that type was visible, and from that
+declaration to the end of the enclosing scope the name denotes only the new
+binding. The built-in type is hidden: a use of the name in type position
+inside that scope — an annotation, a type argument, a bound — no longer
+resolves to a type and is an error (`E0101`). Likewise, shadowing an
+intrinsic hides it: calls to the intrinsic inside that scope no longer
+reach the intrinsic. Shadowing is what makes `let print = 0` legal and
 `print("x")` afterwards an error — which is why both groups SHOULD be left
 alone.
 
@@ -135,9 +139,9 @@ introduced afterwards, even one with the same name in an enclosing scope, does
 not re-point the captured name.
 
 ```xulo
-fn demo(): Int {
+fn demo(): int {
   let x = 1
-  let read = fn(): Int { x }   // captures the outer x
+  let read = fn(): int { x }   // captures the outer x
   let mut total = 0
   if true {
     let x = 2                  // shadows only inside this branch
@@ -168,11 +172,11 @@ referenced afterwards, because no name was created.
 
 ```xulo
 enum Shape {
-  Circle(radius: Number)
+  Circle(radius: number)
   Point
 }
 
-fn area(s: Shape): Number {
+fn area(s: Shape): number {
   match s {
     Shape::Circle(r) => 3 * r * r
     _ => 0                  // matches anything; binds nothing

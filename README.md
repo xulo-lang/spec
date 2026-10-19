@@ -114,7 +114,7 @@ at the point where it is used, and only for that use.
 - **ISO/IEC 14977:1996**, *Extended Backus-Naur Form* — the grammar notation
   of [`grammar.md`](grammar.md).
 - **IEEE Std 754-2019**, *IEEE Standard for Floating-Point Arithmetic* — the
-  semantics of `Float`, `F32`, and `F64`
+  semantics of `float`, `f32`, and `f64`
   ([`types/primitive-types.md`](types/primitive-types.md)).
 - **RFC 3629**, *UTF-8, a transformation format of ISO 10646* — the encoding
   of `.xulo` source files (convention 3 above).
@@ -167,12 +167,12 @@ normative for the whole specification.
 | **immutable binding** | A binding introduced by `let` or `const`; reassignment is a compile-time error (`E0401`). |
 | **impl** | A block that attaches methods to a type — `impl Trait for Type` implements a trait, `impl Type` declares inherent methods — which applies only within the module that contains it. See [`types/traits.md`](types/traits.md). |
 | **intrinsic** | A function or namespace provided directly by the compiler, available without `use`. See [`builtins/`](builtins/README.md). |
-| **is** | The type test `e is T` and its negation `e is not T`: yields `Boolean` and narrows the branches of an `if`. See [`expressions/control-flow.md`](expressions/control-flow.md). |
+| **is** | The type test `e is T` and its negation `e is not T`: yields `bool` and narrows the branches of an `if`. See [`expressions/control-flow.md`](expressions/control-flow.md). |
 | **map** | An insertion-ordered collection of key–value pairs `Map<K, V>`, written with a brace literal `{ k: v }` or the typed form `Map<K, V>{ … }`. See [`types/composite-types.md`](types/composite-types.md). |
 | **module** | A body of code — one file or one inline `mod` block — together with its exported names. |
 | **move** | `move b`: a transfer that severs `b` from its value, after which any use of `b` is a compile-time error (`E0403`); its operand MUST be a path naming a binding, and it is accepted only in a `let` initializer, a call argument, or a `return` operand. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **narrowing** | The refinement of a binding's type within one branch — by `is` in an `if` condition, by a `match` arm's pattern, or by matching a union — so that a member-specific operation type-checks there. See [`expressions/control-flow.md`](expressions/control-flow.md). |
-| **optional type** | `T?`, shorthand for `T \| Null`; absence, which is not an error. |
+| **optional type** | `T?`, shorthand for `T \| null`; absence, which is not an error. |
 | **ownership** | The rules deciding which binding denotes a value: `move` severs a binding from its value, and `copy` produces an independent deep copy while leaving the original binding intact. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **panic** | An unrecoverable stop: a call to `panic(...)` or a runtime failure; it stops the program where it occurs and has no handler. See [`error-handling.md`](error-handling.md). |
 | **pattern** | The left-hand side of a `match` arm; deconstructs a value or tests its type. |
@@ -185,7 +185,7 @@ normative for the whole specification.
 | **trait** | A nominal declaration of a named set of method signatures with no default bodies; a type opts into it with an `impl`. See [`types/traits.md`](types/traits.md). |
 | **tuple** | An ordered, fixed-length sequence of at least two values with one type per position; written `(T, U)`, read with `p.0`, deconstructed with `let (a, b) = e`. See [`types/composite-types.md`](types/composite-types.md). |
 | **type pattern** | A `match` pattern of the form `Type binder` that tests a value's type and binds it; `match`'s type test, the other form being the **is** operator. See [`expressions/control-flow.md`](expressions/control-flow.md). |
-| **unit** | The type of expressions that produce no meaningful value; written `Unit`. |
+| **unit** | The type of expressions that produce no meaningful value; written `unit`. |
 | **View** | The type produced by a component; a value of the render tree. |
 | **view function** | Synonym for *component*. |
 

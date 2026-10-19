@@ -11,11 +11,11 @@ values in [`expressions/closures.md`](expressions/closures.md).
 ## Definition
 
 ```xulo
-fn log(message: String) {
+fn log(message: string) {
   print(message)
 }
 
-fn add(a: Int, b: Int): Int { a + b }
+fn add(a: int, b: int): int { a + b }
 ```
 
 - The form is `fn name(p: T, q: U): R { … }`. Parameters are `name: type`
@@ -23,8 +23,8 @@ fn add(a: Int, b: Int): Int { a + b }
 - **Every parameter MUST be annotated with its type.** Parameter types are
   never inferred from the arguments.
 - The return type is written when the function produces a value. A missing
-  return type means `Unit` ([`types/primitive-types.md`](types/primitive-types.md));
-  declaring `: Unit` explicitly is equivalent to omitting it.
+  return type means `unit` ([`types/primitive-types.md`](types/primitive-types.md));
+  declaring `: unit` explicitly is equivalent to omitting it.
 - A named `fn` declaration MAY appear at module level or inside a block body.
   A nested function is local to its block and is not exported. The anonymous
   forms — `fn(…)` and `(…) => …` — are closures
@@ -34,8 +34,8 @@ fn add(a: Int, b: Int): Int { a + b }
 ## Parameters
 
 ```xulo
-fn greet(name: String = "stranger"): String { "Hello, " + name }
-fn render(text: String, size: Int, bold: Boolean): View { Text(text) }
+fn greet(name: string = "stranger"): string { "Hello, " + name }
+fn render(text: string, size: int, bold: bool): View { Text(text) }
 
 render("Hi", bold: true, size: 14)   // OK: positional, then named
 render(text: "Hi", 14, bold: true)   // error: positional after named
@@ -67,8 +67,8 @@ or **explicit** — a `return` statement. Both forms and the rules of `return`
 are specified in [`statements/return-and-block.md`](statements/return-and-block.md).
 
 ```xulo
-fn add(a: Int, b: Int): Int { a + b }              // implicit return
-fn subtract(a: Int, b: Int): Int { return a - b }  // explicit return
+fn add(a: int, b: int): int { a + b }              // implicit return
+fn subtract(a: int, b: int): int { return a - b }  // explicit return
 ```
 
 - **Recursion** is unrestricted: a function MAY call itself, at any depth its
@@ -97,7 +97,7 @@ fn main() {
   let a = helper()     // legal: helper may be declared later at module level
   print(a)
 }
-fn helper(): Int { 42 }
+fn helper(): int { 42 }
 ```
 
 ## Closures vs named functions
@@ -112,11 +112,11 @@ specified in [`expressions/closures.md`](expressions/closures.md).
 ## Methods and `self`
 
 ```xulo
-struct Counter { value: Int }
+struct Counter { value: int }
 
 impl Counter {
   fn increment(mut self) { self.value = self.value + 1 }
-  fn get(self): Int { self.value }
+  fn get(self): int { self.value }
 }
 
 fn main() {
@@ -154,23 +154,23 @@ fn main() {
 
 ```xulo
 trait Greet {
-  fn greeting(self): String;
-  fn farewell(self): String
+  fn greeting(self): string;
+  fn farewell(self): string
 }
 
-struct Person { name: String }
+struct Person { name: string }
 
 impl Greet for Person {
-  fn greeting(self): String { "hello " + self.name }
-  fn farewell(self): String { "bye " + self.name }
+  fn greeting(self): string { "hello " + self.name }
+  fn farewell(self): string { "bye " + self.name }
 }
 ```
 
 - A `trait` declaration hosts method **signatures only**: parameters and a
   return type, with no body. A trait MUST NOT provide a default implementation.
 - **Every trait method MUST declare a return type.** Unlike an ordinary `fn`,
-  whose omitted return type means `Unit`, a trait method may not omit it; a
-  trait method that produces no value writes `: Unit`.
+  whose omitted return type means `unit`, a trait method may not omit it; a
+  trait method that produces no value writes `: unit`.
 - Method declarations inside a `trait` are separated by `;`, and a `;` after
   the final method is optional.
 - The receiver form is `self` or `mut self`. The receiver used by an
@@ -188,15 +188,15 @@ impl Greet for Person {
 ## Generic functions
 
 ```xulo
-trait Area { fn area(self): Float; fn perimeter(self): Float }
+trait Area { fn area(self): float; fn perimeter(self): float }
 
 fn first<T>(xs: List<T>): T { xs[0] }
-fn areaOf<T: Area>(shape: T): Float { Area::area(shape) }           // explicit dispatch
-fn perimeterOf<T>(shape: T): Float where T: Area { shape.perimeter() }  // member form
+fn areaOf<T: Area>(shape: T): float { Area::area(shape) }           // explicit dispatch
+fn perimeterOf<T>(shape: T): float where T: Area { shape.perimeter() }  // member form
 
-let n = first([1, 2, 3])        // T = Int
-let s = first(["a", "b"])       // T = String
-// let bad: String = first([1, 2])   // error: T inferred as Int
+let n = first([1, 2, 3])        // T = int
+let s = first(["a", "b"])       // T = string
+// let bad: string = first([1, 2])   // error: T inferred as int
 ```
 
 - A generic function declares a type parameter list `<T, U, …>` after its
@@ -208,7 +208,7 @@ let s = first(["a", "b"])       // T = String
   bounds on one parameter are joined with `+`.
 - **Call-site type arguments.** A call MAY write the type arguments of a
   generic function explicitly, in a list between the callee and the argument
-  list — `first<Int>(…)` — or it MAY write none; there is no partial form.
+  list — `first<int>(…)` — or it MAY write none; there is no partial form.
   When the list is written it replaces inference for that call: its length
   MUST equal the declared type-parameter count (`E0808`), every written
   argument MUST satisfy its parameter's bounds (`E0801`), no expected type may
@@ -225,7 +225,7 @@ Bounds, inference, and nested-angle-bracket spelling are specified in
 ## Async functions
 
 ```xulo
-async fn doubleAsync(n: Int): Int {
+async fn doubleAsync(n: int): int {
   await Task::resolve(n * 2)
 }
 async fn main() { print(await doubleAsync(21)) }   // 42
@@ -234,7 +234,7 @@ async fn main() { print(await doubleAsync(21)) }   // 42
 - An `async` function is declared with `async` before `fn` (after `pub` when
   present). The declared return type denotes the *declared* result: the
   function name has the evaluated type `fn(...): Task<T>`. An `async`
-  function with no declared return type has the evaluated type `fn(): Task<Unit>`.
+  function with no declared return type has the evaluated type `fn(): Task<unit>`.
 - Calling an `async` function starts its body immediately; the body runs
   until it suspends at an `await` or completes. `await` unwraps `Task<T>` to
   `T` and is legal only inside `async` bodies.
@@ -260,8 +260,8 @@ function declaration per name; a second declaration of the same name in the
 same scope is a duplicate-declaration error ([`names.md`](names.md)).
 
 ```xulo
-fn show(x: Int) { print(x) }
-fn show(x: String) { print(x) }   // error: duplicate name
+fn show(x: int) { print(x) }
+fn show(x: string) { print(x) }   // error: duplicate name
 ```
 
 Type-directed dispatch exists only through **trait bounds**: a generic
@@ -273,8 +273,8 @@ value.
 ## Visibility
 
 ```xulo
-pub fn add(a: Int, b: Int): Int { a + b }
-fn helper(n: Int): Int { n * 2 }   // private to this module
+pub fn add(a: int, b: int): int { a + b }
+fn helper(n: int): int { n * 2 }   // private to this module
 ```
 
 - A module-level `fn` is **private by default**: it may be used only inside
@@ -288,7 +288,7 @@ fn helper(n: Int): Int { n * 2 }   // private to this module
 
 - **Named function declarations require full annotation.** Every parameter
   type MUST be written, and the return type MUST be written whenever the
-  function produces a value; only an omitted return type — meaning `Unit` —
+  function produces a value; only an omitted return type — meaning `unit` —
   is allowed to be missing. Named functions never take parameter types from
   their arguments, at module level or nested in a block.
 - **Local `let` bindings infer** from their initializer; the annotation is
@@ -303,8 +303,8 @@ fn helper(n: Int): Int { n * 2 }   // private to this module
   ([`expressions/closures.md`](expressions/closures.md)).
 
 ```xulo
-fn apply(f: fn(Int): Int, x: Int): Int { f(x) }
-let double = (x: Int): Int => x * 2        // annotation required
+fn apply(f: fn(int): int, x: int): int { f(x) }
+let double = (x: int): int => x * 2        // annotation required
 print(apply(x => x * 3, 7))                // optional: expected type supplies it
 ```
 
@@ -315,23 +315,23 @@ a generic with a `where` clause, and a recursive function:
 
 ```xulo
 trait Area {
-  fn area(self): Float;
-  fn perimeter(self): Float
+  fn area(self): float;
+  fn perimeter(self): float
 }
 
-struct Rect { w: Float, h: Float }
+struct Rect { w: float, h: float }
 
 impl Area for Rect {
-  fn area(self): Float { self.w * self.h }
-  fn perimeter(self): Float { 2.0 * (self.w + self.h) }
+  fn area(self): float { self.w * self.h }
+  fn perimeter(self): float { 2.0 * (self.w + self.h) }
 }
 
-fn fib(n: Int): Int {
+fn fib(n: int): int {
   if n <= 1 { n } else { fib(n - 1) + fib(n - 2) }
 }
 
-fn areaOf<T: Area>(shape: T): Float { Area::area(shape) }
-fn perimeterOf<T>(shape: T): Float where T: Area { shape.perimeter() }
+fn areaOf<T: Area>(shape: T): float { Area::area(shape) }
+fn perimeterOf<T>(shape: T): float where T: Area { shape.perimeter() }
 
 fn main() {
   let r = Rect(w: 3.0, h: 4.0)

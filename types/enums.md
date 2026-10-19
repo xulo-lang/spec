@@ -66,26 +66,26 @@ list after the variant name. Two parameter forms exist.
 
 ```xulo
 enum Shape {
-  Circle(Float),
-  Rect(width: Float, height: Float),
+  Circle(float),
+  Rect(width: float, height: float),
 }
 
 enum Operation {
-  Success(data: Number),
-  Error(message: String),
+  Success(data: number),
+  Error(message: string),
 }
 
 enum Person {
   Nobody,
-  Named(String, Int),
+  Named(string, int),
 }
 ```
 
 Rules:
 
-- The *positional* form writes only a type per slot: `Circle(Float)`,
-  `Named(String, Int)`. The *named* form labels each slot:
-  `Success(data: Number)`, `Rect(width: Float, height: Float)`.
+- The *positional* form writes only a type per slot: `Circle(float)`,
+  `Named(string, int)`. The *named* form labels each slot:
+  `Success(data: number)`, `Rect(width: float, height: float)`.
 - Within a single variant, all parameters MUST use the same form; a variant may
   not mix labeled and unlabeled parameters. Across variants, an enum MAY mix
   payload-less variants, positional payloads, and named payloads freely, as
@@ -111,7 +111,7 @@ Rules:
 value belongs to.
 
 ```xulo
-fn area(s: Shape): Float {
+fn area(s: Shape): float {
   match s {
     Shape::Circle(r) => 3.14159 * r * r,
     Shape::Rect(w, h) => w * h,
@@ -171,9 +171,9 @@ An `enum` is the usual way to declare a closed set of failure modes, because
 exhaustiveness then guarantees that every failure is handled:
 
 ```xulo
-enum LoadError { NotFound(path: String), Denied(user: String), Timeout(ms: Int) }
+enum LoadError { NotFound(path: string), Denied(user: string), Timeout(ms: int) }
 
-fn message(e: LoadError): String {
+fn message(e: LoadError): string {
   match e {
     LoadError::NotFound(p) => "not found: " + p,
     LoadError::Denied(u) => "denied: " + u,
@@ -195,7 +195,7 @@ fn message(e: LoadError): String {
   a payload-less variant it coincides with a variant test
   (`if theme == Theme::Dark { … }`).
 - To test only the variant of a payload-carrying value outside a `match`
-  statement, use a `match` expression that yields a `Boolean`:
+  statement, use a `match` expression that yields a `bool`:
 
   ```xulo
   let succeeded = match op {
@@ -204,7 +204,7 @@ fn message(e: LoadError): String {
   }
   ```
 
-- An enum value is never implicitly converted to `String`. Interpolation of an
+- An enum value is never implicitly converted to `string`. Interpolation of an
   enum value requires an `impl ToString for …` as described in
   [`traits.md`](traits.md).
 
@@ -228,7 +228,7 @@ exhaustive and checked. It is the `E` payload of the built-in
 `Result<T, E>` — or stands alone, matched directly as `LoadError` above:
 
 ```xulo
-fn read(path: String): Result<String, LoadError> {
+fn read(path: string): Result<string, LoadError> {
   if path == "" { Result::Err(LoadError::NotFound(path)) } else { load(path) }
 }
 ```
@@ -252,8 +252,8 @@ Enums and the union type `T | U` overlap in purpose but differ in kind.
 
 Use an `enum` when introducing a domain concept with a closed set of cases —
 states, commands, results, errors. Use a union to combine types that already
-exist, such as `String | Int`, or an optional `T?`, the shorthand for
-`T | Null`. A union invents no case names and carries no per-case payloads, and
+exist, such as `string | int`, or an optional `T?`, the shorthand for
+`T | null`. A union invents no case names and carries no per-case payloads, and
 an enum cannot be widened to unrelated types; the relations between unions,
 intersections, and their members are defined in
 [`type-relations.md`](type-relations.md).

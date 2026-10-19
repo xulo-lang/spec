@@ -12,8 +12,8 @@ type relations used by bounds are defined in
 
 ```xulo
 trait Area {
-  fn area(self): Float;
-  fn perimeter(self): Float
+  fn area(self): float;
+  fn perimeter(self): float
 }
 ```
 
@@ -32,7 +32,7 @@ Rules:
   and has no body. A trait MUST NOT provide a default implementation, and an
   implementation therefore cannot inherit code from the trait it implements.
 - Every trait method MUST declare a return type. Unlike an ordinary `fn`, whose
-  omitted return type means `Unit`, a trait method may not omit it.
+  omitted return type means `unit`, a trait method may not omit it.
 - The first parameter of a trait method is its *receiver*, written `self` or
   `mut self`. `self` borrows the receiver immutably; `mut self` borrows it
   mutably. Borrowing rules are specified in
@@ -55,21 +55,21 @@ An `impl` block attaches methods to a type. It either implements a trait
 (`impl Trait for Type`) or declares inherent methods (`impl Type`).
 
 ```xulo
-struct Rectangle { w: Float, h: Float }
+struct Rectangle { w: float, h: float }
 
 impl Area for Rectangle {
-  fn area(self): Float { self.w * self.h }
-  fn perimeter(self): Float { 2.0 * (self.w + self.h) }
+  fn area(self): float { self.w * self.h }
+  fn perimeter(self): float { 2.0 * (self.w + self.h) }
 }
 
-struct User { name: String, age: Int }
+struct User { name: string, age: int }
 
 impl User {
-  fn rename(mut self, next: String) {
+  fn rename(mut self, next: string) {
     self.name = next
   }
 
-  pub fn years(self): Int { self.age }
+  pub fn years(self): int { self.age }
 }
 ```
 
@@ -93,7 +93,7 @@ Rules:
   }
 
   impl<T: Area + Scalable> Palette<T> {
-    fn render(self): Float { Area::area(self.shape) }
+    fn render(self): float { Area::area(self.shape) }
   }
   ```
 
@@ -110,16 +110,16 @@ Rules:
 
   ```xulo
   struct Palette<T> { shape: T }
-  struct Rect { w: Float, h: Float }
-  struct Dot { r: Float }
+  struct Rect { w: float, h: float }
+  struct Dot { r: float }
 
   impl Area for Rect {
-    fn area(self): Float { self.w * self.h }
-    fn perimeter(self): Float { 2.0 * (self.w + self.h) }
+    fn area(self): float { self.w * self.h }
+    fn perimeter(self): float { 2.0 * (self.w + self.h) }
   }
 
   impl<T: Area> Palette<T> {
-    fn render(self): Float { Area::area(self.shape) }
+    fn render(self): float { Area::area(self.shape) }
   }
 
   let ok = Palette(shape: Rect(w: 3.0, h: 4.0))
@@ -200,11 +200,11 @@ Inside a body that carries the bound, values of type `T` expose the members the
 bound declares, and either spelling denotes the same static call:
 
 ```xulo
-fn area_of<T: Area>(shape: T): Float {
+fn area_of<T: Area>(shape: T): float {
   Area::area(shape)      // explicit static dispatch
 }
 
-fn area_twice<T: Area>(shape: T): Float {
+fn area_twice<T: Area>(shape: T): float {
   shape.area() + shape.area()   // member form, resolves through the bound
 }
 ```
@@ -250,15 +250,15 @@ The language rule for calls that depend on a type parameter is:
   type an alias expands to, never to the alias itself (see
   [`composite-types.md`](composite-types.md)).
 - `ToString` is a built-in trait. A value interpolated in a template literal
-  `` `…${expr}…` `` must be a base type (`Int`, `Float`, `Boolean`, `String`) or
+  `` `…${expr}…` `` must be a base type (`int`, `float`, `bool`, `string`) or
   implement `ToString`; other types are a compile-time error in that position
   (`E0212`).
 
   ```xulo
-  struct User { name: String, age: Int }
+  struct User { name: string, age: int }
 
   impl ToString for User {
-    fn to_string(self): String {
+    fn toString(self): string {
       `${self.name} (${self.age})`
     }
   }
@@ -267,12 +267,13 @@ The language rule for calls that depend on a type parameter is:
 ## Attributes
 
 A declaration MAY carry attributes written directly before it: the name
-`#Name`, optionally followed by a parenthesized, comma-separated list of
-trait names with an optional trailing comma.
+`#Name`, optionally followed by a parenthesized argument list; what the
+arguments may contain is fixed per entry by the registry — `#Derive` takes a
+comma-separated list of trait names with an optional trailing comma.
 
 ```xulo
 #Derive(ToString)
-struct User { name: String, age: Int }
+struct User { name: string, age: int }
 ```
 
 An attribute on its own line, directly above the declaration it marks, is
@@ -306,7 +307,7 @@ target:
 - On a struct `S` with fields `f₁ … fₙ`, the generated `impl ToString for S`
   renders the value as `S(f1: …, f2: …)` — the fields in declaration order,
   each rendered by the rules `str` already uses: a base type as itself, a
-  type implementing `ToString` through its `to_string`. A struct with no
+  type implementing `ToString` through its `toString`. A struct with no
   fields renders as `S()`.
 - On an enum, the generated body renders each variant exactly as the output
   table renders an enum value — `E::V`, or `E::V(p, …)` — with every payload
@@ -316,10 +317,10 @@ target:
 
 ```xulo
 #Derive(ToString)
-struct User { name: String, age: Int }
+struct User { name: string, age: int }
 
 #Derive(ToString)
-enum Shape { Circle(Float), Rect(Float, Float) }
+enum Shape { Circle(float), Rect(float, float) }
 
 let s = User(name: "Alice", age: 30)
 print(str(s))                    // User(name: Alice, age: 30)
@@ -330,7 +331,7 @@ Rules:
 
 - A field or payload type that is neither a base type nor a type with a
   `ToString` impl has no string form in the generated interpolation; the
-  derive fails with `E0801` at that type: `` `List<Int>` does not implement
+  derive fails with `E0801` at that type: `` `List<int>` does not implement
   `ToString` ``.
 - The expansion is an ordinary impl, so a hand-written `impl ToString` for
   the same type, or a second `#Derive(ToString)`, is the conflicting-impl
@@ -345,21 +346,26 @@ Rules:
 ### Test
 
 `#Test` marks a function as a test. It is spelled only by the test form —
-`#Test [async] fn name() { … }` — whose shape is fixed
+`#Test ("title")? [async] fn name() { … }` — whose shape is fixed
 ([`../testing.md`](../testing.md)):
 
 - the declaration has no parameters, no return type, no generic parameters,
   no `where` clause, and no `pub`;
+- the optional group holds one `StringLiteral` — the test's **title**,
+  metadata for a tool's reporting, not a name; an empty group `()` and an
+  absent group both mean no title, and the bare form is **RECOMMENDED** when
+  no title is wanted;
 - the identifier binds no value, and any reference to it is `E0107`.
 
 Written on a `struct`, `enum`, `trait`, or `impl`, `#Test` is `E0109`
-(`` attribute `Test` is not valid on a struct ``). Written before a `fn`
-whose shape does not match the test form — parameters, a return type,
-generics, a `where` clause, or `pub` — it is `E0110`
-(`` attribute `Test` takes the form `#Test [async] fn name() { … }` ``).
-When the sequence `#Test` `async`? `fn` Identifier `(` `)` Block appears at
-file scope, the declaration is a `TestDecl` and no registry lookup runs
-([`../grammar.md`](../grammar.md)).
+(`` attribute `Test` is not valid on a struct ``). A group that holds an
+identifier, or a `fn` whose shape does not match the test form — parameters,
+a return type, generics, a `where` clause, or `pub` — is `E0110`
+(`` attribute `Test` takes the form `#Test ("…")? [async] fn name() { … }` ``);
+a group holding anything else is a syntax error. When the sequence
+`#Test` `("(" StringLiteral? ")")?` `async`? `fn` Identifier `(` `)` Block
+appears at file scope, the declaration is a `TestDecl` and no registry
+lookup runs ([`../grammar.md`](../grammar.md)).
 
 ## Example
 
@@ -368,24 +374,24 @@ trait, and explicit dispatch.
 
 ```xulo
 trait Area {
-  fn area(self): Float;
-  fn perimeter(self): Float
+  fn area(self): float;
+  fn perimeter(self): float
 }
 
-struct Rectangle { w: Float, h: Float }
-struct Circle { r: Float }
+struct Rectangle { w: float, h: float }
+struct Circle { r: float }
 
 impl Area for Rectangle {
-  fn area(self): Float { self.w * self.h }
-  fn perimeter(self): Float { 2.0 * (self.w + self.h) }
+  fn area(self): float { self.w * self.h }
+  fn perimeter(self): float { 2.0 * (self.w + self.h) }
 }
 
 impl Area for Circle {
-  fn area(self): Float { 3.14159 * self.r * self.r }
-  fn perimeter(self): Float { 2.0 * 3.14159 * self.r }
+  fn area(self): float { 3.14159 * self.r * self.r }
+  fn perimeter(self): float { 2.0 * 3.14159 * self.r }
 }
 
-fn describe<T: Area>(shape: T): Float {
+fn describe<T: Area>(shape: T): float {
   Area::area(shape) + Area::perimeter(shape)
 }
 

@@ -1,6 +1,6 @@
 # Lowercase Primitive Keywords
 
-**Status:** draft · **Date:** 2026-10-17 · **Affects:** every chapter that
+**Status:** accepted · **Date:** 2026-10-17 · **Affects:** every chapter that
 spells a primitive type (signatures, annotations, examples, prose)
 
 ## Summary

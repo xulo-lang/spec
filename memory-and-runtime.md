@@ -43,7 +43,7 @@ holds and what an assignment does.
 
 | Category | Types | A binding denotes | `let x = e` and assignment |
 |----------|-------|-------------------|----------------------------|
-| **Value** | `Boolean`, `String`, `Int`, `Float`, `Number`, fixed-bit numerics, `Null`, `Unit`, `struct`, `enum`, `Range<T>`, tuples | the value itself | a fresh, independent copy of `e`'s value; a `struct`, `enum`, or tuple copy is shallow — each field or element is copied by its own category |
+| **Value** | `bool`, `string`, `int`, `float`, `number`, fixed-bit numerics, `null`, `unit`, `struct`, `enum`, `Range<T>`, tuples | the value itself | a fresh, independent copy of `e`'s value; a `struct`, `enum`, or tuple copy is shallow — each field or element is copied by its own category |
 | **Reference** | `List<T>`, `Map<K, V>`, `Set<T>` | a reference to one shared value | the same value, shared: `x` and `e` then denote the one underlying value |
 
 Four further values carry **identity** rather than content — function values
@@ -63,7 +63,7 @@ Consequences that follow directly from the table:
   ([Ownership with `move`](#ownership-with-move)).
 
 ```xulo
-struct Point { x: Int, y: Int }
+struct Point { x: int, y: int }
 
 let a = Point(x: 1, y: 2)
 let mut b = a        // b holds an independent copy of a's value
@@ -82,7 +82,7 @@ and never copies it, whatever the category ([Borrowing](#borrowing)).
 
 ## Equality and identity
 
-`==` compares by content for every value-carrying type — primitives, `String`,
+`==` compares by content for every value-carrying type — primitives, `string`,
 `struct`, `enum`, `Range`, `List`, `Map`, `Set`, and tuples (element-wise,
 equal arity) — as specified in
 [`expressions/operators.md`](expressions/operators.md). Identity-carrying
@@ -126,7 +126,7 @@ b` groups as `(move a) + b` and the second restriction below then rejects it.
   scope denotes that value.
 
 ```xulo
-fn consume(data: List<Int>): Int {
+fn consume(data: List<int>): int {
   data[0] * 2
 }
 
@@ -139,7 +139,7 @@ fn main() {
 ```
 
 ```xulo
-fn steal(p: List<Int>): Int {
+fn steal(p: List<int>): int {
   let owned = move p            // error[E0403]: `p` is a borrow, not an owned binding
   owned[0]
 }
@@ -218,7 +218,7 @@ borrow, never both. Three rules make that checkable; in them, a place is
    closure's task settles.
 
 ```xulo
-struct Counter { value: Int }
+struct Counter { value: int }
 
 fn bump(p: mut Counter) {
   p.value = p.value + 1
@@ -232,7 +232,7 @@ fn main() {
 ```
 
 ```xulo
-async fn fill(p: mut List<Int>) {
+async fn fill(p: mut List<int>) {
   p[0] = 7
 }
 
@@ -246,11 +246,11 @@ async fn main() {
 ```
 
 ```xulo
-async fn peek(xs: List<Int>) {
+async fn peek(xs: List<int>) {
   print(xs[0])
 }
 
-async fn watch(mut xs: List<Int>) {
+async fn watch(mut xs: List<int>) {
   let t = peek(xs)           // immutable borrow of xs, until t settles
   // xs[0] = 9              // error[E0411]: written during an immutable borrow
   print(xs[0])               // ok: reads remain unrestricted
@@ -279,9 +279,9 @@ or `xs[i]` and `xs[0]`). Overlap is a static judgment: two non-literal
 indices are never assumed distinct.
 
 ```xulo
-fn pair(a: mut Int, b: Int): Int { a + b }
+fn pair(a: mut int, b: int): int { a + b }
 
-fn overlap(mut xs: List<Int>, i: Int) {
+fn overlap(mut xs: List<int>, i: int) {
   pair(xs[0], xs[1])         // ok: distinct literal subscripts are disjoint
   pair(xs[0], xs[0])         // error[E0404]: the same place, mutably borrowed twice
   pair(xs[0], xs[i])         // error[E0404]: a non-literal index is never assumed distinct
@@ -308,7 +308,7 @@ the scope ends.
   outstanding.
 
 ```xulo
-async fn fill(p: mut List<Int>) {
+async fn fill(p: mut List<int>) {
   p[0] = 7
 }
 
@@ -333,7 +333,7 @@ async fn main() {
 ## Mutability rules
 
 `mut` belongs to a binding or a parameter, never to a type: `let mut x = 1`
-binds an `Int`, `p: mut Counter` declares a mutable borrow of a `Counter`
+binds an `int`, `p: mut Counter` declares a mutable borrow of a `Counter`
 ([`statements/let-and-assignment.md`](statements/let-and-assignment.md)).
 
 - A place is **mutable** when the binding at the base of the path is a
@@ -417,7 +417,7 @@ condition occurs, and there is no handler for it.
 | List index out of bounds | reading or writing `xs[i]` where `i` is negative or at or past the list's length | [`types/composite-types.md`](types/composite-types.md) |
 | Absent map key | reading `m[k]` for a key with no binding | [`expressions/path-and-access.md`](expressions/path-and-access.md) |
 | Division or remainder by zero | `/` or `%` on non-constant operands whose value is zero | [`expressions/operators.md`](expressions/operators.md) |
-| Arithmetic overflow | an `Int` or fixed-bit operation whose result exceeds its type, on non-constant operands | [`types/primitive-types.md`](types/primitive-types.md) |
+| Arithmetic overflow | an `int` or fixed-bit operation whose result exceeds its type, on non-constant operands | [`types/primitive-types.md`](types/primitive-types.md) |
 | `Math::toFixed` digits out of range | `Math::toFixed` is called with `digits` outside `0...=15` | [`builtins/intrinsic-functions.md`](builtins/intrinsic-functions.md) |
 | Unprovided environment key | reading an `@Environment` key no provision supplies | [`components/environment.md`](components/environment.md) |
 | Stack or task exhaustion | recursion depth or the runtime's task limit is exceeded | [`functions.md`](functions.md) |

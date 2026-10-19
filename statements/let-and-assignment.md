@@ -10,8 +10,8 @@ name resolution are specified in [`../names.md`](../names.md).
 
 ```xulo
 let count = 0
-let name: String = "Alice"
-let maybe: String? = null
+let name: string = "Alice"
+let maybe: string? = null
 ```
 
 - The form is `let x = expr` or `let x: T = expr`. A type annotation, when
@@ -21,7 +21,7 @@ let maybe: String? = null
 - **Initialization is required.** Every `let` binding is initialized by an
   expression in the same statement; there is no uninitialized binding form.
 - When no annotation is written, the binding's type is inferred from the
-  initializer: `let count = 0` infers `Int`. When the initializer does not
+  initializer: `let count = 0` infers `int`. When the initializer does not
   determine the type — an empty list literal — the annotation is REQUIRED
   ([`../expressions/literals.md`](../expressions/literals.md)).
 - The binding is in scope from the end of its declaration to the end of the
@@ -42,7 +42,7 @@ let mut label = "ready"
   specified in [`../memory-and-runtime.md`](../memory-and-runtime.md).
 
 ```xulo
-struct Point { x: Int, y: Int }
+struct Point { x: int, y: int }
 
 let mut p = Point(x: 0, y: 0)
 p.x = 1              // legal: field through a mut binding
@@ -55,7 +55,7 @@ q.x = 1              // error: q is not mut
   `let`, a `const`, or a place read through an immutable borrow — is a
   compile-time error (`E0401`; [`../type-system/errors.md`](../type-system/errors.md)).
 - `mut` is part of the binding form, not of the type: `let mut x = 1` binds
-  `x` as `Int`.
+  `x` as `int`.
 
 ## `let x := expr`
 
@@ -81,13 +81,13 @@ mutability, inference, and scope.
 ```xulo
 const APP_NAME = "Xulo"
 const MAX_COUNT = 100
-const LIMIT: Int = MAX_COUNT * 2
+const LIMIT: int = MAX_COUNT * 2
 
 const A = 2
 const B = A * 3            // legal: arithmetic over constants
 const C = B > 5            // legal: comparison over constants
 
-fn compute(): Int { 42 }
+fn compute(): int { 42 }
 const BAD = compute()      // error: not a constant expression
 const ZERO = 1 / 0         // error: constant division by zero
 ```
@@ -115,7 +115,7 @@ const ZERO = 1 / 0         // error: constant division by zero
 ```xulo
 const SCALE = 2
 
-fn demo(): Int {
+fn demo(): int {
   const SCALE = 10
   SCALE * 3        // 30: the inner constant
 }
@@ -142,15 +142,15 @@ xs[0] = 9
   does the write occur.
 
 ```xulo
-fn getRow(): List<Int> { [0, 0, 0] }
-fn getIndex(): Int { 0 }
+fn getRow(): List<int> { [0, 0, 0] }
+fn getIndex(): int { 0 }
 
 let mut grid = getRow()
 grid[getIndex()] = 1
 // evaluates `1`, then `grid`, then `getIndex()`, then writes grid[0]
 ```
 
-- The result of an assignment is `Unit`. Assignment is a statement: it
+- The result of an assignment is `unit`. Assignment is a statement: it
   produces no meaningful value.
 - Assigning to a non-`mut` binding is a compile-time error (`E0401`)
   ([`../type-system/errors.md`](../type-system/errors.md)).
@@ -169,7 +169,7 @@ A `struct` or a tuple may be deconstructed into several bindings at once.
 ### Struct destructuring
 
 ```xulo
-struct Person { name: String, age: Int }
+struct Person { name: string, age: int }
 
 let person = Person(name: "Alice", age: 30)
 let { name, age } = person
@@ -218,13 +218,13 @@ let (first, _) = p            // `_` discards an element
 ## Rebinding and shadowing
 
 ```xulo
-fn demo(): Int {
+fn demo(): int {
   let x = 1
   let x = 2      // error: duplicate binding in the same block
   x
 }
 
-fn demo2(): Int {
+fn demo2(): int {
   let x = 1
   if true {
     let x = 2    // legal: shadowing in a nested block
@@ -245,9 +245,9 @@ fn demo2(): Int {
   ([`../expressions/closures.md`](../expressions/closures.md)).
 
 ```xulo
-fn demo3(): Int {
+fn demo3(): int {
   let x = 1
-  let read = fn(): Int { x }   // captures the outer x
+  let read = fn(): int { x }   // captures the outer x
   let mut total = 0
   if true {
     let x = 2
@@ -305,7 +305,7 @@ is issued at the declaration and never rejects a program
   all ([`../names.md`](../names.md)).
 
 ```xulo
-fn demo(): Int {
+fn demo(): int {
   let scratch = 1        // W0101: never read
   let total = 2
   total
@@ -319,7 +319,7 @@ extra rules:
 
 ```xulo
 fn Counter(): View {
-  @State let count: Int = 0
+  @State let count: int = 0
   @Store let { user, theme } = useAppStore()
   @Environment let router: Router
 }

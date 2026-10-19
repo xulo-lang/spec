@@ -18,18 +18,18 @@ written; `null` additionally has a literal form usable in expression position.
 
 | Type | Description | Chapter |
 |------|-------------|---------|
-| `Boolean` | the two truth values, `true` and `false` | [`../types/primitive-types.md`](../types/primitive-types.md) |
-| `String` | immutable UTF-8 sequence of Unicode scalar values | [`../types/primitive-types.md`](../types/primitive-types.md) |
-| `Int` | 64-bit signed integer; the type of integer literals | [`../types/primitive-types.md`](../types/primitive-types.md) |
-| `Float` | 64-bit IEEE-754 binary64 floating point | [`../types/primitive-types.md`](../types/primitive-types.md) |
-| `Number` | the user-facing numeric type, the union `Int \| Float` | [`../types/primitive-types.md`](../types/primitive-types.md) |
-| `I8`, `I16`, `I32`, `I64`, `U8`, `U16`, `U32`, `U64`, `F32`, `F64` | fixed-bit numeric types for exact layout and foreign interfaces | [`../types/primitive-types.md`](../types/primitive-types.md) |
-| `Unknown` | the top type: a value of any type, whose type is not known | [`../types/primitive-types.md`](../types/primitive-types.md) |
+| `bool` | the two truth values, `true` and `false` | [`../types/primitive-types.md`](../types/primitive-types.md) |
+| `string` | immutable UTF-8 sequence of Unicode scalar values | [`../types/primitive-types.md`](../types/primitive-types.md) |
+| `int` | 64-bit signed integer; the type of integer literals | [`../types/primitive-types.md`](../types/primitive-types.md) |
+| `float` | 64-bit IEEE-754 binary64 floating point | [`../types/primitive-types.md`](../types/primitive-types.md) |
+| `number` | the user-facing numeric type, the union `int \| float` | [`../types/primitive-types.md`](../types/primitive-types.md) |
+| `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64` | fixed-bit numeric types for exact layout and foreign interfaces | [`../types/primitive-types.md`](../types/primitive-types.md) |
+| `unknown` | the top type: a value of any type, whose type is not known | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `List<T>` | ordered, growable sequence of elements of one type | [`../types/composite-types.md`](../types/composite-types.md) |
 | `Map<K, V>` | insertion-ordered dictionary with unique keys | [`../types/composite-types.md`](../types/composite-types.md) |
 | `Set<T>` | unordered collection of unique values | [`../types/composite-types.md`](../types/composite-types.md) |
-| `Unit` | the type of expressions that produce no meaningful value | [`../types/primitive-types.md`](../types/primitive-types.md) |
-| `null` | the sole value of the type `Null`; a member of every `T?` | [`../types/primitive-types.md`](../types/primitive-types.md) |
+| `unit` | the type of expressions that produce no meaningful value | [`../types/primitive-types.md`](../types/primitive-types.md) |
+| `null` | the sole value of the type `null`; a member of every `T?` | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `Task<T>` | the value an `async` call produces; unwrapped by `await` | [`../types/function-types.md`](../types/function-types.md) |
 | `Range<T>` | the value produced by `..<` and `...`; iterable by `for` | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `Result<T, E>` | the built-in result of a fallible operation: `Ok(T)` or `Err(E)` | [`../error-handling.md`](../error-handling.md) |
@@ -44,12 +44,12 @@ a program declares them itself; they are not part of the prelude (see
 
 | Protocol | Method | Required by |
 |----------|--------|-------------|
-| `ToString` | `fn to_string(self): String` | interpolation in a template literal, and the intrinsic `str` |
+| `ToString` | `fn toString(self): string` | interpolation in a template literal, and the intrinsic `str` |
 
-- A type implements `ToString` with `impl ToString for T`, whose `to_string`
+- A type implements `ToString` with `impl ToString for T`, whose `toString`
   returns the string form of the receiver
   ([`../types/traits.md`](../types/traits.md)).
-- The base types — `Int`, `Float`, `Boolean`, `String` — convert to text
+- The base types — `int`, `float`, `bool`, `string` — convert to text
   without an implementation; every other type needs one.
 - A value interpolated by `${…}` MUST be a base type or implement
   `ToString` ([`../expressions/literals.md`](../expressions/literals.md));
@@ -77,8 +77,7 @@ in [`../type-system/errors.md`](../type-system/errors.md).
 
 | Category | Names |
 |----------|-------|
-| Base and numeric types | `Boolean`, `String`, `Int`, `Float`, `Number`, `I8`, `I16`, `I32`, `I64`, `U8`, `U16`, `U32`, `U64`, `F32`, `F64` |
-| Value and marker types | `Null`, `Unit`, `Unknown`, `List`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error` |
+| Value and marker types | `List`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error` |
 | Protocols | `ToString` |
 | Namespaces | `Math`, `Time`, `Task` |
 | Intrinsic functions | `print`, `println`, `str`, `assert` |
@@ -97,25 +96,25 @@ bulk conversion, and the `Set` constructor — is a prelude operation: an
 unqualified function in scope in every module, called like any other function.
 
 ```xulo
-let mut counts: Map<String, Int> = { "a": 1, "b": 2 }
-print(map_size(counts))              // 2
-print(map_has_key(counts, "a"))      // true
-print(map_get(counts, "z"))          // null: absent, and no failure
-let previous = map_remove(counts, "a")   // counts loses "a"; previous is 1
+let mut counts: Map<string, int> = { "a": 1, "b": 2 }
+print(mapSize(counts))              // 2
+print(mapHasKey(counts, "a"))      // true
+print(mapGet(counts, "z"))          // null: absent, and no failure
+let previous = mapRemove(counts, "a")   // counts loses "a"; previous is 1
 
-let tags: Set<String> = set_from_list(["a", "b", "a"])
-print(set_size(tags))                // 2: the duplicate collapsed
-let added = set_insert(tags, "c")
-print(set_contains(tags, "c"))       // true
+let tags: Set<string> = setFromList(["a", "b", "a"])
+print(setSize(tags))                // 2: the duplicate collapsed
+let added = setInsert(tags, "c")
+print(setContains(tags, "c"))       // true
 
 let mut xs = ["a", "b"]
-list_push(xs, "c")                   // xs is ["a", "b", "c"]
-let removed = list_remove(xs, 0)     // "a"; xs is ["b", "c"]
+listPush(xs, "c")                   // xs is ["a", "b", "c"]
+let removed = listRemove(xs, 0)     // "a"; xs is ["b", "c"]
 for e in enumerate(xs) {
   print(`${e.0}=${e.1}`)             // 0=b, then 1=c
 }
 
-let user = { name: "lyy", age: 30 }  // a Map<String, String | Int>
+let user = { name: "lyy", age: 30 }  // a Map<string, string | int>
 print(user["name"])                  // lyy
 ```
 
@@ -123,20 +122,20 @@ print(user["name"])                  // lyy
 
 | Signature | Meaning |
 |-----------|---------|
-| `map_size<K, V>(m: Map<K, V>): Int` | the number of entries in `m` |
-| `map_has_key<K, V>(m: Map<K, V>, k: K): Boolean` | `true` when `k` has a binding in `m` |
-| `map_get<K, V>(m: Map<K, V>, k: K): V?` | the value `k` is bound to, or `null` when `k` has no binding |
-| `map_remove<K, V>(m: mut Map<K, V>, k: K): V?` | removes the binding for `k` and returns the value it had, or `null` when `k` was absent |
-| `map_to_entries<K, V>(m: Map<K, V>): List<(K, V)>` | one `(key, value)` tuple per entry, in insertion order (bulk conversion) |
-| `map_from_entries<K, V>(entries: List<(K, V)>): Map<K, V>` | builds a map from `(key, value)` tuples, in list order; a repeated key keeps the later entry |
+| `mapSize<K, V>(m: Map<K, V>): int` | the number of entries in `m` |
+| `mapHasKey<K, V>(m: Map<K, V>, k: K): bool` | `true` when `k` has a binding in `m` |
+| `mapGet<K, V>(m: Map<K, V>, k: K): V?` | the value `k` is bound to, or `null` when `k` has no binding |
+| `mapRemove<K, V>(m: mut Map<K, V>, k: K): V?` | removes the binding for `k` and returns the value it had, or `null` when `k` was absent |
+| `mapToEntries<K, V>(m: Map<K, V>): List<(K, V)>` | one `(key, value)` tuple per entry, in insertion order (bulk conversion) |
+| `mapFromEntries<K, V>(entries: List<(K, V)>): Map<K, V>` | builds a map from `(key, value)` tuples, in list order; a repeated key keeps the later entry |
 
 - Reading (`m[k]`), writing (`m[k] = v`), and iterating the keys (`for k in m`)
   are core syntax and need no prelude function
   ([`../types/composite-types.md`](../types/composite-types.md)).
-- `map_get` is the lookup that cannot fail: reading `m[k]` for a key with no
-  binding is a runtime failure, while `map_get(m, k)` answers `null`
+- `mapGet` is the lookup that cannot fail: reading `m[k]` for a key with no
+  binding is a runtime failure, while `mapGet(m, k)` answers `null`
   ([`../error-handling.md`](../error-handling.md)).
-- `map_remove` mutates its first argument, so that argument MUST be a mutable
+- `mapRemove` mutates its first argument, so that argument MUST be a mutable
   place — a `let mut` binding or a `mut` parameter; passing anything else is a
   compile-time error (`E0401`).
 
@@ -147,15 +146,15 @@ and the operations that manipulate a set.
 
 | Signature | Meaning |
 |-----------|---------|
-| `set_from_list<T>(values: List<T>): Set<T>` | constructs a set holding each distinct element of `values` exactly once |
-| `set_insert<T>(s: mut Set<T>, v: T): Boolean` | adds `v` to `s`; returns `true` when `v` was not already present |
-| `set_remove<T>(s: mut Set<T>, v: T): Boolean` | removes `v` from `s`; returns `true` when `v` was present |
-| `set_contains<T>(s: Set<T>, v: T): Boolean` | `true` when `v` is a member of `s` |
-| `set_size<T>(s: Set<T>): Int` | the number of elements in `s` |
+| `setFromList<T>(values: List<T>): Set<T>` | constructs a set holding each distinct element of `values` exactly once |
+| `setInsert<T>(s: mut Set<T>, v: T): bool` | adds `v` to `s`; returns `true` when `v` was not already present |
+| `setRemove<T>(s: mut Set<T>, v: T): bool` | removes `v` from `s`; returns `true` when `v` was present |
+| `setContains<T>(s: Set<T>, v: T): bool` | `true` when `v` is a member of `s` |
+| `setSize<T>(s: Set<T>): int` | the number of elements in `s` |
 
-- `set_insert` and `set_remove` mutate their first argument, which MUST
-  therefore be a mutable place, exactly as for `map_remove`.
-- A set has no specified order: neither `set_from_list` nor any other
+- `setInsert` and `setRemove` mutate their first argument, which MUST
+  therefore be a mutable place, exactly as for `mapRemove`.
+- A set has no specified order: neither `setFromList` nor any other
   operation defines the order of the elements, and programs MUST NOT depend on
   one ([`../types/composite-types.md`](../types/composite-types.md)).
 
@@ -167,15 +166,15 @@ supplies the operations they do not cover:
 
 | Signature | Meaning |
 |-----------|---------|
-| `list_size<T>(xs: List<T>): Int` | the number of elements in `xs` |
-| `list_push<T>(xs: mut List<T>, v: T): Unit` | appends `v` to the end of `xs` |
-| `list_remove<T>(xs: mut List<T>, i: Int): T?` | removes the element at index `i`, shifting later elements down, and returns it; `null` when `i` is negative or at or past the end |
-| `enumerate<T>(xs: List<T>): List<(Int, T)>` | one `(index, element)` tuple per element, in order |
+| `listSize<T>(xs: List<T>): int` | the number of elements in `xs` |
+| `listPush<T>(xs: mut List<T>, v: T): unit` | appends `v` to the end of `xs` |
+| `listRemove<T>(xs: mut List<T>, i: int): T?` | removes the element at index `i`, shifting later elements down, and returns it; `null` when `i` is negative or at or past the end |
+| `enumerate<T>(xs: List<T>): List<(int, T)>` | one `(index, element)` tuple per element, in order |
 
-- `list_push` and `list_remove` mutate their first argument, which MUST
-  therefore be a mutable place, exactly as for `map_remove`.
-- `list_remove` is the removal that cannot fail: the subscript `xs[i]` for an
-  out-of-range index is a runtime failure, while `list_remove(xs, i)` answers
+- `listPush` and `listRemove` mutate their first argument, which MUST
+  therefore be a mutable place, exactly as for `mapRemove`.
+- `listRemove` is the removal that cannot fail: the subscript `xs[i]` for an
+  out-of-range index is a runtime failure, while `listRemove(xs, i)` answers
   `null` and leaves `xs` unchanged.
 
 ## Prelude visibility
@@ -201,7 +200,7 @@ supplies the operations they do not cover:
   scope the prelude name is visible again.
 
   ```xulo
-  fn demo(): Int {
+  fn demo(): int {
     let str = "not the intrinsic"    // hides `str` for the rest of this block
     print(str)
     42

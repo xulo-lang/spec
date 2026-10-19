@@ -15,7 +15,7 @@ An `async` function is a function declaration written with the `async` keyword
 before `fn` (after `pub` when present):
 
 ```xulo
-async fn fetchUser(id: Int): User {
+async fn fetchUser(id: int): User {
   let raw = await request(`/users/${id}`)
   decodeUser(raw)
 }
@@ -33,14 +33,14 @@ async fn notify() {
   task is automatic
   ([`checking-rules.md`](../type-system/checking-rules.md)).
 - An `async` function without a declared return type has the evaluated type
-  `fn(): Task<Unit>` and its body produces `Unit`.
+  `fn(): Task<unit>` and its body produces `unit`.
 - Calling an `async` function yields its `Task`; the result `T` is obtained
   with `await`.
 
 | Written form | Value type |
 |--------------|------------|
 | `async fn f(): T { ... }` | `fn(): Task<T>` |
-| `async fn f() { ... }` | `fn(): Task<Unit>` |
+| `async fn f() { ... }` | `fn(): Task<unit>` |
 | `async (x: A): R => ...` | `fn(A): Task<R>` |
 | `async (x: A) => ...` | `fn(A): Task<R>` (result from the body) |
 | `async fn(x: A): R { ... }` | `fn(A): Task<R>` |
@@ -50,8 +50,8 @@ prefixed with `async`:
 
 ```xulo
 async fn main() {
-  let double = async (x: Int): Int => x * 2
-  let t: Task<Int> = double(21)
+  let double = async (x: int): int => x * 2
+  let t: Task<int> = double(21)
   print(await t)     // 42
 }
 ```
@@ -76,12 +76,12 @@ async fn main() {
   anywhere an expression may appear — including argument position.
 
 ```xulo
-async fn greet(id: Int): String {
+async fn greet(id: int): string {
   let user = await fetchUser(id)   // suspends here until the task settles
   "hello " + user.name
 }
 
-async fn sumPrices(a: Int, b: Int): Int {
+async fn sumPrices(a: int, b: int): int {
   let x = await priceOf(a)         // the second await does not begin
   let y = await priceOf(b)         //   until the first has completed
   x + y
@@ -89,7 +89,7 @@ async fn sumPrices(a: Int, b: Int): Int {
 ```
 
 ```xulo
-async fn demo(a: Task<Int>, b: Task<Int>) {
+async fn demo(a: Task<int>, b: Task<int>) {
   let r1 = await cache.get("k")    // == await (cache.get("k"))
   let r2 = await a + await b       // == (await a) + (await b)
   print(await fetchCount())        // await in argument position
@@ -137,7 +137,7 @@ and the built-in `Task` namespace is accessed with `.`:
 | `Task::all` | `all<T>(tasks: List<Task<T>>): Task<List<T>>` | completes when every task has completed; results in argument order |
 | `Task::race` | `race<T>(tasks: List<Task<T>>): Task<T>` | completes with the first task to complete |
 | `Task::resolve` | `resolve<T>(value: T): Task<T>` | an already-completed task holding `value` |
-| `Task::timeout` | `timeout<T>(t: Task<T>, ms: U64): Task<Result<T, Error>>` | settles with `t`'s result within `ms`, or fails with `Error("timed out")` |
+| `Task::timeout` | `timeout<T>(t: Task<T>, ms: u64): Task<Result<T, Error>>` | settles with `t`'s result within `ms`, or fails with `Error("timed out")` |
 
 Generic type arguments are inferred at the call site. `Task::all` and
 `Task::race` are commonly combined with `await`:
@@ -155,7 +155,7 @@ its result and its cancellation mean is specified in
 [`../error-handling.md`](../error-handling.md):
 
 ```xulo
-async fn bounded(t: Task<Int>): Result<Int, Error> {
+async fn bounded(t: Task<int>): Result<int, Error> {
   await Task::timeout(t, 2000)   // Ok(value) in time, Err("timed out") otherwise
 }
 ```
@@ -180,7 +180,7 @@ and its failure model is the synchronous one:
   ([`../concurrency.md`](../concurrency.md)).
 
 ```xulo
-async fn log_user(id: Int) {
+async fn log_user(id: int) {
   match await find_user(id) {
     Result::Ok(user) => print(user.name)
     Result::Err(reason) => print(reason)
@@ -200,14 +200,14 @@ its call, and awaiting their tasks afterwards lets the started work overlap:
 
 ```xulo
 // sequential: each await completes before the next call is made
-async fn sequential(): Int {
+async fn sequential(): int {
   let a = await stepA()
   let b = await stepB()
   a + b
 }
 
 // concurrent: both tasks start at their calls, then both are awaited
-async fn concurrent(): Int {
+async fn concurrent(): int {
   let ta = stepA()
   let tb = stepB()
   await ta + await tb
@@ -241,7 +241,7 @@ contains no suspension point, and `await` inside it is a compile-time error
 ([`../concurrency.md`](../concurrency.md))).
 
 ```xulo
-async fn cached(id: Int): User {
+async fn cached(id: int): User {
   if await isCached(id) {
     return await readCache(id)
   }
