@@ -182,8 +182,8 @@ Alternatives weighed:
 Everything not on the list — `string`, `List`/`Map`/`Set`, `struct`, `enum`,
 tuples, `View`, `Task`, `Result`, `unknown`, `number`, unions, function types
 — is `E0901`. `unit` is allowed as the return type (or omitted) and rejected
-as a parameter type under the same code: C has no `void` parameter to map it
-to.
+as a parameter type under the same code — `E0901`: C has no `void`
+parameter to map it to.
 
 **Diagnostic split.** The division of labor follows the repository's own
 convention — grammar decides what parses, checking decides what is true:
@@ -287,6 +287,18 @@ token besides compare it and hand it back. `==`/`!=` on `Ptr` (address
 equality) are the only operators. Ordering comparisons are not defined; the
 prelude's numeric conversions reject `Ptr` under `E0201` like any
 non-numeric.
+
+What remains is storage, not interpretation. A `Ptr` is an ordinary value
+on the Xulo side: `let`-bound, stored in a struct field or a `List<Ptr>`,
+passed into and out of ordinary functions and closures (the
+`body: fn(Ptr): i32` pattern in [`specs/ffi.md`](specs/ffi.md)), with the
+collector treating the token as an opaque word. The whole design turns on
+this split: operations that *interpret* a pointer value — read, write,
+offset, cast — are the forbidden family; operations that *move the token*
+are ordinary language operations that need no FFI rule. Neither widens the
+boundary: a struct of `Ptr` fields is still not ABI-safe in an extern
+signature, and an imported symbol is not a value to store — only to call
+(`E0903`).
 
 The known trap from Rust's history is recorded as a permanent rule: **a `Ptr`
 never converts to or from an integer.** Rust spent years on integer↔pointer

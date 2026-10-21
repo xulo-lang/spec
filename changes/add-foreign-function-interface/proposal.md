@@ -14,7 +14,8 @@ a foreign ABI. It adds:
   **string ABI tag drawn from a closed, checker-validated registry**
   (`"C"`, `"system"` in v1);
 - two pointer-width integer types, `usize` and `isize`, for sizes and C's
-  `size_t`/`ptrdiff_t`;
+  `size_t`/`ptrdiff_t` (both are hard keywords;
+  [`design.md`](design.md) §8 records why they are not contextual);
 - one new type, `Ptr` — an **opaque, non-null, non-dereferenceable** handle —
   and its ordinary optional form `Ptr?` for nullable handles;
 - a closed list of **ABI-safe types** that may appear in an `extern` signature
@@ -77,6 +78,28 @@ extern "C" {
 pub extern "C" fn add(a: i32, b: i32): i32 { a + b }   // ok
 ```
 
+And four ways to guard a nullable handle — the chapter and
+[`design.md`](design.md) §12 show the same four:
+
+```xulo
+let p = cMalloc(64)
+if p != null { cFree(p) }                 // 1: the guard narrows inside the branch
+
+fn mustAllocate(n: usize): Ptr {
+  cMalloc(n) ?? panic("out of memory")    // 2: allocate-or-die; binds a `Ptr`
+}
+
+match p {                                 // 3: both arms produce a value
+  Ptr q => { cFree(q); "freed" }
+  null => "empty"
+}
+
+let handle = cMalloc(8) ?? backup         // 4: a real fallback handle
+```
+
+Narrowing is branch-local, so an early-return guard does not carry — that
+trap, and the rebinds that avoid it, are in [`design.md`](design.md) §12.
+
 ## Scope
 
 **In scope:**
@@ -92,7 +115,13 @@ pub extern "C" fn add(a: i32, b: i32): i32 { a + b }   // ok
   appear in an `extern` signature;
 - `Ptr` / `Ptr?`: construction (only as an extern result or pass-through),
   `==`/`!=`, ordinary optional handling; never dereference, arithmetic, or
-  conversion to and from integers — in this version or any later one;
+  conversion to and from integers — in this version or any later one. On the
+  Xulo side of the boundary a `Ptr` is an ordinary value: `let`-bound,
+  storable in a struct field or a `List<Ptr>`, passable into and out of an
+  ordinary Xulo function — a wrapper wraps the call, never holds the imported
+  symbol itself (`E0903`). The ordinariness stops at the boundary: a struct,
+  even one whose fields are all `Ptr`, is not ABI-safe (`E0901`), and only
+  `Ptr` and `Ptr?` cross;
 - the boundary carve-out in [`memory-and-runtime.md`](../../memory-and-runtime.md)
   and the corresponding implementation-defined entry (which platform ABI
   document `"C"` and `"system"` denote, hence the width of `usize`/`isize`);
@@ -109,6 +138,13 @@ pub extern "C" fn add(a: i32, b: i32): i32 { a + b }   // ok
 - **Strings, buffers, and collections across the boundary** — `string` is
   GC-managed UTF-8 with no NUL guarantee, and no borrowed-slice type exists.
   A borrowed `Slice<u8>` with a pinning obligation is a v2 design.
+- **`Ptr` ↔ `Slice<u8>` conversion** — distinct from the borrowed buffer
+  above, and likewise deferred: Xulo heap → slice needs a GC pinning
+  obligation for the call's duration; foreign `Ptr` plus length → slice
+  makes Xulo read memory it does not own. A plausible v2 answer is to forbid
+  both implicit conversions so that foreign-owned memory and Xulo-owned
+  buffers never blur; the open question is recorded in
+  [`design.md`](design.md) (§14), beside the borrowed-buffer debt.
 - **Callbacks**: no function-pointer type crosses the boundary, so foreign
   code cannot call back into Xulo in this version.
 - **C++ and other runtime ABIs** — `"c++"` is not registered and is not
