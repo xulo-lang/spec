@@ -50,6 +50,8 @@ items, so `ModuleDeclaration` appears only there:
 ```typescript
 type DeclarationNode =
   | FnDeclaration
+  | ExternBlockDeclaration
+  | ExternFunctionDeclaration
   | StructDeclaration
   | EnumDeclaration
   | TraitDeclaration
@@ -88,6 +90,38 @@ interface FnDeclaration extends BaseNode {
   body: BlockNode;
 }
 
+interface ExternBlockDeclaration extends BaseNode {
+  type: 'ExternBlockDeclaration';
+  isPub: boolean;
+  abi: StringLiteral;
+  items: ExternItemNode[];
+}
+
+interface ExternItemNode extends BaseNode {
+  type: 'ExternItem';
+  name: IdentifierNode;
+  params: ParameterNode[];
+  returnType: TypeNode | null;
+  localName: IdentifierNode | null;
+}
+
+interface ExternFunctionDeclaration extends BaseNode {
+  type: 'ExternFunctionDeclaration';
+  abi: StringLiteral;
+  name: IdentifierNode;
+  params: ParameterNode[];
+  returnType: TypeNode | null;
+  body: BlockNode;
+}
+```
+
+`abi` carries the grammar's `AbiTag` as a bare `StringLiteral`; an extern
+parameter's `mode` and `default` are always `null`. `ExternItemNode.localName`
+is the `as` target, `null` when an item binds its declared name;
+`ExternFunctionDeclaration` has no `isPub` because the `pub` is mandatory —
+its absence is a syntax failure, so no boolean distinguishes the cases.
+
+```typescript
 interface StructDeclaration extends BaseNode {
   type: 'StructDeclaration';
   attributes: AttributeNode[];

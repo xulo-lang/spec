@@ -30,6 +30,12 @@ fn add(a: int, b: int): int { a + b }
   forms — `fn(…)` and `(…) => …` — are closures
   ([`expressions/closures.md`](expressions/closures.md)).
 - `pub` on a `fn` marks it as exported from its module; see [Visibility](#visibility).
+- The `extern` forms declare the same function shape under a foreign ABI: an
+  import block `extern "C" { fn …; }` declares signatures with no body, and a
+  `pub extern "C" fn …` exports a body under that ABI. Signature types,
+  call rules, and the boundary guarantee are in [`ffi.md`](ffi.md). Neither
+  extern form appears in a function body: `Statement` admits a nested `fn`
+  and no extern form.
 
 ## Parameters
 

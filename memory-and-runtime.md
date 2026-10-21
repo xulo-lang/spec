@@ -460,7 +460,15 @@ run time is one of the runtime failures in the tables of this chapter and of
 cause, after which the computation has ended. At no point is an
 implementation permitted to continue in a way of its own choosing, and no
 operation has a result, order, or effect that the specification leaves open
-to it. Programs rejected at compile time are rejected with one of the
+to it. One boundary is outside this promise, and is the only one: during an
+extern call declared in [`ffi.md`](ffi.md), what the foreign code itself
+does — memory it touches, values it produces, effects it has on the host —
+is neither specified nor checked here. The Xulo side of that call remains
+inside the promise: every argument expression, every conversion to an
+ABI-safe type, and the result conversion are fully specified, and an
+implementation MUST document which ABI document its registered tags denote
+(below). Nothing else in the language crosses this boundary. Programs
+rejected at compile time are rejected with one of the
 diagnostics in [`type-system/errors.md`](type-system/errors.md).
 
 Everything not fixed falls into exactly two categories, and the lists below
@@ -468,7 +476,7 @@ are closed: a construct not named in them is fully specified.
 
 ### Implementation-defined
 
-Choices an implementation MAY make but MUST document — three, all at or
+Choices an implementation MAY make but MUST document — four, all at or
 beyond the boundary between the program and its environment:
 
 - the recursion and live-task limits behind *Stack or task exhaustion* and
@@ -478,7 +486,11 @@ beyond the boundary between the program and its environment:
   above all — is detected and reported;
 - how a runtime failure is presented to that environment — message text,
   stream, exit status — since the language itself has no I/O
-  ([`README.md`](README.md), § 1.1).
+  ([`README.md`](README.md), § 1.1);
+- which ABI document each registered tag (`"C"`, `"system"`) denotes on the
+  target platform — and therefore the pointer width `W` that `usize` and
+  `isize` have, and the layout every ABI-safe signature is laid out in
+  ([`ffi.md`](ffi.md), [`types/primitive-types.md`](types/primitive-types.md)).
 
 ### Unspecified
 

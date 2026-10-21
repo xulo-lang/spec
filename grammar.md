@@ -64,18 +64,19 @@ formed first, then classified as keyword, reserved word, or identifier.
 
 ### Keywords
 
-The language has exactly the following closed set of 58 keywords; every other
+The language has exactly the following closed set of 61 keywords; every other
 word is an ordinary identifier unless it is reserved.
 
 ```text
 Keyword = "and" | "as" | "async" | "await" | "bool" | "break" | "const"
-        | "continue" | "copy" | "defer" | "else" | "enum" | "f32" | "f64"
-        | "false" | "float" | "fn" | "for" | "i8" | "i16" | "i32" | "i64"
-        | "if" | "impl" | "in" | "int" | "is" | "let" | "lock" | "match"
-        | "mod" | "move" | "mut" | "not" | "number" | "null" | "or" | "panic"
-        | "pub" | "return" | "self" | "shared" | "spawn" | "string" | "struct"
-        | "super" | "trait" | "true" | "type" | "u8" | "u16" | "u32" | "u64"
-        | "unit" | "unknown" | "use" | "where" | "while" ;
+        | "continue" | "copy" | "defer" | "else" | "enum" | "extern" | "f32"
+        | "f64" | "false" | "float" | "fn" | "for" | "i8" | "i16" | "i32"
+        | "i64" | "if" | "impl" | "in" | "int" | "is" | "isize" | "let"
+        | "lock" | "match" | "mod" | "move" | "mut" | "not" | "number" | "null"
+        | "or" | "panic" | "pub" | "return" | "self" | "shared" | "spawn"
+        | "string" | "struct" | "super" | "trait" | "true" | "type" | "u8"
+        | "u16" | "u32" | "u64" | "unit" | "unknown" | "use" | "usize" | "where"
+        | "while" ;
 ```
 
 A `ReservedWord` is a word whose spelling appears in the reserved list of
@@ -156,8 +157,9 @@ private everywhere.
 ```text
 Program      = { HeaderItem } { Declaration } [ Entry ] ;
 HeaderItem   = ModDecl | UseDecl | PubUse ;
-Declaration  = FnDecl | StructDecl | EnumDecl | TraitDecl | ImplDecl
-             | TypeAlias | LetDecl | ConstDecl | TestDecl ;
+Declaration  = FnDecl | ExternFnDecl | ExternBlock | StructDecl | EnumDecl
+             | TraitDecl | ImplDecl | TypeAlias | LetDecl | ConstDecl
+             | TestDecl ;
 
 ModDecl      = [ "pub" ] "mod" Identifier ( ModuleBody | ";" ) ;
 ModuleBody   = "{" { HeaderItem } { Declaration } "}" ;
@@ -200,8 +202,8 @@ EntryPoint = [ "pub" ] [ "async" ] "fn" "main" "(" ")" [ ":" Type ] Block ;
 followed by `use`, and end with `;` (or, for an inline `mod`, with its own
 block), so `{ HeaderItem } { Declaration }` splits at the first token outside
 that set — a `pub` that begins a declaration continues the split by its
-follower (`pub use` stays in the header; `pub fn` and the rest start the
-body). `UseTarget` alternatives are distinguished by what follows the
+follower (`pub use` stays in the header; `pub extern`, `pub fn` and the rest
+start the body). `UseTarget` alternatives are distinguished by what follows the
 head: `as`, `::`, or nothing (which no alternative allows). In an expression
 or a type, a hyphenated head is part of a path only when it is written
 without surrounding whitespace and followed by `::` — the rule of
@@ -215,12 +217,17 @@ Every alternative of `Declaration` MAY carry `pub`, except `impl` and
 a `#Test` declaration is never part of an interface either
 ([visibility.md](modules/visibility.md)); the four component declarations
 carry no visibility marker either
-([state.md](components/state.md)). `async` follows `pub` and precedes `fn`.
+([state.md](components/state.md)). An `ExternFnDecl` is the exception in the
+other direction: it MUST carry `pub`, since linkage with no export is not
+expressible, and an `ExternBlock`'s `pub` exports every item of the block.
+`async` follows `pub` and precedes `fn`; neither extern form carries it, and
+neither appears in `Statement` — both are declarations of a module body only.
 The five item declarations — `FnDecl`, `StructDecl`, `EnumDecl`, `TraitDecl`,
 and `ImplDecl` — MAY carry an attribute list, written outermost, before `pub`
 and `async`; which attributes are defined, and on which of them, is a
 checking rule and not a grammatical one
-([traits.md](types/traits.md)). Generic parameters are declared once,
+([traits.md](types/traits.md)); the two extern forms carry no attribute list.
+Generic parameters are declared once,
 directly after the name, by functions,
 `struct`s, `enum`s, type aliases, and `impl` blocks — never by a `trait`,
 whose `GenericParams?` exists only so that an attempt can be diagnosed
@@ -242,6 +249,22 @@ Parameter     = Receiver | Identifier ":" [ "mut" | "shared" ] Type
                               [ "=" Expression ] ;
 Receiver      = "self" | "mut" "self" ;
 
+AbiTag          = StringLiteral ;
+ExternBlock     = [ "pub" ] "extern" AbiTag "{" { ExternItem } "}" ;
+ExternItem      = "fn" Identifier "(" [ ExternParamList ] ")" [ ":" Type ]
+                  [ "as" Identifier ] ";" ;
+ExternParamList = ExternParam { "," ExternParam } [ "," ] ;
+ExternParam     = Identifier ":" Type ;
+ExternFnDecl    = "pub" "extern" AbiTag "fn" Identifier
+                  "(" [ ExternParamList ] ")" [ ":" Type ] Block ;
+```
+
+`AbiTag` admits any string literal; which literals are registered is a
+checking rule, not a grammatical one ([ffi.md](ffi.md)). An `ExternItem`
+has no `Block`: an import declares a signature and terminates in `;`,
+exactly as a `TraitMethod` does.
+
+```text
 StructDecl = [ AttributeList ] [ "pub" ] "struct" Identifier GenericParams?
              "{" [ FieldList ] "}" ;
 FieldList  = Field { [ "," ] Field } [ "," ] ;
@@ -716,7 +739,7 @@ production itself appears exactly once, in its own section.
 | `StringLiteral`, `StringChar`, `EscapeSeq`, `TemplateLiteral`, `TemplateText`, `TemplateEscape`, `Interpolation` | [Lexical structure](#lexical-structure) |
 | `DQuote`, `SQuote`, `Backslash`, `Backtick`, `Operator`, `WordOperator`, `SymbolOperator`, `Delimiter` | [Lexical structure](#lexical-structure) |
 | `Program`, `HeaderItem`, `Declaration`, `Entry`, `EntryPoint`, `ModDecl`, `ModuleBody`, `UseDecl`, `PubUse`, `UseTarget`, `UsePath`, `UseGroup`, `UseGlob`, `UseEntry`, `PubUseLocal`, `PathHead`, `Path`, `PackageName` | [Program and modules](#program-and-modules) |
-| `Attribute`, `AttributeArgs`, `AttributeArg`, `AttributeList`, `FnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl`, `TestDecl` | [Declarations](#declarations) |
+| `Attribute`, `AttributeArgs`, `AttributeArg`, `AttributeList`, `FnDecl`, `AbiTag`, `ExternBlock`, `ExternItem`, `ExternParamList`, `ExternParam`, `ExternFnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl`, `TestDecl` | [Declarations](#declarations) |
 | `ComponentDecl`, `StateDecl`, `StoreDecl`, `EffectDecl`, `EnvironmentDecl` | [Declarations](#declarations) |
 | `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `PrimitiveType`, `LiteralType`, `TypeArgs`, `TypeList`, `TupleType`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
 | `Expression`, `AssignmentExpression`, `TernaryExpression`, `LogicalOrExpression`, `LogicalAndExpression`, `NullishExpression`, `EqualityExpression`, `IsExpression`, `RelationalExpression`, `RangeExpression`, `BitOrExpression`, `BitXorExpression`, `BitAndExpression`, `ShiftExpression`, `AdditiveExpression`, `MultiplicativeExpression`, `PowerExpression`, `UnaryExpression`, `PostfixExpression`, `PostfixOperand`, `CallTypeArgs` | [Expressions](#expressions) |

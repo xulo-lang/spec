@@ -53,7 +53,7 @@ Digit      ::= '0' .. '9'
 
 ## Keywords
 
-The language has exactly the following closed set of 58 keywords; every other
+The language has exactly the following closed set of 61 keywords; every other
 word is an ordinary identifier unless it is reserved below. No keyword MAY be
 used as one.
 
@@ -61,6 +61,7 @@ used as one.
 |----------|---------|---------|
 | Declarations | `const` | Declares a compile-time constant |
 | | `enum` | Declares an enumeration type |
+| | `extern` | Declares foreign imports, or marks a function as exported under a foreign ABI |
 | | `fn` | Declares a function or a function-typed value |
 | | `impl` | Declares the implementation of a trait for a type |
 | | `let` | Declares a binding; immutable unless preceded by `mut` |
@@ -114,6 +115,8 @@ used as one.
 | | `u64` | 64-bit unsigned integer type |
 | | `f32` | 32-bit IEEE-754 binary32 type |
 | | `f64` | 64-bit IEEE-754 binary64 type |
+| | `isize` | Signed pointer-width integer type |
+| | `usize` | Unsigned pointer-width integer type |
 | | `null` | The null literal; the type of `null` |
 | | `unit` | The unit type |
 | | `unknown` | The top type |

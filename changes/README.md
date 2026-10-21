@@ -96,7 +96,6 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
-| [add-foreign-function-interface/](add-foreign-function-interface/proposal.md) | draft | `extern "C" { … }` imports and `pub extern "C" fn …` exports behind a closed ABI registry (`"C"`, `"system"`); ABI-safe signature whitelist, opaque non-null `Ptr`/`Ptr?`, `usize`/`isize`; `E0901`–`E0903` registered; zero-UB claim gains a foreign-boundary carve-out. |
 
 ## Archived
 
@@ -106,6 +105,7 @@ with their final status.
 | Change | Status | Summary |
 |--------|--------|---------|
 | [archive/add-declaration-attributes/](archive/add-declaration-attributes/proposal.md) | accepted | `#Derive(ToString)` — declarations MAY carry `#Name` attributes from a closed, checker-interpreted registry; `E0108`–`E0112` registered. |
+| [archive/add-foreign-function-interface/](archive/add-foreign-function-interface/proposal.md) | accepted | `extern "C" { … }` imports and `pub extern "C" fn …` exports behind a closed ABI registry (`"C"`, `"system"`); ABI-safe signature whitelist, opaque non-null `Ptr`/`Ptr?`, `usize`/`isize`; `E0901`–`E0903` registered; zero-UB claim gains a foreign-boundary carve-out. |
 | [archive/add-explicit-type-arguments/](archive/add-explicit-type-arguments/proposal.md) | accepted | a call MAY write explicit type arguments — `first<Int>(…)` — which replace inference; `E0807`/`E0808` registered. |
 | [archive/add-test-title/](archive/add-test-title/proposal.md) | accepted | `#Test("parse test") fn …` — a test MAY carry a parenthesized string title; the identifier stays the identity, bare `#Test` stays canonical. |
 | [archive/align-intrinsic-casing/](archive/align-intrinsic-casing/proposal.md) | accepted | Rename the multi-word prelude intrinsics and `to_string` to lowerCamelCase (`mapGet`, `setInsert`, `listRemove`, `toString`), matching names.md. |

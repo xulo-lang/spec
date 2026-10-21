@@ -92,6 +92,31 @@ Fixed-bit types map directly to C, Rust, and WASM ABI types:
 | `u64` | `uint64_t` | `i64` (unsigned) |
 | `f32` | `float` | `f32` |
 | `f64` | `double` | `f64` |
+| `usize` | `size_t` / `usize` | `i32` (32-bit) or `i64` (64-bit), the pointer width |
+| `isize` | `ptrdiff_t` / `isize` | `i32` (32-bit) or `i64` (64-bit), the pointer width |
+
+### Pointer-width integers
+
+| Type | Width | Range |
+|------|-------|-------|
+| `usize` | `W` bits, unsigned — the platform's pointer width, implementation-defined | 0 to 2^W − 1 |
+| `isize` | `W` bits, signed — the same `W` | −2^(W−1) to 2^(W−1) − 1 |
+
+- `usize` and `isize` are formal-layer types whose width is the width of the
+  platform's pointer: sizes, capacities, indices, and C's `size_t` and
+  `ptrdiff_t`.
+- The value of `W` is implementation-defined and an implementation MUST
+  document it (32 or 64 in practice), together with the ABI document it comes
+  from ([`../memory-and-runtime.md`](../memory-and-runtime.md)).
+- A literal used where `usize` or `isize` is required follows the fixed-bit
+  literal rule below: `let n: usize = 8` has type `usize`, and a literal out
+  of range is a compile-time error (`E0209`).
+- Arithmetic follows the fixed-bit promotion rule below: `usize + usize` is
+  `usize`; mixing either type with any other numeric type — fixed-bit of
+  another width, `int`, `number` — is a compile-time error (`E0201`), since
+  a signed and an unsigned quantity of implementation-defined width have no
+  defined mixed result. There is no coercion between `usize` and `isize`, or
+  between either and any fixed-bit type ([`../type-system/coercion.md`](../type-system/coercion.md)).
 
 ### Literal defaulting and coercion
 
@@ -217,6 +242,6 @@ for i in a {
 
 The names of the built-in composite types are reserved for the language. A module-scope `struct`, `enum`, `trait`, or `type` declaration MUST NOT use any of the following names:
 
-`List`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error`
+`List`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error`, `Ptr`
 
-Declaring a type with one of these names at module scope is a compile-time error (`E0106`). The primitive value types need no entry in this list: their spellings are keywords, stopped at the lexical layer before a declaration is ever checked. `List`, `Map`, and `Set` are specified in [`composite-types.md`](composite-types.md), `Task<T>` in [`function-types.md`](function-types.md), `Result` and `Error` in [`../error-handling.md`](../error-handling.md), and `View` in [`../components/view-syntax.md`](../components/view-syntax.md); `Range<T>` is specified above in this file. Elsewhere — as a type parameter name or an ordinary value binding — a built-in type name is an ordinary identifier, though using one conflicts with the naming conventions in [`../names.md`](../names.md).
+Declaring a type with one of these names at module scope is a compile-time error (`E0106`). The primitive value types need no entry in this list: their spellings are keywords, stopped at the lexical layer before a declaration is ever checked. `List`, `Map`, and `Set` are specified in [`composite-types.md`](composite-types.md), `Task<T>` in [`function-types.md`](function-types.md), `Result` and `Error` in [`../error-handling.md`](../error-handling.md), and `View` in [`../components/view-syntax.md`](../components/view-syntax.md); `Range<T>` is specified above in this file. `Ptr` is specified in [`../ffi.md`](../ffi.md); it names an opaque foreign handle, not a value type, and is reserved for that reason. Elsewhere — as a type parameter name or an ordinary value binding — a built-in type name is an ordinary identifier, though using one conflicts with the naming conventions in [`../names.md`](../names.md).

@@ -67,6 +67,7 @@ code MUST NOT be reused for a different failure.
 | `E0601`–`E0699` | modules, visibility, entry point | [modules](../modules/README.md) |
 | `E0701`–`E0799` | components | [`../components/README.md`](../components/README.md) |
 | `E0801`–`E0899` | traits, impls, generic bounds | [`../types/traits.md`](../types/traits.md), [`../types/generics.md`](../types/generics.md) |
+| `E0901`–`E0999` | foreign boundary: extern signatures, ABI tags, extern calls | [`../ffi.md`](../ffi.md) |
 | `W0101`–`W0199` | warnings | this chapter |
 
 The table above is a coarse map of the families; a family's codes may be
@@ -260,6 +261,22 @@ reported with the call codes `E0202`, `E0204`, `E0207`, and `E0208`.
 | `E0809` | a member call `value.method(…)` finds more than one trait method candidate in scope for the receiver's type | `r.grow()` with two traits in scope that both implement `grow` for `Rect` | ``multiple applicable implementations of `grow` for `Rect` `` | [traits.md](../types/traits.md) |
 | `E0810` | a `trait` declaration declares a type parameter list | `trait Convert<T> { fn convert(self): T }` | ``a trait may not declare type parameters`` | [traits.md](../types/traits.md) |
 | `E0811` | a bound applies type arguments to a trait | `<T: Convert<string>>` | ``bound `Convert<string>` applies type arguments; a trait has none`` | [generics.md](../types/generics.md) |
+
+### Foreign boundary errors
+
+| Code | Trigger | Example | Message shape | Specified in |
+|------|---------|---------|---------------|--------------|
+| `E0901` | a type that is not ABI-safe appears in an extern signature; `unit` as a parameter; an optional type other than `Ptr?` | `fn f(s: string): i32` inside `extern "C" { … }` | `` `string` is not allowed across an `extern "C"` boundary `` | [ffi.md](../ffi.md) |
+| `E0902` | an ABI tag outside the registry | `extern "c++" { … }` | `` ABI `"c++"` is not registered `` | [ffi.md](../ffi.md) |
+| `E0903` | an imported symbol referenced outside direct call position | `let g = abs` | `` `abs` is an extern import and can only be called directly `` | [ffi.md](../ffi.md) |
+
+`E0901` carries the note `` = note: ABI-safe types: `bool`, `i8`…`u64`,
+`f32`, `f64`, `usize`, `isize`, `unit`, `Ptr`, `Ptr?` ``, and `E0902`
+carries `` = note: registered ABIs: `"C"`, `"system"` `` — both notes follow
+the `E0111` pattern. Positions that do not exist in an extern form's grammar
+— a body on an import item, `async` on either form, a parameter mode, a
+private export — are syntax failures raised before the checker runs and carry
+no code (see **Error categories** above).
 
 ## Warnings
 

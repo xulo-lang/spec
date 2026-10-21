@@ -148,11 +148,13 @@ language as it grows.
   ([`expressions/operators.md`](expressions/operators.md)); no `trait` or
   `impl` may redefine `+`, `==`, or any other operator for a user type.
   Structural equality is therefore the only equality a user type has.
-- **No foreign-function interface contract.** The language defines no `extern`
-  form, no linkage or ABI annotation, and no calling convention for code
-  written outside it. The fixed-bit types exist so that a value can be laid out
-  compatibly with a C ABI; binding Xulo to another language's code is a library
-  and host concern.
+- **No C++ or foreign-runtime ABIs.** The language declares foreign functions
+  against exactly two ABI tags, `"C"` and `"system"`, and nothing else
+  ([`ffi.md`](ffi.md)): C++ interop — which has no single ABI, Itanium and
+  MSVC name mangling being incompatible — and calling into managed runtimes
+  remain library and host concerns. The boundary carries value copies and
+  opaque handles only: no string, buffer, or callback crosses it, and no
+  foreign ABI annotation exists beyond the registry.
 - **No documentation comments.** A comment carries no meaning to the language:
   [`lexical-structure.md`](lexical-structure.md) defines only `//` and
   `/* … */` and states that there is no documentation-comment syntax.

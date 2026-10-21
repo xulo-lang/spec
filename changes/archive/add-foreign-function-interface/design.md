@@ -1,6 +1,6 @@
 # Add Foreign Function Interface — Design
 
-**Status:** draft
+**Status:** accepted · **Date:** 2026-10-21
 **Change ID:** add-foreign-function-interface
 
 This file is the record of the design discussion: every fork that was

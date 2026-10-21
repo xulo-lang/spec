@@ -18,7 +18,7 @@ This specification defines the *design* of the Xulo language:
 - the function, component, and module layers,
 - the type-checking rules and diagnostics,
 - the built-in intrinsics provided by the compiler,
-- the memory, concurrency, and error-handling models,
+- the memory, concurrency, error-handling, and foreign-boundary models,
 - a complete formal grammar.
 
 The design rests on one claim: *structural* trust in a program does not
@@ -138,6 +138,7 @@ and the xulo-website documents named in § 6.
 | [`type-system/`](type-system/README.md) | Checking rules, coercions, compile-time diagnostics (`E`/`W` codes) |
 | [`builtins/`](builtins/README.md) | Prelude and compiler intrinsics |
 | [`memory-and-runtime.md`](memory-and-runtime.md) | Value/reference semantics, ownership, borrowing, runtime model |
+| [`ffi.md`](ffi.md) | The foreign boundary: `extern` imports and exports, the ABI registry, ABI-safe signature types, `Ptr`, and the boundary guarantee |
 | [`concurrency.md`](concurrency.md) | Tasks, `spawn` and its executors, cancellation, structured concurrency |
 | [`error-handling.md`](error-handling.md) | Fallible operations: `Result`, `?` propagation, `panic`, runtime failures |
 | [`testing.md`](testing.md) | Test functions: checking, inertness, the `async` marker, pass and fail |
@@ -153,6 +154,7 @@ normative for the whole specification.
 
 | Term | Definition |
 |------|------------|
+| **ABI-safe** | Of a type permitted in an `extern` signature: on the closed list of [`ffi.md`](ffi.md) — `bool`, the fixed-bit types, `usize`/`isize`, `unit`, `Ptr`, and `Ptr?` — so that it has a defined representation under a registered ABI. |
 | **binding** | An association between a name and a value or type introduced by `let`, `let mut`, `const`, a parameter, or a declaration. |
 | **borrowing** | The grant by which a parameter or receiver accesses an argument's storage for the duration of a call instead of receiving it — extended until the returned task settles when the call returns a `Task`: `p: T` borrows immutably, `p: mut T` mutably, under aliasing XOR mutability. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **bound** | A constraint on a type parameter, written inline `<T: Area>` or in a `where` clause; a type argument MUST satisfy every bound of its parameter. See [`types/generics.md`](types/generics.md). |
@@ -164,6 +166,7 @@ normative for the whole specification.
 | **diagnostic** | A message emitted for a program the checker rejects or warns about, identified by an `E` or `W` code; a compile-time event, not a runtime one. Lexical and syntax failures are raised before the checker runs and carry no code. See [`type-system/errors.md`](type-system/errors.md). |
 | **enum** | A nominal type declaring a fixed set of variants, each optionally carrying a payload; written `enum Name { … }`, constructed through a variant path and deconstructed with `match`. See [`types/enums.md`](types/enums.md). |
 | **evaluation order** | The order in which subexpressions are evaluated; left-to-right unless stated otherwise. |
+| **extern** | The declaration forms that cross the foreign boundary: `extern "ABI" { fn …; }` imports symbols, `pub extern "ABI" fn …` exports one. Only value copies and opaque handles cross; see [`ffi.md`](ffi.md). |
 | **immutable binding** | A binding introduced by `let` or `const`; reassignment is a compile-time error (`E0401`). |
 | **impl** | A block that attaches methods to a type — `impl Trait for Type` implements a trait, `impl Type` declares inherent methods — which applies only within the module that contains it. See [`types/traits.md`](types/traits.md). |
 | **intrinsic** | A function or namespace provided directly by the compiler, available without `use`. See [`builtins/`](builtins/README.md). |
@@ -176,6 +179,7 @@ normative for the whole specification.
 | **ownership** | The rules deciding which binding denotes a value: `move` severs a binding from its value, and `copy` produces an independent deep copy while leaving the original binding intact. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **panic** | An unrecoverable stop: a call to `panic(...)` or a runtime failure; it stops the program where it occurs and has no handler. See [`error-handling.md`](error-handling.md). |
 | **pattern** | The left-hand side of a `match` arm; deconstructs a value or tests its type. |
+| **Ptr** | An opaque, non-null handle to memory the language does not own: produced only by an extern call or passed back through one, comparable only for identity, and never dereferenceable. See [`ffi.md`](ffi.md). |
 | **pub** | The visibility marker: a declaration is module-private unless it is marked `pub`, which exports the one name the declaration introduces. See [`modules/visibility.md`](modules/visibility.md). |
 | **Result** | The built-in `Result<T, E>`: either `Result::Ok(T)` or `Result::Err(E)`; the value a fallible operation returns. See [`error-handling.md`](error-handling.md). |
 | **runtime failure** | A condition that stops a running program — an out-of-bounds index, division by zero — as a panic; there is no handler. See [`memory-and-runtime.md`](memory-and-runtime.md). |

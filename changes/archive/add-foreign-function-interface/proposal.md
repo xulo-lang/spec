@@ -1,6 +1,6 @@
 # Add Foreign Function Interface
 
-**Status:** draft
+**Status:** accepted · **Date:** 2026-10-21
 **Change ID:** add-foreign-function-interface
 
 ## What
