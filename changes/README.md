@@ -96,6 +96,7 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
+| [add-foreign-function-interface/](add-foreign-function-interface/proposal.md) | draft | `extern "C" { … }` imports and `pub extern "C" fn …` exports behind a closed ABI registry (`"C"`, `"system"`); ABI-safe signature whitelist, opaque non-null `Ptr`/`Ptr?`, `usize`/`isize`; `E0901`–`E0903` registered; zero-UB claim gains a foreign-boundary carve-out. |
 
 ## Archived
 
