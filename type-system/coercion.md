@@ -107,8 +107,9 @@ combination it does not give is a compile-time error (`E0201`)
 | one fixed-bit type, the same fixed-bit type | that type |
 | distinct fixed-bit types, or a fixed-bit type with any other numeric type | error `E0201` |
 
-Constant division or remainder by zero, and constant results that overflow the
-type, are compile-time errors (`E0210`); the same conditions with non-constant
+Constant division or remainder by zero, constant results that overflow the
+type, and constant shifts by a negative or out-of-range amount are
+compile-time errors (`E0210`); the same conditions with non-constant
 operands are runtime traps.
 
 Promotion stops at the operator. The result of `n + 0.5` is `float` and

@@ -129,6 +129,9 @@ async fn main() { … }       // asynchronous program: returns Task<unit>
   denotes `Task<unit>` or `Task<View>` as usual
   ([`../expressions/async-expressions.md`](../expressions/async-expressions.md)).
 - `main` MAY be marked `pub`.
+- A program that terminates normally exits with status 0, and one that ends
+  in a runtime failure exits with a nonzero status; the rule is specified
+  in [`../memory-and-runtime.md`](../memory-and-runtime.md).
 - A program whose root module declares no `main` is `E0608`, and a `main`
   with parameters or with any return type other than the two above is
   `E0609`; both are modules-family diagnostics

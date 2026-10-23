@@ -127,7 +127,7 @@ Operand and result types, in summary; precedence and associativity are in
 |-----------|----------|--------|
 | `+ - * / % **`, unary `-` | numeric, per the promotion table of [`../types/primitive-types.md`](../types/primitive-types.md) | the promoted type; constant division or remainder by zero is `E0210` |
 | `+` | `string` with `string`; `List` with `List` of a common element type | `string`; that element type |
-| `& \| ^ ~ << >>` | integers of one and the same type (shift amount a non-negative integer) | that type |
+| `& \| ^ ~ << >>` | integers of one and the same type (shift amount a non-negative integer below the type's width; a constant amount outside is `E0210`) | that type |
 | `< > <= >=` | both numeric (same promotion) or both `string` | `bool` |
 | `== !=` | a common type (below) | `bool` |
 | `is`, `is not` | an expression of type `S`; a testable type `T` with `T ≼ S` (`E0222`) | `bool` |
@@ -279,7 +279,7 @@ that disagree on what they bind are `E0304`.
   REQUIRED whenever `e` leaves the type undetermined — an empty list or map
   literal, `null`, a closure with no expected type. Every `let` has an
   initializer; a `const` initializer MUST be a constant expression, whose division or
-  remainder by zero and out-of-range results are `E0210`.
+  remainder by zero, out-of-range results, and negative or out-of-range shift amounts are `E0210`.
 - **Assignment.** The target MUST be a place expression (`E0402`) backed by a
   `mut` binding (`E0401`), and the value MUST be assignable to the place's type
   (`E0201`). Evaluation order — right-hand side first, then receiver and index
@@ -370,6 +370,12 @@ that disagree on what they bind are `E0304`.
 - **Type aliases.** Expanding aliases MUST terminate: an alias that expands,
   directly or through a chain, to itself is `E0105`; recursion through a type
   constructor is not a cycle.
+- **Value composition.** A struct's field types MUST NOT reach the declaring
+  struct through field positions, tuple elements, and alias expansion without
+  an intervening indirection (`E0113`); recursion through `List<T>`,
+  `Map<K, V>`, `Set<T>`, `T?`, a function type, or an enum payload is
+  well-formed
+  ([`../types/composite-types.md`](../types/composite-types.md)).
 - **Duplicates and visibility.** Two declarations of one name in one scope
   are `E0103`, and a collision involving a `mod` or `use` binding — two
   `use` entries, a `use` against a declaration, a glob overlap, a manifest

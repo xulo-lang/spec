@@ -94,6 +94,12 @@ Rules:
   appear in diagnostics, but they are not argument labels, because construction
   and matching are always positional. A payload slot may have any type —
   `struct`s, `enum`s, `List`s, `Map`s, and type parameters alike.
+- A variant payload MAY mention the enum being declared, through other
+  payloads included: `enum Tree { Leaf(int), Node(Tree, Tree) }` and
+  `enum Step { Next(Step) }` are well-formed. Payload recursion needs no
+  indirection; the field-composition cycle rule
+  ([`composite-types.md`](composite-types.md), `E0113`) governs struct fields
+  only.
 - Construction applies arguments positionally, exactly as many as the variant
   declares: `Shape::Circle(2.0)`, `Shape::Rect(3.0, 4.0)`,
   `Person::Named("Ada", 36)`. The arity MUST match the declaration, and each

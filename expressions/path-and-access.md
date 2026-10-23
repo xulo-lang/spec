@@ -129,7 +129,9 @@ counts[key]    // map value
 The index type follows the collection: a `List<T>` is indexed by `int` and
 yields `T`; a `Map<K, V>` is indexed by `K` and yields `V`. Strings are not
 indexable (see [`../types/primitive-types.md`](../types/primitive-types.md));
-select a character by other means, such as the built-in string intrinsics.
+inspect one with the prelude string functions — `stringSize`,
+`stringCodeAt`, `stringSlice` — and reach its bytes with `stringBytes` (see
+[`../builtins/prelude.md`](../builtins/prelude.md)).
 
 Element access yields the element type directly — there is no automatic
 optional. Reading past the end of a `List` (a negative index included), or

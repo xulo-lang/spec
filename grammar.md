@@ -77,6 +77,9 @@ Keyword = "and" | "as" | "async" | "await" | "bool" | "break" | "const"
         | "string" | "struct" | "super" | "trait" | "true" | "type" | "u8"
         | "u16" | "u32" | "u64" | "unit" | "unknown" | "use" | "usize" | "where"
         | "while" ;
+
+ReservedWord = ? one of the spellings in the reserved list of
+                lexical-structure.md ? ;
 ```
 
 A `ReservedWord` is a word whose spelling appears in the reserved list of
@@ -735,7 +738,7 @@ production itself appears exactly once, in its own section.
 
 | Nonterminal | Section |
 |-------------|---------|
-| `SourceFile`, `TokenSequence`, `Skipped`, `Whitespace`, `Comment`, `Token`, `Identifier`, `IdentStart`, `IdentPart`, `Letter`, `Digit`, `HexDigit`, `OctDigit`, `Keyword`, `Literal`, `IntegerLiteral`, `FloatLiteral`, `DecInt`, `HexInt`, `BinInt`, `OctInt`, `BooleanLiteral`, `NullLiteral` | [Lexical structure](#lexical-structure) |
+| `SourceFile`, `TokenSequence`, `Skipped`, `Whitespace`, `Comment`, `Token`, `Identifier`, `IdentStart`, `IdentPart`, `Letter`, `Digit`, `HexDigit`, `OctDigit`, `Keyword`, `ReservedWord`, `Literal`, `IntegerLiteral`, `FloatLiteral`, `DecInt`, `HexInt`, `BinInt`, `OctInt`, `BooleanLiteral`, `NullLiteral` | [Lexical structure](#lexical-structure) |
 | `StringLiteral`, `StringChar`, `EscapeSeq`, `TemplateLiteral`, `TemplateText`, `TemplateEscape`, `Interpolation` | [Lexical structure](#lexical-structure) |
 | `DQuote`, `SQuote`, `Backslash`, `Backtick`, `Operator`, `WordOperator`, `SymbolOperator`, `Delimiter` | [Lexical structure](#lexical-structure) |
 | `Program`, `HeaderItem`, `Declaration`, `Entry`, `EntryPoint`, `ModDecl`, `ModuleBody`, `UseDecl`, `PubUse`, `UseTarget`, `UsePath`, `UseGroup`, `UseGlob`, `UseEntry`, `PubUseLocal`, `PathHead`, `Path`, `PackageName` | [Program and modules](#program-and-modules) |

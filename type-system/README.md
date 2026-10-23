@@ -39,7 +39,7 @@ which declarations are checked does not change the result.
 
 | Area | Checked |
 |------|---------|
-| Declarations | Signatures are annotated, names are unique, aliases terminate, and every declared type name resolves |
+| Declarations | Signatures are annotated, names are unique, aliases terminate, struct fields do not compose themselves, and every declared type name resolves |
 | Expressions | Every expression has a type, operands and callees fit, literals are in range |
 | Statements | Bindings initialize, assignments target mutable places, control transfers are in scope |
 | Patterns | Each pattern fits its scrutinee, `match` is exhaustive, no arm is unreachable |

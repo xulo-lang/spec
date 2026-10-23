@@ -90,6 +90,7 @@ const C = B > 5            // legal: comparison over constants
 fn compute(): int { 42 }
 const BAD = compute()      // error: not a constant expression
 const ZERO = 1 / 0         // error: constant division by zero
+const SHIFTED = 1 << 64    // error: constant shift amount out of range
 ```
 
 - `const` introduces a **compile-time constant** binding. Like `let`, it is
@@ -103,8 +104,9 @@ const ZERO = 1 / 0         // error: constant division by zero
 - The type annotation is optional when the initializer determines the type;
   it is REQUIRED when the initializer does not.
 - Constant evaluation obeys the numeric error rules: constant division or
-  remainder by zero, and constant out-of-range results, are compile-time
-  errors ([`../type-system/checking-rules.md`](../type-system/checking-rules.md)).
+  remainder by zero, constant out-of-range results, and constant shifts by a
+  negative or out-of-range amount are compile-time errors
+  ([`../type-system/checking-rules.md`](../type-system/checking-rules.md)).
 - A `const` MAY be declared at module level or inside a block. In either
   position it follows the ordinary scope rules of [`../names.md`](../names.md);
   at module level it MUST be declared before use

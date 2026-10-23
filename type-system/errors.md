@@ -119,6 +119,7 @@ the source line, a caret line, and optional notes.
 | `E0110` | a registered attribute whose arguments do not fit the registered shape | `#Derive` | `` attribute `Derive` takes a parenthesized list of trait names `` | [traits.md](../types/traits.md) |
 | `E0111` | a well-shaped argument that names a reserved, unregistered derive target | `#Derive(Display)` | `` `Display` is not a registered derive target `` | [traits.md](../types/traits.md) |
 | `E0112` | `#Derive` on a type that declares type parameters | `#Derive(ToString) struct Box<T> { v: T }` | `` cannot derive `ToString` for a generic type `` | [traits.md](../types/traits.md) |
+| `E0113` | a struct whose field types reach the declaring struct through fields, tuple elements, and alias expansion with no intervening indirection | `struct Node { node: Node }` | ``type `Node` has a cyclic field definition`` | [composite-types.md](../types/composite-types.md) |
 
 `E0111` carries the note `` = note: registered targets: `ToString` ``.
 
@@ -145,7 +146,7 @@ or payload type with no string form is `E0801`.
 | `E0207` | the number of arguments is wrong | `f(1, 2)` for `fn f(a: int)` | ``expected 1 argument, found 2`` | [calls.md](../expressions/calls.md) |
 | `E0208` | an argument label is unknown, duplicated, or a positional argument follows a named one | `f(on: 1)` | ``unknown argument label `on` `` | [calls.md](../expressions/calls.md) |
 | `E0209` | a literal does not fit the type it is given — its default type or a type it is coerced into | `let b: u8 = 300` | ``literal `300` does not fit in `u8` `` | [literals.md](../expressions/literals.md) |
-| `E0210` | constant arithmetic divides by zero, takes a remainder by zero, or overflows its type | `const H = 1 / 0` | ``division by zero in constant expression`` | [operators.md](../expressions/operators.md) |
+| `E0210` | constant arithmetic divides by zero, takes a remainder by zero, overflows its type, or shifts by a negative or out-of-range amount | `const H = 1 / 0` | ``division by zero in constant expression`` | [operators.md](../expressions/operators.md) |
 | `E0211` | operands, branches, or arms have no common type | `flag ? 1 : "x"` | `` `int` and `string` have no common type `` | [checking-rules.md](checking-rules.md) |
 | `E0212` | a value has no string form, in `${…}` or in `str` | `` `${user}` `` without `ToString` | `` `User` has no string form; implement `ToString` `` | [traits.md](../types/traits.md) |
 | `E0213` | the iterable of a `for` loop is not a supported type | `for x in 42` | `` `int` is not iterable `` | [control-flow.md](../expressions/control-flow.md) |

@@ -83,8 +83,8 @@ in [`../type-system/errors.md`](../type-system/errors.md).
 | Intrinsic functions | `print`, `println`, `str`, `assert` |
 
 `Task` appears twice because it is both a type and a namespace. The prelude
-operations defined in the next section are reserved under the same rule, and
-so is every intrinsic listed in
+operations defined below — collection and string alike — are reserved under
+the same rule, and so is every intrinsic listed in
 [`intrinsic-functions.md`](intrinsic-functions.md#complete-signature-index).
 
 ## Prelude operations
@@ -176,6 +176,32 @@ supplies the operations they do not cover:
 - `listRemove` is the removal that cannot fail: the subscript `xs[i]` for an
   out-of-range index is a runtime failure, while `listRemove(xs, i)` answers
   `null` and leaves `xs` unchanged.
+
+## String operations
+
+Strings have syntax only for concatenation (`+`), equality, and templates;
+the operations that inspect them are prelude functions, reserved under the
+same rule as the collection operations
+([Reserved names](#reserved-names)).
+
+| Signature | Meaning |
+|-----------|---------|
+| `stringSize(s: string): int` | the number of Unicode scalar values in `s` |
+| `stringCodeAt(s: string, i: int): int` | the Unicode scalar value at index `i`, counting from 0 in scalar order |
+| `stringSlice(s: string, start: int, end: int): string` | the substring containing the scalars at indices `start … end − 1` |
+| `stringBytes(s: string): List<u8>` | the UTF-8 bytes of `s`, in order |
+
+- Indices count Unicode scalar values: `stringSize` counts scalars, not
+  bytes or UTF-16 code units, and `stringCodeAt` yields the scalar's value
+  — its code point — as an `int`.
+- An index outside `0 … stringSize(s) − 1`, slice bounds outside
+  `0 … stringSize(s)`, or `start > end` is a runtime failure
+  ([`../memory-and-runtime.md`](../memory-and-runtime.md), closed tables);
+  `stringSlice(s, n, n)` is the empty string for every `n` in range, and
+  `stringSlice(s, 0, stringSize(s))` is `s` itself.
+- These functions are the inspection that `s[i]` refuses: the subscript on
+  a `string` remains a compile-time error (`E0215`;
+  [`../types/primitive-types.md`](../types/primitive-types.md)).
 
 ## Prelude visibility
 
