@@ -126,7 +126,7 @@ A method call writes `receiver.method(arguments)`.
 
 ```xulo
 r.area()
-r.is_square()
+r.isSquare()
 ```
 
 Resolution proceeds in this order: first the methods declared in `impl` blocks

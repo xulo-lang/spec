@@ -29,7 +29,7 @@ cancellation, and services in [`concurrency.md`](concurrency.md).
 
 ```xulo
 // Ok(user) found, Ok(null) absent, Err(reason) the lookup itself failed
-fn find_user(id: int): Result<User?, LoadError> {
+fn findUser(id: int): Result<User?, LoadError> {
   if id < 0 { return Result::Err(LoadError::Denied("negative id")) }
   query(id)
 }
@@ -62,7 +62,7 @@ fn half(n: int): Result<int, string> {
   if n % 2 == 0 { Result::Ok(n / 2) } else { Result::Err("odd input") }
 }
 
-fn doubled_half(n: int): int {
+fn doubledHalf(n: int): int {
   match half(n) {
     Result::Ok(v) => v * 2
     Result::Err(reason) => { print(reason); 0 }
@@ -90,7 +90,7 @@ fn doubled_half(n: int): int {
 ```xulo
 enum LoadError { Missing(string), Denied(string) }
 
-fn read_config(path: string): Result<string, LoadError> {
+fn readConfig(path: string): Result<string, LoadError> {
   if path == "" { return Result::Err(LoadError::Missing(path)) }
   load(path)
 }
@@ -149,12 +149,12 @@ fn quarter(n: int): Result<int, string> {
   half(h)              // the trailing expression, itself a Result
 }
 
-fn fetch_name(id: int): string? {
-  let u = find_user(id)?   // null propagates: `fetch_name` returns null
+fn fetchName(id: int): string? {
+  let u = findUser(id)?   // null propagates: `fetchName` returns null
   u.name
 }
 
-fn still_wrong(n: int): int {
+fn stillWrong(n: int): int {
   half(n)?    // E0217: `Result::Err` is not assignable to `int`
 }
 ```
@@ -182,7 +182,7 @@ profile out of a function returning an optional, one step at a time.
 ```xulo
 let label = if n > 0 { "positive" } else { panic("n must be positive") }
 
-fn double_or_stop(n: int): int {
+fn doubleOrStop(n: int): int {
   if n < 0 { panic("negative input") }
   n * 2
 }
@@ -207,9 +207,9 @@ and its failure model is the same as a synchronous one:
   and `?` propagates from there — with parentheses, `(await t)?`.
 
 ```xulo
-async fn fetch_user(id: int): Result<User, LoadError> {
-  let raw = (await get_json(`/users/${id}`))?   // Err propagates out
-  decode_user(raw)                              // Result<User, LoadError>
+async fn fetchUser(id: int): Result<User, LoadError> {
+  let raw = (await getJson(`/users/${id}`))?   // Err propagates out
+  decodeUser(raw)                              // Result<User, LoadError>
 }
 ```
 
@@ -259,7 +259,7 @@ combine results and cancellation the way the operations they describe settle:
 - Cancelling the combined task cancels `t` in turn.
 
 ```xulo
-async fn poll_with_deadline(): Result<int, Error> {
+async fn pollWithDeadline(): Result<int, Error> {
   await Task::timeout(poll(), 2000)   // Ok(n) in time, Err("timed out") otherwise
 }
 ```

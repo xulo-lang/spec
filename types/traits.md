@@ -200,11 +200,11 @@ Inside a body that carries the bound, values of type `T` expose the members the
 bound declares, and either spelling denotes the same static call:
 
 ```xulo
-fn area_of<T: Area>(shape: T): float {
+fn areaOf<T: Area>(shape: T): float {
   Area::area(shape)      // explicit static dispatch
 }
 
-fn area_twice<T: Area>(shape: T): float {
+fn areaTwice<T: Area>(shape: T): float {
   shape.area() + shape.area()   // member form, resolves through the bound
 }
 ```

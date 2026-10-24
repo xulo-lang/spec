@@ -61,7 +61,7 @@ The environment designates the root file; how it does so is tooling
 ```xulo
 mod tests {
   use form::validate;
-  fn rejects_empty() { … }
+  fn rejectsEmpty() { … }
 }
 ```
 

@@ -135,13 +135,13 @@ Capture is decided when the `spawn` expression is evaluated, before the body
 runs, so what a block receives never changes while it executes:
 
 ```xulo
-fn upload_files(): Task<unit> {
-  let config = load_config()
+fn uploadFiles(): Task<unit> {
+  let config = loadConfig()
   let data = gather()
   let job = spawn.thread async {
-    let local_config = move config   // captured when the spawn runs
-    let local_data = copy data       // a snapshot; `data` stays usable
-    transmit(local_data, local_config)
+    let localConfig = move config   // captured when the spawn runs
+    let localData = copy data       // a snapshot; `data` stays usable
+    transmit(localData, localConfig)
   }
   print(data)                        // legal: `data` was copied, not moved
   // print(config)                   // error: `config` has been moved (E0403)
@@ -259,17 +259,17 @@ lock state { Block }             // a critical section
   a runtime failure defined in [Runtime failures](#runtime-failures).
 
 ```xulo
-struct AppState { total_online: int, names: List<string> }
+struct AppState { totalOnline: int, names: List<string> }
 
 fn join(state: shared AppState, name: string) {
   lock state {
-    state.total_online = state.total_online + 1
+    state.totalOnline = state.totalOnline + 1
     state.names = state.names + [name]
   }
 }
 
 fn report(state: shared AppState): int {
-  lock state { state.total_online }
+  lock state { state.totalOnline }
 }
 ```
 
@@ -277,15 +277,15 @@ The no-suspension rule draws a line between where a value is fetched and where
 it is installed; the await belongs outside the section:
 
 ```xulo
-async fn refresh_bad(state: shared AppState) {
+async fn refreshBad(state: shared AppState) {
   lock state {
-    state.total_online = await fetch_count()   // error[E0410]
+    state.totalOnline = await fetchCount()   // error[E0410]
   }
 }
 
-async fn refresh_ok(state: shared AppState) {
-  let fresh = await fetch_count()              // ok: the await is outside the lock
-  lock state { state.total_online = fresh }
+async fn refreshOk(state: shared AppState) {
+  let fresh = await fetchCount()              // ok: the await is outside the lock
+  lock state { state.totalOnline = fresh }
 }
 ```
 
@@ -328,14 +328,14 @@ which ready task runs next, how many run concurrently — is the subject of
 
 ## Services
 
-A **service** is an actor: a struct with an `on_message` method, running in
+A **service** is an actor: a struct with an `onMessage` method, running in
 its own process, reached only by sending messages.
 
 ```xulo
 struct Tally { total: int }
 
 impl Tally {
-  fn on_message(mut self, cmd: int) {
+  fn onMessage(mut self, cmd: int) {
     self.total = self.total + cmd
     reply(self.total)
   }
@@ -354,7 +354,7 @@ async fn main() {
   struct construction ([`types/composite-types.md`](types/composite-types.md));
   it is evaluated left-to-right, and the constructed value is deep-copied into
   the new service, so the service never shares storage with its spawner.
-- `Type` MUST declare `on_message` in an `impl` block; a service type without
+- `Type` MUST declare `onMessage` in an `impl` block; a service type without
   one is a compile-time error (`E0409`). The method takes a receiver (`self`
   or `mut self`) and exactly one message parameter of some type `M`; it MAY be
   declared `async`.
@@ -380,13 +380,13 @@ async fn main() {
   position is fire-and-forget — the message was queued when the call
   evaluated, so only the reply goes unread, and the block settles the task on
   exit ([`statements/expression-statements.md`](statements/expression-statements.md)).
-- A service handles one message at a time, in arrival order: `on_message` runs
+- A service handles one message at a time, in arrival order: `onMessage` runs
   to completion — through every `await`, if it is `async` — before the next
   message begins.
-- `reply(e)` may be called only inside `on_message`. The reply type `R` is the
+- `reply(e)` may be called only inside `onMessage`. The reply type `R` is the
   common type of the `reply` operands in the method (`E0211` if they have
   none), or `unit` when the method never calls `reply`. The send's task
-  settles when `on_message` returns, carrying the operand of the `reply` the
+  settles when `onMessage` returns, carrying the operand of the `reply` the
   executed path performed — or, when that path performed none although the
   method contains `reply` calls, settling as cancelled.
 - Cancelling a send task does not withdraw a message already queued.
@@ -404,7 +404,7 @@ stopped through its handle or until the program ends:
   follows the same rule as a cancelled task
   ([Cancellation](#cancellation)) — the service finishes its current
   synchronous run and stops at its next `await`. A body that never awaits
-  again runs to completion, and the service has stopped when `on_message`
+  again runs to completion, and the service has stopped when `onMessage`
   returns.
 - When a service stops, every message still queued for it is discarded, and
   each discarded message's send task settles as cancelled. A `reply` performed

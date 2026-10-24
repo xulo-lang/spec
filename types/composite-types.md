@@ -176,7 +176,7 @@ A union type `T | U` describes a value that is a `T` or a `U`.
 ```xulo
 type Status = "active" | "inactive" | "pending"
 
-fn set_status(s: Status) {
+fn setStatus(s: Status) {
   match s {
     "active" => print("on")
     "inactive" => print("off")

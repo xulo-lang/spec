@@ -137,17 +137,17 @@ Function types are compared structurally, with variance:
 - **Parameter modes are exact**: `fn(T): R`, `fn(mut T): R`, and `fn(shared T): R` are pairwise unrelated — none MAY be used where another is required — and no coercion converts between modes. Type subtyping never rescues a mode mismatch: `fn(int?): int` is not usable where `fn(mut int): int` is required.
 
 ```xulo
-fn count_any(v: int?): int { 0 }
+fn countAny(v: int?): int { 0 }
 
 fn run(g: fn(int): int): int {
   g(1)
 }
 
-let n = run(count_any)  // OK: count_any accepts every int? — and int
+let n = run(countAny)  // OK: countAny accepts every int? — and int
 ```
 
 Here `int` is assignable to `int?`, so `fn(int?): int` is a subtype of
-`fn(int): int` by parameter contravariance: `count_any` — which accepts more
+`fn(int): int` by parameter contravariance: `countAny` — which accepts more
 than `run` requires — satisfies the required type `fn(int): int`.
 
 Function types may appear in any position, including as the parameter or result of another function type, so higher-order functions are written directly (`fn(fn(int): int): int`); the language has no separate notation for higher-rank polymorphism. A generic function used where a function type is expected MUST have its type parameters determined by the expected type or the arguments at that point; otherwise a compile-time error is reported (`E0216`). The complete compatibility and subtyping rules are in [`type-relations.md`](type-relations.md).

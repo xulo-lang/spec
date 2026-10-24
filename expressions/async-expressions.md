@@ -180,8 +180,8 @@ and its failure model is the synchronous one:
   ([`../concurrency.md`](../concurrency.md)).
 
 ```xulo
-async fn log_user(id: int) {
-  match await find_user(id) {
+async fn logUser(id: int) {
+  match await findUser(id) {
     Result::Ok(user) => print(user.name)
     Result::Err(reason) => print(reason)
   }
