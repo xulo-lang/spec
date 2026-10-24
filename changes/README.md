@@ -96,6 +96,7 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
+| [change-time-intrinsic-casing/](change-time-intrinsic-casing/proposal.md) | draft | official names are normative — the `names.md` table binds every built-in spelling; `Time::now_nanos`/`monotonic_nanos` → `nowNanos`/`monotonicNanos`; user code stays RECOMMENDED with no diagnostic. |
 
 ## Archived
 
