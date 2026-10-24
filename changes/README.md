@@ -96,7 +96,6 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
-| [change-time-intrinsic-casing/](change-time-intrinsic-casing/proposal.md) | draft | official names are normative — the `names.md` table binds every built-in spelling; `Time::now_nanos`/`monotonic_nanos` → `nowNanos`/`monotonicNanos`; user code stays RECOMMENDED with no diagnostic. |
 
 ## Archived
 
@@ -114,6 +113,7 @@ with their final status.
 | [archive/add-exit-status/](archive/add-exit-status/proposal.md) | accepted | pin the exit status of ordinary termination — 0 on a normal exit, nonzero on a runtime failure; exact nonzero values stay implementation-defined; no `exit` intrinsic. |
 | [archive/add-string-introspection/](archive/add-string-introspection/proposal.md) | accepted | four prelude functions — `stringSize`, `stringCodeAt`, `stringSlice`, `stringBytes` — fulfill the dangling "string intrinsics" promise; scalar indices; *String index out of range* joins both closed failure tables. |
 | [archive/add-wrapping-arithmetic/](archive/add-wrapping-arithmetic/proposal.md) | accepted | eight `Math` intrinsics — `wrappingAdd`/`Sub`/`Mul` (mod 2⁶⁴, never trap), `popCount`, `countLeadingZeros`/`countTrailingZeros`, `rotateLeft`/`rotateRight` — close the bit-hashing gap the trap policy leaves. |
+| [archive/change-time-intrinsic-casing/](archive/change-time-intrinsic-casing/proposal.md) | accepted | official names are normative under the `names.md` table; `Time::now_nanos`/`monotonic_nanos` → `nowNanos`/`monotonicNanos`; user code stays RECOMMENDED with no diagnostic. |
 | [archive/align-intrinsic-casing/](archive/align-intrinsic-casing/proposal.md) | accepted | Rename the multi-word prelude intrinsics and `to_string` to lowerCamelCase (`mapGet`, `setInsert`, `listRemove`, `toString`), matching names.md. |
 | [archive/change-module-system-to-trees/](archive/change-module-system-to-trees/proposal.md) | accepted | a package is a `mod`-declared tree; `::` paths, manifest package names (one per dependency), verbs `use`/`pub use` replace string specifiers. |
 | [archive/change-shift-count/](archive/change-shift-count/proposal.md) | accepted | pin the shift-amount domain (`0 … width−1`): a constant violation is `E0210`, a non-constant one a runtime trap — the same shape as division by zero; shifts in range never overflow. |

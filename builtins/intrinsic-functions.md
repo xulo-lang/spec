@@ -260,15 +260,15 @@ the delay.
 | Member | Signature | Meaning |
 |--------|-----------|---------|
 | `Time::now` | `fn(): u64` | current Unix time in milliseconds |
-| `Time::now_nanos` | `fn(): u64` | current Unix time in nanoseconds |
+| `Time::nowNanos` | `fn(): u64` | current Unix time in nanoseconds |
 | `Time::monotonic` | `fn(): u64` | current reading of the monotonic clock in milliseconds |
-| `Time::monotonic_nanos` | `fn(): u64` | current reading of the monotonic clock in nanoseconds |
+| `Time::monotonicNanos` | `fn(): u64` | current reading of the monotonic clock in nanoseconds |
 | `Time::sleep` | `fn(ms: u64): Task<unit>` | delays for at least `ms` milliseconds |
 
-- `Time::now` and `Time::now_nanos` read the wall clock: milliseconds and
+- `Time::now` and `Time::nowNanos` read the wall clock: milliseconds and
   nanoseconds since the Unix epoch. They are appropriate for timestamps, not
   for measuring how long something took.
-- `Time::monotonic` and `Time::monotonic_nanos` read a clock that never runs
+- `Time::monotonic` and `Time::monotonicNanos` read a clock that never runs
   backwards and is unaffected by changes to the wall clock. Only differences
   between two readings are meaningful, which makes them the right choice for
   elapsed time, debounce windows, and benchmarks.
@@ -280,9 +280,9 @@ the delay.
   ([`../expressions/async-expressions.md`](../expressions/async-expressions.md)).
 
 ```xulo
-let start = Time::monotonic_nanos()
+let start = Time::monotonicNanos()
 // ... work ...
-let elapsed = Time::monotonic_nanos() - start
+let elapsed = Time::monotonicNanos() - start
 
 async fn later() {
   await Time::sleep(1000)
@@ -388,7 +388,7 @@ Constants give their type in place of a signature.
 | `Task::resolve` | `resolve<T>(value: T): Task<T>` | [`Task` namespace](#task-namespace) |
 | `Task::timeout` | `timeout<T>(t: Task<T>, ms: u64): Task<Result<T, Error>>` | [`Task` namespace](#task-namespace) |
 | `Time::monotonic` | `fn(): u64` | [`Time` namespace](#time-namespace) |
-| `Time::monotonic_nanos` | `fn(): u64` | [`Time` namespace](#time-namespace) |
+| `Time::monotonicNanos` | `fn(): u64` | [`Time` namespace](#time-namespace) |
 | `Time::now` | `fn(): u64` | [`Time` namespace](#time-namespace) |
-| `Time::now_nanos` | `fn(): u64` | [`Time` namespace](#time-namespace) |
+| `Time::nowNanos` | `fn(): u64` | [`Time` namespace](#time-namespace) |
 | `Time::sleep` | `fn(ms: u64): Task<unit>` | [`Time` namespace](#time-namespace) |

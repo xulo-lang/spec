@@ -1,6 +1,6 @@
 # Change Time Intrinsic Casing
 
-**Status:** draft · **Date:** 2026-10-24 · **Affects:** `names.md`,
+**Status:** accepted · **Date:** 2026-10-24 · **Affects:** `names.md`,
 `builtins/intrinsic-functions.md`
 
 ## Summary
