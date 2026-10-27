@@ -96,6 +96,9 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
+| [change-collection-members/](change-collection-members/proposal.md) | draft | List is the growable sequence with Array-style dynamic and callback members; Map/Set have no key subscript or member form (`.get`/`.set` only); sequences use `.len`, containers `.size`; the prelude collection/string functions are removed. |
+| [add-const-generics/](add-const-generics/proposal.md) | draft | const parameters `<const N: int>`; mixed type/const generic lists; explicit const arguments (integer literals, module consts, const parameter names); no const arithmetic or inference; `E0812`/`E0813`; a fixed-array consumer is a separate change. |
+| [add-fixed-array/](add-fixed-array/proposal.md) | draft | builds on `add-const-generics` and `change-collection-members`; inline `Array<T, N>` with a const N, context-typed literal, `Array::filled`, read/callback/sort members, value copy, no dynamic members; depends on both prerequisites. |
 
 ## Archived
 
