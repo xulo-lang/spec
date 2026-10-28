@@ -78,7 +78,8 @@ value-copy semantics; the non-negative `N` domain; the prelude/reserved name
 `Array`; the new diagnostics.
 
 **Out of scope.** The const-generic mechanism itself (see `add-const-generics`) and the List member changes (see `change-collection-members`);
-variance over N; `Array` ↔ `List` conversions; Array in FFI; Array as a
+length subtyping (N is an exact const argument, so different lengths are
+unrelated types); `Array` ↔ `List` conversions; Array in FFI; Array as a
 heap/reference type; a new literal syntax (the expected-type list literal is
 reused); `Array` dynamic members.
 

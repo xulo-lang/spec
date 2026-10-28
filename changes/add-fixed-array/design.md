@@ -42,17 +42,21 @@ and an instantiation with a negative value is `E0814`.
   `truncate`, or `clear`: the length is N. A member outside this set is
   `E0102`.
 - `.map` preserves the length, so its result is `Array<U, N>`; `.filter` and
-  `.slice` have runtime lengths, so they return `List`s. Callbacks follow the
-  List rules: synchronous, element only, receiver borrowed, a callback panic
-  stops the call.
+  `.slice` have runtime lengths, so they return `List`s. A filtered or sliced
+  `List` cannot be turned back into an `Array` until a checked conversion
+  exists; that conversion is a deliberate follow-up. Callbacks follow the List
+  rules: synchronous, element only, receiver borrowed, a callback panic stops
+  the call.
 - The read/callback/sort members otherwise share List's semantics and
   diagnostics; Array has no dynamic members to shadow them.
 - `a[i]` and iteration are core syntax; a subscript outside `0 … N − 1` is a
-  runtime failure, joining the closed tables as *Array index out of bounds*.
+  runtime failure: it adds an *Array index out of bounds* row to both closed
+  runtime-failure tables.
 - Values are inline and have value semantics: binding, assignment, argument
   passing, and return copy the N elements; there is no shared backing store,
   and no identity relation depends on storage. `Array<T, N>` is invariant in
-  `T` and exact in N; there is no subtyping between different N and no
+  `T` — elements are writable through `a[i] = v`, so covariance would be
+  unsound — and exact in N; there is no subtyping between different N and no
   conversion to or from `List`.
 
 ### Literal and constructor
@@ -66,9 +70,11 @@ and an instantiation with a negative value is `E0814`.
   no bare array literal and no new literal syntax.
 - In a generic declaration N is abstract, so a literal cannot prove its length
   equals N. `Array::filled(value)` is the generic constructor: it creates N
-  copies of `value` and is written with explicit type and const arguments,
-  e.g. `Array::filled<int, 3>(0)`; const inference is not available. It is the
-  only constructor besides the context-typed literal.
+  ordinary value copies of `value` and is written with explicit type and const
+  arguments, e.g. `Array::filled<int, 3>(0)`; const inference is not available.
+  A copy is shallow for a reference-category element such as a `List` (the N
+  elements share it); pass `copy value` for deep copies. It is the only
+  constructor besides the context-typed literal.
 
 ### No FFI, no conversions
 
