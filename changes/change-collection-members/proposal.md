@@ -7,7 +7,8 @@
 `type-system/checking-rules.md`, `type-system/errors.md`,
 `builtins/prelude.md`,
 `builtins/README.md`, `builtins/intrinsic-functions.md`, `names.md`,
-`testing.md`, `error-handling.md`, `memory-and-runtime.md`
+`statements/let-and-assignment.md`, `testing.md`, `error-handling.md`,
+`memory-and-runtime.md`
 
 ## Summary
 

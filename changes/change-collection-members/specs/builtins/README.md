@@ -1,8 +1,10 @@
 # Built-ins — Delta: Members Are Not Prelude Names
 
-> **Delta** — replaces the introduction, the two-layer table, the inner-scope
-> sentence of Availability, and the prelude item of the resolution order in
-> `builtins/README.md`; the rest is unchanged.
+> **Delta** — replaces the introduction, the two-layer table, and the
+> inner-scope bullet of Availability in `builtins/README.md`, adds the
+> built-in-members paragraph after the two-layer discussion, and replaces
+> item 5 of the resolution order and the `prelude.md` row of the Index; the
+> rest is unchanged.
 
 Some names belong to the language rather than to any file: the built-in types
 and their members, the conversion and output functions, and the members of
@@ -47,21 +49,11 @@ with local bindings.
   [Shadowing](prelude.md#shadowing). A built-in member is unaffected: it is
   reached after a receiver and no local binding hides it.
 
-## Resolution order
+Replace item 5 of `## Resolution order` with:
 
-When a name is used, [`../names.md`](../names.md) searches the following
-scopes in order, and the first scope that provides the name wins:
-
-1. bindings of the innermost enclosing block, innermost first;
-2. parameters and type parameters of the enclosing function or closure;
-3. the remaining bindings of that function, then the module's own top-level
-   declarations;
-4. names brought into the module by `mod`, `use`, and `pub use`;
 5. the prelude — the built-in type names and the intrinsics (`print`,
    `println`, `str`, `Math`, `Time`, `Task`).
 
-A namespace is resolved as an ordinary name *before* member access: in
-`Math::max(a, b)` the leading `Math` is found by the search above, and only
-then is `max` looked up as its member. Prelude names are therefore visible
-only when nothing in the earlier scopes matches, which is why a local binding
-of the same name hides them for as long as it is in scope.
+Replace the `prelude.md` row of `## Index` with:
+
+| [`prelude.md`](prelude.md) | what the prelude contains — built-in types, `ToString`, the built-in namespaces — the reserved-name list, the built-in members, prelude visibility, and shadowing |

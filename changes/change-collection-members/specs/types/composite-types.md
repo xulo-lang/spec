@@ -37,33 +37,33 @@ let names: List<string> = []
 - The type has these inherent members:
   - `.len` — a read-only property of type `int`, the number of elements,
     O(1);
-  - `.push(v)` — append `v`; mutating; returns `unit`;
+  - `.push(v: T)` — append `v`; mutating; returns `unit`;
   - `.pop()` — remove and return the last element, or `null` when the list is
     empty; mutating; type `T?`;
   - `.shift()` — remove and return the first element, or `null` when the list
     is empty; mutating; type `T?`;
-  - `.unshift(v)` — insert `v` at the front; mutating; returns `unit`;
-  - `.splice(start, deleteCount, items: List<T> = [])` — remove
+  - `.unshift(v: T)` — insert `v` at the front; mutating; returns `unit`;
+  - `.splice(start: int, deleteCount: int, items: List<T> = [])` — remove
     `deleteCount` elements at `start`, insert the elements of `items` there,
     and return the removed elements as a new `List<T>` in order; mutating.
     `start` is in `0 …= len`, and `deleteCount` in `0 …= len − start`;
     outside is a runtime failure. `items` defaults to the empty list, so
     `splice(start, n)` only deletes and `splice(start, 0, items)` only
     inserts;
-  - `.resize(n, fill)` — set the length to `n`: shrink from the end when
+  - `.resize(n: int, fill: T)` — set the length to `n`: shrink from the end when
     `n < len`, append `fill` when `n > len`; mutating; returns `unit`. `n`
     MUST be non-negative; a negative `n` is a runtime failure;
-  - `.truncate(n)` — remove elements from the end until the length is `n`,
+  - `.truncate(n: int)` — remove elements from the end until the length is `n`,
     with no effect when `n >= len`; mutating; returns `unit`. `n` MUST be
     non-negative; a negative `n` is a runtime failure;
   - `.clear()` — remove all elements; mutating; returns `unit`;
-  - `.slice(start, end: int? = null)` — a new `List<T>` of the elements at
+  - `.slice(start: int, end: int? = null)` — a new `List<T>` of the elements at
     `start … end − 1`, where `null` `end` means `len`; `start` and `end` are
     in `0 …= len` with `start <= end`; outside is a runtime failure;
-  - `.indexOf(v)` — the first index whose element is `== v`, or `-1`; type
+  - `.indexOf(v: T)` — the first index whose element is `== v`, or `-1`; type
     `int`;
-  - `.lastIndexOf(v)` — the last such index, or `-1`; type `int`;
-  - `.includes(v)` — whether some element is `== v`; type `bool`;
+  - `.lastIndexOf(v: T)` — the last such index, or `-1`; type `int`;
+  - `.includes(v: T)` — whether some element is `== v`; type `bool`;
   - `.join(separator: string = ",")` — the elements' string forms joined by
     `separator`, with `""` for an empty list; type `string`. The element type
     MUST be a base type or implement `ToString` (the `str` domain); otherwise
@@ -159,11 +159,11 @@ let ages = Map<int, string>{ 30: "thirty" }     // typed form: keys are not iden
 - The type has inherent members:
   - `.size` — a read-only property of type `int`, the number of entries,
     O(1);
-  - `.get(k)` — the value for `k`, or `null` when absent; type `V?`;
-  - `.set(k, v)` — replace the value for `k`, or insert the entry; mutating;
-    returns `unit`;
-  - `.has(k)` — whether `k` is present; type `bool`;
-  - `.remove(k)` — remove the entry and return the value it had, or `null`
+  - `.get(k: K)` — the value for `k`, or `null` when absent; type `V?`;
+  - `.set(k: K, v: V)` — replace the value for `k`, or insert the entry;
+    mutating; returns `unit`;
+  - `.has(k: K)` — whether `k` is present; type `bool`;
+  - `.remove(k: K)` — remove the entry and return the value it had, or `null`
     when absent; mutating; type `V?`;
   - `.keys()`, `.values()`, `.entries()` — new `List`s of the keys, the
     values, and the `(key, value)` pairs, in insertion order;
@@ -181,10 +181,10 @@ let ages = Map<int, string>{ 30: "thirty" }     // typed form: keys are not iden
 
 ```xulo
 let mut counts = { "a": 1, "b": 2 }      // Map<string, int>
-let a = counts.get("a")                  // 1
+let a = counts.get("a")                  // 1 (int?)
 let missing = counts.get("z")            // null: absent
 counts.set("a", 3)                       // counts now holds "a" → 3
-let had = counts.remove("b")             // 2
+let had = counts.remove("b")             // 2 (int?)
 print(counts.size)                       // 1
 print(counts.has("a"))                   // true
 for k in counts {                        // keys, in insertion order
@@ -199,10 +199,10 @@ A `Set<T>` is an unordered collection of unique values: it contains each distinc
 - The element type `T` MUST be hashable — the same set of types admitted as map keys: `string`, `int`, `float`, `bool`, and payload-free enums. Any other element type is a compile-time error (`E0225`). Element identity follows the key identity rule above: every `NaN` is one element of a `Set<float>`.
 - The language defines no set literal: the brace syntax belongs to `Map` — `{}` is its empty literal — so a set is constructed with the static member `Set::fromList(values)`.
 - The type has inherent members: `.size` (a read-only property of type `int`,
-  the number of elements, O(1)), `.has(v)` (membership; type `bool`),
-  `.insert(v)` (add `v`; returns `true` when it was not present), and
-  `.remove(v)` (remove `v`; returns `true` when it was present). The mutating
-  members require a mutable place.
+  the number of elements, O(1)), `.has(v: T)` (membership; type `bool`),
+  `.insert(v: T)` (add `v`; returns `true` when it was not present), and
+  `.remove(v: T)` (remove `v`; returns `true` when it was present). The
+  mutating members require a mutable place.
 - A subscript or member entry form does not exist: `s[v]` is `E0215` and
   `s.v` is `E0102`.
 - A set has no order: the language specifies no iteration order for `Set<T>`, and programs MUST NOT depend on one.

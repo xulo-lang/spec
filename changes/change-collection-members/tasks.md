@@ -13,12 +13,17 @@
       `setInsert`, `setRemove`, `setContains`, `setSize`, `stringSize`,
       `stringCodeAt`, `stringSlice`, `stringBytes`.
 - [ ] Outside `changes/archive/`, confirm no *use* of `m[k]`, `m[k] = v`, or
-      `m.key` remains in the language chapters (the Map section states they do
-      not exist, and the `E0215` row uses `m[k]` as a rejected example);
-      `xs[i]` stays, and the *Absent map key* row is gone.
+      `m.key` remains in the language chapters, and no prose still directs
+      the reader to the subscript or member form for map keys (the Map
+      section states they do not exist, the `let` destructuring bullet reads
+      entries with `m.get(k)`, and the `E0215` row uses `m[k]` as a rejected
+      example); `xs[i]` stays, and the *Absent map key* row is gone.
+- [ ] Outside `changes/archive/`, confirm no passage names “the prelude
+      operations” — the `builtins/README.md` Index row included.
 - [ ] Re-read the prelude example, the `assert` example, the testing example,
-      the `for` iteration bullet, and the Map/List/Set sections against the
-      new members.
+      the `for` iteration bullet, the `let` destructuring bullet, the
+      `builtins/README.md` Index row, and the Map/List/Set sections against
+      the new members.
 
 ## Downstream
 

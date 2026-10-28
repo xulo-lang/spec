@@ -12,10 +12,10 @@
     scalar values;
   - `.byteLen` — a read-only property of type `int`, the number of UTF-8
     bytes, O(1) and allocation-free;
-  - `.codeAt(i)` — the Unicode scalar value at index `i`, counting from 0 in
-    scalar order; type `int`;
-  - `.slice(start, end)` — the substring containing the scalars at indices
-    `start … end − 1`; type `string`;
+  - `.codeAt(i: int)` — the Unicode scalar value at index `i`, counting from
+    0 in scalar order; type `int`;
+  - `.slice(start: int, end: int)` — the substring containing the scalars at
+    indices `start … end − 1`; type `string`;
   - `.bytes()` — a `List<u8>` holding the UTF-8 bytes, in order.
 - Indices count Unicode scalar values, not bytes or UTF-16 code units;
   `codeAt` yields the scalar's value — its code point — as an `int`. An index

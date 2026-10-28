@@ -10,10 +10,11 @@
   `E0101`.
 - `Γ ⊢ e.m : U` when `e : T` and `T` (after alias expansion) declares member
   `m` of type `U`; unknown member → `E0102`, a non-`pub` member examined
-  outside its module → `E0602`. The built-in collection and string types
-  declare their inherent members with their types; a read-only property is not
-  a place, and there is no map entry member form — `e.m` on a `Map` is a
-  member lookup, never the entry `"m"`. On a `List<T>`,
+  outside its module → `E0602`. On `e : unknown` there is no member at all,
+  so `e.m` is `E0102`. The built-in collection and string types declare their
+  inherent members with their types; a read-only property is not a place, and
+  there is no map entry member form — `e.m` on a `Map` is a member lookup,
+  never the entry `"m"`. On a `List<T>`,
   `indexOf`/`lastIndexOf`/`includes` require `T` to admit `==`, and `join`
   requires `T` to have a string form (`E0212`). The callback members check
   their function argument against `fn(T): unit`, `fn(T): U`,
@@ -23,11 +24,10 @@
   borrows the same list is `E0404`/`E0405`. Method resolution is the
   receiver type's built-in inherent member first, then inherent `impl`
   methods, then trait methods in scope, with explicit `Trait.method(recv)`
-  always available;
-  a method used without a call has its function type with the receiver bound.
-  On a type parameter, access succeeds only through a bound. A built-in static
-  member (`Map::fromEntries`, `Set::fromList`) is reached through `::`; it has
-  no receiver.
+  always available; a method used without a call has its function type with
+  the receiver bound. On a type parameter, access succeeds only through a
+  bound. A built-in static member (`Map::fromEntries`, `Set::fromList`) is
+  reached through `::`; it has no receiver.
 - `Γ ⊢ p.i : Tᵢ` when `p : (T₁, …, Tₙ)` and `i` is a decimal literal naming
   an existing position — `0 ≤ i < n`; a positional access on a non-tuple
   type or at or past the arity → `E0220`

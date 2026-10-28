@@ -1,8 +1,9 @@
 # Functions — Delta: Built-in Members and Method Resolution
 
-> **Delta** — replaces the method bullets in the “Methods” section of
-> `functions.md` and adds the static-members bullet; the surrounding prose
-> and the `Counter` example are unchanged.
+> **Delta** — replaces the first three method bullets of the “Methods and
+> `self`” section of `functions.md` and adds the static-members bullet at the
+> end of the bullet list; bullets 4–6, the surrounding prose, and the
+> `Counter` example are unchanged.
 
 - Methods are functions declared inside an `impl` block. The built-in
   collection and string types also declare **inherent members** specified
@@ -25,6 +26,15 @@
   Exactly one candidate MUST result; ambiguity is an error (`E0809`) and MUST
   be disambiguated with explicit dispatch `Trait.method(receiver)`. Explicit
   dispatch is always available.
+- Inside a body bounded by `T: Trait`, both `x.method(args)` and
+  `Trait.method(x)` are permitted.
+- A method call whose receiver may be `null` is written with optional
+  chaining, `receiver?.method()`; the expression evaluates to `null` instead
+  of evaluating the call
+  ([`expressions/path-and-access.md`](expressions/path-and-access.md)).
+- The receiver is the first parameter of the method's function type; using a
+  method as a value with the receiver bound is specified in
+  [`expressions/calls.md`](expressions/calls.md).
 - **Static members.** `Map::fromEntries(entries)` and
   `Set::fromList(values)` are associated members of the built-in types,
   reached through `::` like the associated names of an `impl` block. They have

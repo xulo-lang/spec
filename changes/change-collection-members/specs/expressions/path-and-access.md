@@ -24,10 +24,13 @@ The type of a field access is the declared type of that field. On a built-in
 type, the member's declared type is the type of the access: `.len`, `.size`,
 and `.byteLen` are read-only properties of type `int`, and a property is not a
 place — assigning to one is `E0402`. A method access has the method's function
-type with the receiver bound to the receiver (see
+type with `self` bound to the receiver (see
 [`../functions.md`](../functions.md)); the call itself is specified in
 [`calls.md`](calls.md). A name that is not in the receiver's member set is a
-compile-time error (`E0102`).
+compile-time error (`E0102`)
+(see [`../type-system/errors.md`](../type-system/errors.md)). Members are
+private by default, so a member that is not `pub` is accessible only inside
+the module that declares it (see [`../modules/README.md`](../modules/README.md)).
 
 The built-in collections and `string` have closed inherent member sets,
 specified with their types
@@ -71,8 +74,8 @@ xs[0] = 9
 ### Paths `::` — path heads (excerpt)
 
 A path head is a package name (through the manifest mapping), a root module
-of this package, `self`, `super`, or a type name for a variant or an
-associated member — `Theme::Dark`, `Map::fromEntries`; the head and its
-resolution, including the hyphen rule that keeps `lsp-server::run()` a path
-and `total - Math::PI` subtraction, are specified in
+of this package, `self`, `super`, or a type name — for a variant or an
+associated member, as in `Theme::Dark` and `Map::fromEntries`; the head and
+its resolution — including the hyphen rule that keeps `lsp-server::run()` a
+path and `total - Math::PI` subtraction — are specified in
 [`../modules/import-export.md`](../modules/import-export.md).
