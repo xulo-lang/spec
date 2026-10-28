@@ -2,10 +2,11 @@
 
 **Status:** draft · **Date:** 2026-10-27 · **Affects:**
 `types/composite-types.md`, `types/type-relations.md`,
-`expressions/literals.md`, `expressions/path-and-access.md`,
+`expressions/literals.md`, `expressions/operators.md`,
+`expressions/path-and-access.md`,
 `expressions/control-flow.md`, `type-system/checking-rules.md`,
 `type-system/errors.md`, `error-handling.md`, `memory-and-runtime.md`,
-`builtins/prelude.md`, `types/README.md`, `README.md`
+`builtins/prelude.md`, `types/README.md`, `grammar.md`, `README.md`
 
 ## Summary
 
@@ -17,8 +18,9 @@ semantics), and adds the fixed-length counterpart to `List<T>`: an **inline**
 > `struct Buffer<const N: int> { data: Array<int, N> }`
 > `fn zeroes<const N: int>(): Array<int, N>`
 
-Const arguments are the prerequisite's literals, module `const` names, and
-const parameter names: `Array<int, 3>`, `Array<int, N>`, `zeroes<3>()`.
+Const arguments are the prerequisite's literals, `const` bindings
+(module-level or block-level), and const parameter names: `Array<int, 3>`,
+`Array<int, N>`, `zeroes<3>()`.
 Version 1 adds no const arithmetic or inference (the prerequisite has none).
 
 `Array<T, N>` is a value type with N inline elements, N ≥ 0: no `push`/`pop`/
@@ -73,9 +75,9 @@ prerequisite would leave undefined syntax or undefined member names.
 ## Scope
 
 **In scope.** The inline value type `Array<T, N>`; its literal,
-`Array::filled`, `.len`, subscript, iteration, read/callback/sort members, and
-value-copy semantics; the non-negative `N` domain; the prelude/reserved name
-`Array`; the new diagnostics.
+`Array::filled`, `.len`, subscript, iteration, read/callback/sort members,
+value-copy semantics, and structural `==`; the non-negative `N` domain; the
+prelude/reserved name `Array`; the new diagnostics.
 
 **Out of scope.** The const-generic mechanism itself (see `add-const-generics`) and the List member changes (see `change-collection-members`);
 length subtyping (N is an exact const argument, so different lengths are

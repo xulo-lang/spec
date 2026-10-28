@@ -28,8 +28,9 @@ and exact in N.
   differences:
   - `.slice` and `.filter` return `List<T>`; `.map` returns `Array<U, N>`
     because the length is preserved;
-  - `.reverse` and `.sort` mutate the array; `sort` is stable and takes a
-    comparator;
+  - `.reverse` and `.sort` mutate the array; as in the List rule, the
+    mutating members require the receiver to be a mutable place (`E0404` on
+    an immutable binding); `sort` is stable and takes a comparator;
   - callbacks are synchronous, receive the element only, and cannot mutate
     the receiver (the ordinary borrow rules, `E0404`/`E0405`).
 - There is **no** `.push`, `.pop`, `.shift`, `.unshift`, `.splice`, `.resize`,
@@ -37,12 +38,18 @@ and exact in N.
   `E0102`.
 - A list literal checked against an expected `Array<T, N>` is an array
   literal: its element count MUST equal N, and its elements check against T in
-  order. `[]` is the N = 0 case; a length mismatch is `E0815`. Without an
-  expected Array type, `[1, 2, 3]` remains a `List<int>`.
-- `Array::filled(value)` is the generic constructor: it creates N copies of
-  `value` and is written with explicit type and const arguments, as in
-  `Array::filled<int, 3>(0)` — there is no const inference. It is the only
-  constructor besides the context-typed literal.
+  order. `[]` is the N = 0 case; a length mismatch is `E0815`, and a literal
+  that cannot be checked statically — a spread, or an abstract const parameter
+  N — is `E0818`. Without an expected Array type, `[1, 2, 3]` remains a
+  `List<int>`.
+- `Array::filled<T, N>(value: T): Array<T, N>` is the generic constructor: it
+  creates N copies of `value` and is written with explicit type and const
+  arguments, as in `Array::filled<int, 3>(0)` — there is no const inference.
+  A call that omits the list is `E0816` and a partial list is `E0808` (the
+  const-generic rules from `add-const-generics`). It is the only constructor
+  besides the context-typed literal.
 - `Array<T, N>` and `List<T>` are unrelated nominal types: there is no
   implicit conversion in either direction, and no FFI boundary for Array in
   this change.
+- An `Array` has no string form: `str(a)` and `${a}` are `E0212`, as for any
+  other collection operand of the intrinsics.

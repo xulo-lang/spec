@@ -22,8 +22,9 @@
   first, then inherent `impl` methods, then trait methods in scope, with
   explicit `Trait.method(recv)` always available; a method used without a call
   has its function type with the receiver bound. On a type parameter, access
-  succeeds only through a bound. A built-in static member is reached through
-  `::`; it has no receiver.
+  succeeds only   through a bound. A built-in static member (`Map::fromEntries`,
+  `Set::fromList`, `Array::filled`) is reached through `::`; it has
+  no receiver.
 
 For `a[i]`: `a : List<T>` or `a : Array<T, N>` requires `i : int` and yields
 `T`; any other type — `Map<K, V>` and `string` included — is `E0215`. The read
@@ -34,5 +35,7 @@ assignable to the element type.
 - An `Array<T, N>` type application requires the const argument N to be
   non-negative; a concrete negative N is `E0814`.
 - A list literal checked against an expected `Array<T, N>` must have exactly N
-  written elements and no spread; a mismatch is `E0815`. Its elements check
-  against T in order, and `[]` is the N = 0 case.
+  written elements and no spread; a mismatch is `E0815`, and a literal whose
+  length cannot be compared statically — it contains a spread, or N is an
+  abstract const parameter — is `E0818`. Its elements check against T in
+  order, and `[]` is the N = 0 case.

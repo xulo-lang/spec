@@ -5,8 +5,9 @@
 This design builds on two drafts that must be accepted first:
 
 - `add-const-generics` supplies `<const N: int>`, explicit const arguments
-  (integer literals, module `const` names, const parameter names), no const
-  arithmetic or inference, and monomorphization over const values.
+  (integer literals, `const` bindings — module-level or block-level — and
+  const parameter names), no const arithmetic or inference, and
+  monomorphization over const values.
 - `change-collection-members` supplies the List member names and semantics
   (`.len`, `.slice`, `.indexOf`, `.join`, `.entries`, the callback members,
   and `sort`) that Array shares.
@@ -65,16 +66,19 @@ and an instantiation with a negative value is `E0814`.
   literal**: its element count MUST equal the constant N, and its elements
   check against T in order. `let a: Array<int, 3> = [1, 2, 3]` is the form;
   `[]` is the N = 0 case. A literal whose length is not equal to N is
-  `E0815`.
+  `E0815`. A literal containing a spread has runtime length, so it is never
+  checkable against a static N; both that case and the abstract-N case below
+  are `E0818`.
 - Without an expected Array type, `[1, 2, 3]` remains a `List<int>`; there is
   no bare array literal and no new literal syntax.
 - In a generic declaration N is abstract, so a literal cannot prove its length
-  equals N. `Array::filled(value)` is the generic constructor: it creates N
-  ordinary value copies of `value` and is written with explicit type and const
-  arguments, e.g. `Array::filled<int, 3>(0)`; const inference is not available.
-  A copy is shallow for a reference-category element such as a `List` (the N
-  elements share it); pass `copy value` for deep copies. It is the only
-  constructor besides the context-typed literal.
+  equals N and is `E0818` there. `Array::filled(value)` is the generic
+  constructor: it creates N ordinary value copies of `value` and is written
+  with explicit type and const arguments, e.g. `Array::filled<int, 3>(0)`;
+  const inference is not available. A copy is shallow for a
+  reference-category element such as a `List` (the N elements share it); pass
+  `copy value` for deep copies. It is the only constructor besides the
+  context-typed literal.
 
 ### No FFI, no conversions
 
@@ -108,13 +112,21 @@ N. Rejected for this change; a reference fixed array is a different design.
 - `Array` is a built-in type name; the prelude's type table and reserved-name
   list gain it. Its members are specified in the type chapter; the literal,
   subscript, iteration, and error rows are added to their chapters.
-- No grammar change: `Array<T, N>` uses the const-generic syntax supplied by
-  `add-const-generics`; the array literal reuses the list-literal syntax.
+- Grammar: `Array<T, N>` uses the const-generic syntax supplied by
+  `add-const-generics` and the array literal reuses the list-literal syntax,
+  so the only grammar delta widens `CallTypeArgs` recognition to the final
+  segment of a `::`-path, for `Array::filled<int, 3>(0)`.
 
 ### Typing and diagnostics
 
 - A const argument outside `Array`'s `N >= 0` domain is `E0814`; an array
-  literal whose element count differs from N is `E0815`.
+  literal whose element count differs from N is `E0815`; an array literal
+  whose length cannot be compared to N at compile time — a spread, or an
+  abstract const parameter — is `E0818`.
+- `==` is structural over an `Array`'s elements (different N is `E0211`, as
+  for tuple arities); an `Array` operand of `+` or of an arithmetic operator
+  is `E0201`, because Array concatenation would need a const sum for the
+  length.
 - `a[i]` out of range is a runtime failure; `Array::filled`/literal/member
   arguments use the ordinary call and checking rules.
 

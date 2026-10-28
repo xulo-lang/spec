@@ -3,6 +3,6 @@
 > **Delta** — adds the fixed-array row to the type-kinds table in
 > `types/README.md`; the rest is unchanged.
 
-| Kind | Spelling | Chapter |
-|------|----------|---------|
+| Kind | Examples | Topic file |
+|------|----------|------------|
 | Fixed array | `Array<T, N>` | [`composite-types.md`](composite-types.md) |
