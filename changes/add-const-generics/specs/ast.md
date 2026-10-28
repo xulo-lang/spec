@@ -1,7 +1,7 @@
 # AST — Delta: Const Generic Parameters
 
 > **Delta** — replaces the `GenericParamNode` interface in `ast.md` and its
-> explanatory sentence; the rest of the AST is unchanged.
+> explanatory paragraph; the rest of the AST is unchanged.
 
 ```text
 interface GenericParamNode extends BaseNode {
@@ -19,3 +19,6 @@ interface GenericParamNode extends BaseNode {
   `null`. A written generic argument keeps its syntax node — an integer
   literal or a path — and the checker interprets it by the callee's parameter
   kind; there is no separate const-argument node.
+- A `TraitDeclaration`'s `genericParams` remains empty: a trait may not
+  declare type or const parameters, and an attempt is diagnosed after parsing
+  (`E0810`; [`types/traits.md`](types/traits.md)).
