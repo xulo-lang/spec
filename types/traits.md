@@ -21,13 +21,13 @@ Rules:
 
 - A trait declaration is `trait` Identifier `{` methods `}`. Method declarations
   are separated by `;`, and a `;` after the final method is permitted.
-- A trait declares **no type parameters**. Its grammar accepts a type
+- A trait declares **no generic parameters**. Its grammar accepts a generic
   parameter list only so that the attempt can be diagnosed; declaring one —
-  `trait Convert<T> { … }` — is a compile-time error (`E0810`), and a trait's
-  methods therefore never mention type parameters. A trait is a fixed
-  contract: a type that should convert to several targets implements one
-  trait per target, not one parameterized trait
-  ([`generics.md`](generics.md)).
+  `trait Convert<T> { … }` or `trait Sized<const N: int> { … }` — is a
+  compile-time error (`E0810`), and a trait's methods therefore never mention
+  type or const parameters. A trait is a fixed contract: a type that should
+  convert to several targets implements one trait per target, not one
+  parameterized trait ([`generics.md`](generics.md)).
 - A trait method is a *signature only*: it declares parameters and a return type
   and has no body. A trait MUST NOT provide a default implementation, and an
   implementation therefore cannot inherit code from the trait it implements.
@@ -81,32 +81,39 @@ Rules:
   partial implementations and no `default` methods to fall back on.
 - A trait implementation MUST NOT declare methods that the trait does not
   declare; additional behaviour belongs in an inherent `impl` block of the type.
-- An `impl` block MAY be generic, with its own type parameter list and bounds,
-  and MAY declare inherent methods as well as trait methods:
+- An `impl` block MAY be generic, with its own type and const parameter list
+  and bounds on type parameters, and MAY declare inherent methods as well as
+  trait methods:
 
   ```xulo
   struct Pair<A, B> { first: A, second: B }
-  struct Palette<T> { shape: T }
+  struct Tagged<const N: int, T> { value: T }
 
   impl<T> Pair<T, T> {
     fn duplicated(self): T { self.first }
   }
 
-  impl<T: Area + Scalable> Palette<T> {
-    fn render(self): float { Area::area(self.shape) }
+  impl<const N: int, T> Tagged<N, T> {
+    fn size(self): int { N }
   }
   ```
 
 - **When an impl applies.** A generic `impl` applies to a type exactly when
-  its type parameters can be instantiated so that the implemented type —
-  `Pair<T, T>` above — equals that type, and the impl's bounds are satisfied
-  by that same instantiation. An impl that cannot be so instantiated, or whose
-  bounds are not satisfied, contributes **nothing** for that type: no members
-  through member-call resolution, and no trait implementation for explicit
-  dispatch or bound checking. Satisfaction is recursive: an impl whose bounds
-  name other traits applies only when those bounds hold in turn — which,
-  because traits are never parameterized, always means a bound naming a trait
-  with no arguments.
+  its type and const parameters can be instantiated so that the implemented
+  type — `Pair<T, T>` or `Tagged<N, T>` above — equals that type, and the
+  impl's type bounds are satisfied by that same instantiation. Matching the
+  implemented type determines the type and const values; this is not a call
+  and is not const argument inference at a use site. A const parameter MUST
+  occur in the implemented type so matching determines it; an impl whose
+  const parameter does not occur is ill-formed (`E0817`). An impl that cannot
+  be so instantiated, or whose bounds are not satisfied, contributes
+  **nothing** for that type: no members through member-call resolution, and
+  no trait implementation for explicit dispatch or bound checking. Two impls
+  that can apply to the same type after substitution conflict under the
+  ordinary `E0805` rule. Satisfaction is recursive: an impl whose bounds name
+  other traits applies only when those bounds hold in turn — which, because
+  traits are never parameterized, always means a bound naming a trait with no
+  arguments.
 
   ```xulo
   struct Palette<T> { shape: T }
@@ -336,10 +343,10 @@ Rules:
 - The expansion is an ordinary impl, so a hand-written `impl ToString` for
   the same type, or a second `#Derive(ToString)`, is the conflicting-impl
   error `E0805`.
-- `#Derive` on a type that declares type parameters is `E0112`: the language
-  has no bound that means "is a base type or implements `ToString`", so the
-  expansion cannot be written for an open `T`. A generic type keeps its
-  hand-written impl.
+- `#Derive` on a type that declares generic parameters is `E0112`: the
+  language has no bound that means "is a base type or implements `ToString`",
+  so the expansion cannot be written for an open parameter. A generic type
+  keeps its hand-written impl.
 - A derived impl participates in dispatch exactly as a written one; derive
   introduces no satisfaction that an `impl` would not.
 

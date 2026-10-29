@@ -166,12 +166,15 @@ normative for the whole specification.
 | Term | Definition |
 |------|------------|
 | **ABI-safe** | Of a type permitted in an `extern` signature: on the closed list of [`ffi.md`](ffi.md) — `bool`, the fixed-bit types, `usize`/`isize`, `unit`, `Ptr`, and `Ptr?` — so that it has a defined representation under a registered ABI. |
+| **array** | An inline, fixed-length sequence `Array<T, N>`, with N a const parameter of type `int`; indexed by `int` and copied as a value. See [`types/composite-types.md`](types/composite-types.md). |
 | **binding** | An association between a name and a value or type introduced by `let`, `let mut`, `const`, a parameter, or a declaration. |
 | **borrowing** | The grant by which a parameter or receiver accesses an argument's storage for the duration of a call instead of receiving it — extended until the returned task settles when the call returns a `Task`: `p: T` borrows immutably, `p: mut T` mutably, under aliasing XOR mutability. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **bound** | A constraint on a type parameter, written inline `<T: Area>` or in a `where` clause; a type argument MUST satisfy every bound of its parameter. See [`types/generics.md`](types/generics.md). |
 | **closure** | A function value written in expression position — `fn(…) { … }` or `params => …` — which captures the bindings of the scope in which it was written. See [`expressions/closures.md`](expressions/closures.md). |
 | **coercion** | An implicit conversion from the closed list of [`type-system/coercion.md`](type-system/coercion.md), written `A ⇝ B`; nothing outside that list converts implicitly, and no coercion discards information. |
 | **component** | A function whose declared return type is `View`; constructs a fragment of the UI tree. See [`components/`](components/README.md). |
+| **const argument** | A compile-time `int` value written in a generic argument list for a const parameter: an integer literal, a `const` binding (module-level or block-level), or a const parameter name. Negative values are written through a `const` binding. See [`types/generics.md`](types/generics.md). |
+| **const parameter** | `const N: int` in a generic parameter list; a compile-time `int` value substituted at each instantiation. It is never a type and carries no runtime argument. See [`types/generics.md`](types/generics.md). |
 | **copy** | `copy e`: an explicit deep copy of `e`'s value, leaving the original binding untouched; accepted only in a `let` initializer, a call argument, or a `return` operand. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **declaration** | A top-level or member-level construct that introduces a name: `fn`, `struct`, `enum`, `trait`, `impl`, `type`, `let`, `const`. |
 | **diagnostic** | A message emitted for a program the checker rejects or warns about, identified by an `E` or `W` code; a compile-time event, not a runtime one. Lexical and syntax failures are raised before the checker runs and carry no code. See [`type-system/errors.md`](type-system/errors.md). |

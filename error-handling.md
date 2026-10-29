@@ -274,9 +274,9 @@ operations themselves.
 
 | Condition | When it occurs | Specified in |
 |-----------|----------------|--------------|
-| List index out of bounds | reading or writing `xs[i]` where `i` is negative or at or past the list's length | [`types/composite-types.md`](types/composite-types.md) |
-| Absent map key | reading `m[k]` for a key with no binding | [`expressions/path-and-access.md`](expressions/path-and-access.md) |
-| String index out of range | `stringCodeAt` with an index outside `0 … stringSize(s) − 1`, or `stringSlice` with bounds outside `0 … stringSize(s)` or with `start > end` | [`builtins/prelude.md`](builtins/prelude.md) |
+| List index or length out of range | a subscript `xs[i]` with `i` negative or at or past the list's length; a `splice` or `slice` index/count outside its stated bounds; or a negative `resize`/`truncate` length | [`types/composite-types.md`](types/composite-types.md) |
+| Array index out of bounds | reading or writing `a[i]` where `i` is negative or at or past N | [`types/composite-types.md`](types/composite-types.md) |
+| String index out of range | `s.codeAt(i)` with an index outside `0 … s.len − 1`, or `s.slice(start, end)` with bounds outside `0 … s.len` or with `start > end` | [`types/primitive-types.md`](types/primitive-types.md) |
 | Division or remainder by zero | `/` or `%` on non-constant operands whose value is zero | [`expressions/operators.md`](expressions/operators.md) |
 | Shift amount out of range | `<<` or `>>` whose amount is negative or at or past the operands' bit width, on non-constant operands | [`expressions/operators.md`](expressions/operators.md) |
 | Arithmetic overflow | an `int` or fixed-bit operation whose result exceeds its type, on non-constant operands | [`types/primitive-types.md`](types/primitive-types.md) |

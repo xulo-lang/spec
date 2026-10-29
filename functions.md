@@ -134,18 +134,27 @@ fn main() {
 }
 ```
 
-- Methods are functions declared inside an `impl` block. The first parameter
-  is the **receiver**, written `self` (an immutable borrow) or `mut self`
-  (a mutable borrow). `self` is an explicit parameter, never implicit. A
-  method that assigns to `self` or a field of `self` MUST declare `mut self`.
+- Methods are functions declared inside an `impl` block. The built-in
+  collection and string types also declare **inherent members** specified
+  with their types
+  ([`types/composite-types.md`](types/composite-types.md),
+  [`types/primitive-types.md`](types/primitive-types.md)); the methods among
+  them are methods in the call and method-value sense, while `.len`, `.size`,
+  and `.byteLen` are read-only properties. None is an `impl` declaration, and
+  a program cannot add an inherent member to them; `impl Trait for` a built-in
+  type is an ordinary trait implementation. The first parameter is
+  the **receiver**, written `self` (an immutable borrow) or `mut self` (a
+  mutable borrow). `self` is an explicit parameter, never implicit. A method
+  that assigns to `self` or a field of `self` MUST declare `mut self`.
 - At the call site the receiver is not written as an argument:
   `c.increment()` supplies `c` to the declared `self` parameter.
-- **Method resolution order:** `value.method(…)` resolves first to an
-  inherent method declared in an `impl` block for the receiver's type, and
-  otherwise to a trait method provided by an implementation in scope at the
-  call site. Exactly one candidate MUST result; ambiguity is an error (`E0809`)
-  and MUST be disambiguated with explicit dispatch `Trait.method(receiver)`.
-  Explicit dispatch is always available.
+- **Method resolution order:** `value.method(…)` resolves first to the
+  receiver type's built-in inherent member, then to an inherent method
+  declared in an `impl` block for the receiver's type, and otherwise to a
+  trait method provided by an implementation in scope at the call site.
+  Exactly one candidate MUST result; ambiguity is an error (`E0809`) and MUST
+  be disambiguated with explicit dispatch `Trait.method(receiver)`. Explicit
+  dispatch is always available.
 - Inside a body bounded by `T: Trait`, both `x.method(args)` and
   `Trait.method(x)` are permitted.
 - A method call whose receiver may be `null` is written with optional
@@ -155,6 +164,10 @@ fn main() {
 - The receiver is the first parameter of the method's function type; using a
   method as a value with the receiver bound is specified in
   [`expressions/calls.md`](expressions/calls.md).
+- **Static members.** `Map::fromEntries(entries)`, `Set::fromList(values)`, and
+  `Array::filled<T, const N: int>(value: T)` are associated members of the
+  built-in types, reached through `::` like the associated names of an `impl`
+  block. They have no receiver and are never selected by `.`.
 
 ## Trait methods
 
@@ -205,23 +218,29 @@ let s = first(["a", "b"])       // T = string
 // let bad: string = first([1, 2])   // error: T inferred as int
 ```
 
-- A generic function declares a type parameter list `<T, U, …>` after its
-  name. Type parameters are in scope over the signature and the body.
+- A generic function declares a **generic parameter list** after its name —
+  `<T, U, …>`, `<const N: int>`, or `<T, const N: int>`. Type parameters are
+  types; const parameters are compile-time `int` values. Both are in scope
+  over the signature and the body. A const parameter may be used in ordinary
+  expressions and as a const argument; it is never a type.
 - **Bounds** restrict the type arguments a parameter accepts. They are
   written inline — `<T: Area>` — or in a `where` clause that follows the
   signature and precedes the body — `where T: Area`. The forms are
   equivalent; a parameter MUST NOT be bounded in both places. Multiple
   bounds on one parameter are joined with `+`.
-- **Call-site type arguments.** A call MAY write the type arguments of a
-  generic function explicitly, in a list between the callee and the argument
-  list — `first<int>(…)` — or it MAY write none; there is no partial form.
-  When the list is written it replaces inference for that call: its length
-  MUST equal the declared type-parameter count (`E0808`), every written
-  argument MUST satisfy its parameter's bounds (`E0801`), no expected type may
-  override a written argument, and a list before a callee that declares no
-  type parameters is `E0807`. When the list is omitted, type arguments are
-  inferred from the arguments and the expected type, and every inferred
-  argument MUST satisfy the parameter's bounds.
+- **Call-site generic arguments.** A call MAY write the generic arguments of
+  a generic function explicitly, in a list between the callee and the
+  argument list — `first<int>(…)`, `count<3>()` — or, for a callee with only
+  type parameters, it MAY write none; there is no partial form. When the list
+  is written it replaces inference for that call: its length MUST equal the
+  declared generic-parameter count, type and const combined (`E0808`); every
+  written type argument MUST satisfy its parameter's bounds (`E0801`); a
+  written const argument MUST be an integer literal, a `const` binding, or a
+  const parameter name (`E0813`), and is used as given. A callee that
+  declares a const parameter and is called without a list is `E0816`; const
+  arguments are never inferred. A list before a callee that declares no
+  generic parameters is `E0807`. When the list is omitted for a type-only
+  callee, type arguments are inferred as before.
 - Inside a body bounded by `T: Trait`, values of type `T` expose the members
   the bound declares; `Trait.method(x)` and `x.method()` are both legal.
 

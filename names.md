@@ -24,7 +24,8 @@ The following entities are named, each by an identifier:
 | Components | A `fn` whose declared return type is `View` | Named exactly like any other function |
 | Struct fields | A field declaration inside `struct` | Accessed with `.` |
 | Enum variants | A constructor inside `enum` | Named `Enum::Variant`, never `Enum.Variant` |
-| Type parameters | `<T>` in a signature or a `where` clause | Visible in the signature and the body |
+| Type parameters | `<T>` in a generic parameter list or a `where` clause | Visible in the signature and the body |
+| Const parameters | `<const N: int>` in a generic parameter list | A compile-time `int` value visible in the signature and the body |
 | Pattern bindings | A `match` arm pattern | Scoped to that arm's guard and body only |
 | Namespaces | `mod` declarations, `use … as` aliases; built-ins `Math`, `Time`, `Task` | Members are selected with `::` |
 | Argument labels | Named parameters and component attributes | The label before `:` — `spacing`, `onClick` — is part of a signature, not a separate binding |
@@ -45,8 +46,8 @@ reserved words, and a lone `_` used as an ordinary identifier.
 
 **Official names.** The conventions in the table are normative for every
 name this specification defines itself — built-in types, protocols,
-namespaces, prelude operations, and intrinsic functions: a built-in
-function or method is always lowerCamelCase (`mapGet`, `nowNanos`), a
+namespaces, built-in members, and intrinsic functions: a built-in function,
+method, or property is always lowerCamelCase (`codeAt`, `nowNanos`), a
 built-in type always UpperCamelCase (`List`, `Result`). The standard
 library follows the same table; its chapters are documented outside this
 specification ([`README.md`](README.md), § 1.1).
@@ -58,6 +59,7 @@ specification ([`README.md`](README.md), § 1.1).
 | Functions, variables, parameters, fields, methods | lowerCamelCase | `sumTo`, `count`, `area`, `label` |
 | Constants | UPPER_SNAKE_CASE | `PI`, `APP_NAME` |
 | Type parameters | A single letter, never a descriptive word | `T`, `U`, `E`, `K`, `V` (a lowercase `t` or `e` is also a single letter) |
+| Const parameters | A single uppercase letter, never a descriptive word | `N`, `M` |
 | Argument labels and attributes | lowerCamelCase | `spacing`, `variant`, `onClick` |
 
 Traits are named for the capability they describe, without an `I` prefix:
@@ -83,10 +85,10 @@ Two groups of names are built in rather than declared:
   `float`, `i8`…`u64`, `f32`, `f64`, `null`, `unit`, `unknown` — are
   keywords: no declaration MAY bear their spelling, and there is nothing to
   shadow.
-- **Built-in (non-primitive) type names** — `List`, `Map`, `Set`, `Task`,
-  `Range`, `View`, `Result`, `Error` — and **intrinsic names** — `print`,
-  `println`, `str`, `Math`, `Time` (and the namespace `Task`) — SHOULD NOT
-  be shadowed. Intrinsics are described in the
+- **Built-in (non-primitive) type names** — `List`, `Array`, `Map`, `Set`,
+  `Task`, `Range`, `View`, `Result`, `Error` — and **intrinsic names** —
+  `print`, `println`, `str`, `Math`, `Time` (and the namespace `Task`) — SHOULD
+  NOT be shadowed. Intrinsics are described in the
   [builtins chapter](builtins/README.md).
 
 Shadowing a built-in type name means precisely this: a declaration
@@ -110,7 +112,7 @@ the following scope kinds:
 |-------|---------------|---------------|
 | Module scope | The module body (file or inline `mod` block) | Every top-level declaration, plus every `mod`, `use`, and `pub use` binding |
 | Function scope | A `fn` header | Parameters, and the body that follows |
-| Generic-parameter scope | `<T>` or a `where` clause | The type parameter, in the signature, return type, and body |
+| Generic-parameter scope | `<T>`, `<const N: int>`, or a `where` clause | The type or const parameter, in the signature, return type, and body |
 | Block scope | Every `{ ... }` | Declarations made inside the block |
 | Closure scope | A closure (`fn() { ... }`, `=>`) | Its parameters, plus everything captured at creation |
 | Pattern scope | A `match` arm pattern | Bindings made by the pattern, in that arm's guard and body only |
@@ -205,7 +207,8 @@ When a name is used, it is resolved by searching the following scopes in
 order; the first scope that provides the name wins:
 
 1. Bindings of the innermost enclosing block, innermost first.
-2. Parameters and type parameters of the enclosing function or closure.
+2. Parameters, type parameters, and const parameters of the enclosing
+   function or closure.
 3. Remaining bindings of the enclosing function, then the module's own
    top-level declarations (functions and types in any order; variables and
    constants in declaration order).

@@ -207,9 +207,10 @@ let wrong = n == "1"            // error[E0211]: no common type
   `unknown` in both branches of a following `if` — only a `match` type pattern
   narrows it ([`../expressions/control-flow.md`](../expressions/control-flow.md)).
 - Strings compare lexicographically by Unicode code point, locale
-  independently. Structural equality for `List`, `Map`, `Set`, structs,
-enums, and tuples compares the contained values, each pair under
-the same common-type rule.
+  independently. Structural equality for `List`, `Array`, `Map`, `Set`,
+  structs, enums, and tuples compares the contained values, each pair under
+  the same common-type rule; for an `Array`, the length is part of the type, so
+  arrays of different N are unrelated and comparing them is `E0211`.
 - Relational operators follow the same operand rule as arithmetic promotion
   and convert nothing else: two operands are numeric with the promotion table
   applied, or both `string`.

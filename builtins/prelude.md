@@ -1,13 +1,13 @@
 # Prelude
 
 The prelude is what a module knows before it imports anything: the built-in
-types, the built-in protocol, and the operations defined directly on the
-built-in collections. Nothing declares the prelude, no import introduces it,
-and no import can take it away; it is the constant background of name
-resolution ([`../names.md`](../names.md)). This chapter lists what the
-prelude contains and specifies the prelude operations. The compiler-provided
-functions and the namespace members among them are specified in
-[`intrinsic-functions.md`](intrinsic-functions.md).
+types, the built-in protocol, and the built-in namespaces. Nothing declares
+the prelude, no import introduces it, and no import can take it away; it is
+the constant background of name resolution
+([`../names.md`](../names.md)). This chapter lists what the prelude contains
+and the names it reserves. The built-in types' members are specified with the
+types; the compiler-provided functions and the namespace members are specified
+in [`intrinsic-functions.md`](intrinsic-functions.md).
 
 ## What the prelude contains
 
@@ -26,6 +26,7 @@ written; `null` additionally has a literal form usable in expression position.
 | `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64` | fixed-bit numeric types for exact layout and foreign interfaces | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `unknown` | the top type: a value of any type, whose type is not known | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `List<T>` | ordered, growable sequence of elements of one type | [`../types/composite-types.md`](../types/composite-types.md) |
+| `Array<T, N>` | inline fixed-length sequence of N elements; N is a const parameter, N ≥ 0 | [`../types/composite-types.md`](../types/composite-types.md) |
 | `Map<K, V>` | insertion-ordered dictionary with unique keys | [`../types/composite-types.md`](../types/composite-types.md) |
 | `Set<T>` | unordered collection of unique values | [`../types/composite-types.md`](../types/composite-types.md) |
 | `unit` | the type of expressions that produce no meaningful value | [`../types/primitive-types.md`](../types/primitive-types.md) |
@@ -77,131 +78,26 @@ in [`../type-system/errors.md`](../type-system/errors.md).
 
 | Category | Names |
 |----------|-------|
-| Value and marker types | `List`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error` |
+| Value and marker types | `List`, `Array`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error` |
 | Protocols | `ToString` |
 | Namespaces | `Math`, `Time`, `Task` |
 | Intrinsic functions | `print`, `println`, `str`, `assert` |
 
-`Task` appears twice because it is both a type and a namespace. The prelude
-operations defined below — collection and string alike — are reserved under
-the same rule, and so is every intrinsic listed in
-[`intrinsic-functions.md`](intrinsic-functions.md#complete-signature-index).
+`Task` appears twice because it is both a type and a namespace. Every
+intrinsic listed in
+[`intrinsic-functions.md`](intrinsic-functions.md#complete-signature-index)
+is reserved under the same rule.
 
-## Prelude operations
+## Built-in members
 
-Iteration, subscripts, and concatenation on the collections are core syntax and
-are specified with the types themselves. Everything else that the built-in
-collections need — removal, size, entry tests, lookup, append, enumeration,
-bulk conversion, and the `Set` constructor — is a prelude operation: an
-unqualified function in scope in every module, called like any other function.
-
-```xulo
-let mut counts: Map<string, int> = { "a": 1, "b": 2 }
-print(mapSize(counts))              // 2
-print(mapHasKey(counts, "a"))      // true
-print(mapGet(counts, "z"))          // null: absent, and no failure
-let previous = mapRemove(counts, "a")   // counts loses "a"; previous is 1
-
-let tags: Set<string> = setFromList(["a", "b", "a"])
-print(setSize(tags))                // 2: the duplicate collapsed
-let added = setInsert(tags, "c")
-print(setContains(tags, "c"))       // true
-
-let mut xs = ["a", "b"]
-listPush(xs, "c")                   // xs is ["a", "b", "c"]
-let removed = listRemove(xs, 0)     // "a"; xs is ["b", "c"]
-for e in enumerate(xs) {
-  print(`${e.0}=${e.1}`)             // 0=b, then 1=c
-}
-
-let user = { name: "lyy", age: 30 }  // a Map<string, string | int>
-print(user["name"])                  // lyy
-```
-
-### Map operations
-
-| Signature | Meaning |
-|-----------|---------|
-| `mapSize<K, V>(m: Map<K, V>): int` | the number of entries in `m` |
-| `mapHasKey<K, V>(m: Map<K, V>, k: K): bool` | `true` when `k` has a binding in `m` |
-| `mapGet<K, V>(m: Map<K, V>, k: K): V?` | the value `k` is bound to, or `null` when `k` has no binding |
-| `mapRemove<K, V>(m: mut Map<K, V>, k: K): V?` | removes the binding for `k` and returns the value it had, or `null` when `k` was absent |
-| `mapToEntries<K, V>(m: Map<K, V>): List<(K, V)>` | one `(key, value)` tuple per entry, in insertion order (bulk conversion) |
-| `mapFromEntries<K, V>(entries: List<(K, V)>): Map<K, V>` | builds a map from `(key, value)` tuples, in list order; a repeated key keeps the later entry |
-
-- Reading (`m[k]`), writing (`m[k] = v`), and iterating the keys (`for k in m`)
-  are core syntax and need no prelude function
-  ([`../types/composite-types.md`](../types/composite-types.md)).
-- `mapGet` is the lookup that cannot fail: reading `m[k]` for a key with no
-  binding is a runtime failure, while `mapGet(m, k)` answers `null`
-  ([`../error-handling.md`](../error-handling.md)).
-- `mapRemove` mutates its first argument, so that argument MUST be a mutable
-  place — a `let mut` binding or a `mut` parameter; passing anything else is a
-  compile-time error (`E0401`).
-
-### Set operations
-
-The language defines no set literal, so the prelude provides the constructor
-and the operations that manipulate a set.
-
-| Signature | Meaning |
-|-----------|---------|
-| `setFromList<T>(values: List<T>): Set<T>` | constructs a set holding each distinct element of `values` exactly once |
-| `setInsert<T>(s: mut Set<T>, v: T): bool` | adds `v` to `s`; returns `true` when `v` was not already present |
-| `setRemove<T>(s: mut Set<T>, v: T): bool` | removes `v` from `s`; returns `true` when `v` was present |
-| `setContains<T>(s: Set<T>, v: T): bool` | `true` when `v` is a member of `s` |
-| `setSize<T>(s: Set<T>): int` | the number of elements in `s` |
-
-- `setInsert` and `setRemove` mutate their first argument, which MUST
-  therefore be a mutable place, exactly as for `mapRemove`.
-- A set has no specified order: neither `setFromList` nor any other
-  operation defines the order of the elements, and programs MUST NOT depend on
-  one ([`../types/composite-types.md`](../types/composite-types.md)).
-
-### List operations
-
-`+`, the subscript, and iteration on a list are core syntax
-([`../types/composite-types.md`](../types/composite-types.md)); the prelude
-supplies the operations they do not cover:
-
-| Signature | Meaning |
-|-----------|---------|
-| `listSize<T>(xs: List<T>): int` | the number of elements in `xs` |
-| `listPush<T>(xs: mut List<T>, v: T): unit` | appends `v` to the end of `xs` |
-| `listRemove<T>(xs: mut List<T>, i: int): T?` | removes the element at index `i`, shifting later elements down, and returns it; `null` when `i` is negative or at or past the end |
-| `enumerate<T>(xs: List<T>): List<(int, T)>` | one `(index, element)` tuple per element, in order |
-
-- `listPush` and `listRemove` mutate their first argument, which MUST
-  therefore be a mutable place, exactly as for `mapRemove`.
-- `listRemove` is the removal that cannot fail: the subscript `xs[i]` for an
-  out-of-range index is a runtime failure, while `listRemove(xs, i)` answers
-  `null` and leaves `xs` unchanged.
-
-## String operations
-
-Strings have syntax only for concatenation (`+`), equality, and templates;
-the operations that inspect them are prelude functions, reserved under the
-same rule as the collection operations
-([Reserved names](#reserved-names)).
-
-| Signature | Meaning |
-|-----------|---------|
-| `stringSize(s: string): int` | the number of Unicode scalar values in `s` |
-| `stringCodeAt(s: string, i: int): int` | the Unicode scalar value at index `i`, counting from 0 in scalar order |
-| `stringSlice(s: string, start: int, end: int): string` | the substring containing the scalars at indices `start … end − 1` |
-| `stringBytes(s: string): List<u8>` | the UTF-8 bytes of `s`, in order |
-
-- Indices count Unicode scalar values: `stringSize` counts scalars, not
-  bytes or UTF-16 code units, and `stringCodeAt` yields the scalar's value
-  — its code point — as an `int`.
-- An index outside `0 … stringSize(s) − 1`, slice bounds outside
-  `0 … stringSize(s)`, or `start > end` is a runtime failure
-  ([`../memory-and-runtime.md`](../memory-and-runtime.md), closed tables);
-  `stringSlice(s, n, n)` is the empty string for every `n` in range, and
-  `stringSlice(s, 0, stringSize(s))` is `s` itself.
-- These functions are the inspection that `s[i]` refuses: the subscript on
-  a `string` remains a compile-time error (`E0215`;
-  [`../types/primitive-types.md`](../types/primitive-types.md)).
+The built-in collections (`List`, `Array`, `Map`, `Set`) and `string` expose
+inherent members, specified with their types: `List`, `Array`, `Map`, and
+`Set` in [`../types/composite-types.md`](../types/composite-types.md), and
+`string` in [`../types/primitive-types.md`](../types/primitive-types.md). They
+are not prelude operations: they have no unqualified spelling, no import
+introduces them, and they are not module-scope names. A local binding named
+`len` or `get` does not shadow `xs.len` or `m.get`; a static member is reached
+through a type name, as in `Map::fromEntries`.
 
 ## Prelude visibility
 
@@ -220,10 +116,11 @@ same rule as the collection operations
   ([Reserved names](#reserved-names)); redeclaring one is a compile-time error
   (`E0106`), not a shadowing.
 - **Inner scopes.** An inner-scope `let`, `let mut`, `const`, or parameter MAY
-  shadow a prelude operation or an intrinsic name. From its declaration to the
-  end of the enclosing scope the name denotes that binding alone, so a call
-  written there reaches the local value rather than the prelude; outside the
-  scope the prelude name is visible again.
+  shadow an intrinsic name. From its declaration to the end of the enclosing
+  scope the name denotes that binding alone, so a call written there reaches
+  the local value rather than the intrinsic; outside the scope the intrinsic
+  name is visible again. Built-in members are reached only after a receiver,
+  so no local binding hides `xs.len` or `m.get`.
 
   ```xulo
   fn demo(): int {

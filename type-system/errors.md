@@ -118,8 +118,8 @@ the source line, a caret line, and optional notes.
 | `E0109` | a registered attribute on a declaration the registry does not allow it on | `#Derive(ToString) fn main()` | `` attribute `Derive` is not valid on a function `` | [traits.md](../types/traits.md) |
 | `E0110` | a registered attribute whose arguments do not fit the registered shape | `#Derive` | `` attribute `Derive` takes a parenthesized list of trait names `` | [traits.md](../types/traits.md) |
 | `E0111` | a well-shaped argument that names a reserved, unregistered derive target | `#Derive(Display)` | `` `Display` is not a registered derive target `` | [traits.md](../types/traits.md) |
-| `E0112` | `#Derive` on a type that declares type parameters | `#Derive(ToString) struct Box<T> { v: T }` | `` cannot derive `ToString` for a generic type `` | [traits.md](../types/traits.md) |
-| `E0113` | a struct whose field types reach the declaring struct through fields, tuple elements, and alias expansion with no intervening indirection | `struct Node { node: Node }` | ``type `Node` has a cyclic field definition`` | [composite-types.md](../types/composite-types.md) |
+| `E0112` | `#Derive` on a type that declares generic parameters | `#Derive(ToString) struct Box<const N: int> { v: int }` | `` cannot derive `ToString` for a generic type `` | [traits.md](../types/traits.md) |
+| `E0113` | a struct whose field types reach the declaring struct through fields, tuple elements, array element positions, and alias expansion with no intervening indirection | `struct Node { node: Node }` | ``type `Node` has a cyclic field definition`` | [composite-types.md](../types/composite-types.md) |
 
 `E0111` carries the note `` = note: registered targets: `ToString` ``.
 
@@ -151,7 +151,7 @@ or payload type with no string form is `E0801`.
 | `E0212` | a value has no string form, in `${…}` or in `str` | `` `${user}` `` without `ToString` | `` `User` has no string form; implement `ToString` `` | [traits.md](../types/traits.md) |
 | `E0213` | the iterable of a `for` loop is not a supported type | `for x in 42` | `` `int` is not iterable `` | [control-flow.md](../expressions/control-flow.md) |
 | `E0214` | `break`, `continue`, or `return` is written outside its context | `return` at file scope | `` `return` outside of a function `` | [return-and-block.md](../statements/return-and-block.md) |
-| `E0215` | a subscript is applied to a type that is not a `List` or `Map` | `"abc"[0]` | `` `string` cannot be indexed `` | [checking-rules.md](checking-rules.md) |
+| `E0215` | a subscript is applied to a type that is not a `List` or an `Array` | `"abc"[0]`, `m[k]` | `` `string` and `Map` cannot be indexed `` | [checking-rules.md](checking-rules.md) |
 | `E0216` | a type cannot be determined: an empty collection, a bare `null`, an unannotated closure, an unsolved generic argument | `let xs = []` | `type annotations needed` | [checking-rules.md](checking-rules.md) |
 | `E0217` | a `?` propagation is ill-formed: its operand is neither `T?` nor `Result<T, E>`; it appears outside a function or in one with no declared return type; or the early return's value does not fit the declared return type | `fn f(): int { half(3)? }` | ``cannot propagate `?` to return type `int``` | [error-handling.md](../error-handling.md) |
 | `E0218` | an expression statement in statement position has a type other than `unit` and is neither an excepted control-flow construct nor a `send` whose task is discarded | `a + b` with `a: int` | ``expected `unit`, found `int``` | [expression-statements.md](../statements/expression-statements.md) |
@@ -166,7 +166,7 @@ or payload type with no string form is `E0801`.
 | `E0227` | an operand of `+` is a `string` and the other is not | `"count=" + 1` | ``cannot add `int` to `string` `` | [operators.md](../expressions/operators.md) |
 | `E0228` | a parameter's default value does not fit the parameter's declared type | `fn f(name: string = 42)` | ``expected `string`, found `int` `` | [calls.md](../expressions/calls.md) |
 | `E0229` | `return`, `break`, `continue`, or `?` appears in a `defer` operand | `defer { return }` | ``cannot transfer control out of a `defer` operand`` | [return-and-block.md](../statements/return-and-block.md) |
-| `E0230` | a type application is ill-formed: the argument count differs from the declared type-parameter count, a generic name is written without its arguments, a non-generic name is given arguments, or the head is a type parameter | `Map<string>` | `` `Map` expects 2 type arguments, found 1 `` | [generics.md](../types/generics.md) |
+| `E0230` | a type application is ill-formed: the argument count differs from the declared generic-parameter count, a generic name is written without its arguments, a non-generic name is given arguments, or the head is a type parameter | `Map<string>` | `` `Map` expects 2 generic arguments, found 1 `` | [generics.md](../types/generics.md) |
 
 ### Pattern errors
 
@@ -257,11 +257,18 @@ reported with the call codes `E0202`, `E0204`, `E0207`, and `E0208`.
 | `E0804` | an impl declares a method the trait does not declare | an extra `extra` in `impl Area for Rect` | `` `impl Area for Rect` declares `extra`, which `Area` does not `` | [checking-rules.md](checking-rules.md) |
 | `E0805` | two impls of one trait for one type in one module | a second `impl Area for Rect` | `` `Area` is already implemented for `Rect` `` | [checking-rules.md](checking-rules.md) |
 | `E0806` | a bound does not name a visible trait | `<T: int>` | ``bound `int` is not a trait`` | [generics.md](../types/generics.md) |
-| `E0807` | a type-argument list before a callee that declares no type parameters | `f<int>(1)` where `f: fn(int): int` | `` `f` accepts no type arguments `` | [generics.md](../types/generics.md) |
-| `E0808` | a written type-argument list of the wrong length | `first<int, string>([1])` for `fn first<T>(…)` | ``expected 1 type argument, found 2`` | [generics.md](../types/generics.md) |
+| `E0807` | a generic-argument list before a callee that declares no generic parameters | `f<int>(1)` where `f: fn(int): int` | `` `f` accepts no generic arguments `` | [generics.md](../types/generics.md) |
+| `E0808` | a written generic-argument list of the wrong length | `first<int, 3>([1])` for `fn first<T>(…)` | ``expected 1 generic argument, found 2`` | [generics.md](../types/generics.md) |
 | `E0809` | a member call `value.method(…)` finds more than one trait method candidate in scope for the receiver's type | `r.grow()` with two traits in scope that both implement `grow` for `Rect` | ``multiple applicable implementations of `grow` for `Rect` `` | [traits.md](../types/traits.md) |
-| `E0810` | a `trait` declaration declares a type parameter list | `trait Convert<T> { fn convert(self): T }` | ``a trait may not declare type parameters`` | [traits.md](../types/traits.md) |
+| `E0810` | a `trait` declaration declares a generic parameter list | `trait Convert<T> { fn convert(self): T }` | ``a trait may not declare generic parameters`` | [traits.md](../types/traits.md) |
 | `E0811` | a bound applies type arguments to a trait | `<T: Convert<string>>` | ``bound `Convert<string>` applies type arguments; a trait has none`` | [generics.md](../types/generics.md) |
+| `E0812` | a const parameter's declared type is not `int` | `fn f<const N: string>()` | ``a const parameter must have type `int` `` | [generics.md](../types/generics.md) |
+| `E0813` | a generic argument has the wrong kind — a const argument supplied for a type parameter, or a type argument supplied for a const parameter | `f<int>()` for `fn f<const N: int>()` | `` `int` is not a const argument `` | [generics.md](../types/generics.md) |
+| `E0814` | an `Array<T, N>` is applied with a negative length | `const M = -1` then `Array<int, M>` | ``array length must be non-negative`` | [composite-types.md](../types/composite-types.md) |
+| `E0815` | an array literal's element count differs from its `Array<T, N>` length | `let a: Array<int, 3> = [1, 2]` | ``array literal has 2 elements, expected 3`` | [literals.md](../expressions/literals.md) |
+| `E0816` | a callee with const parameters is called without a written generic-argument list | `count()` for `fn count<const N: int>()` | `` `count` requires a written generic-argument list `` | [generics.md](../types/generics.md) |
+| `E0817` | a const parameter on an `impl` does not occur in the implemented type | `impl<const N: int> Area for Circle` | ``const parameter `N` does not occur in the implemented type `` | [traits.md](../types/traits.md) |
+| `E0818` | an array literal checked against `Array<T, N>` cannot have its length compared statically — it contains a spread, or N is an abstract const parameter | `let a: Array<int, 3> = [1, ...xs]`; a literal checked against `Array<int, N>` inside `fn f<const N: int>()` | ``array literal length cannot be proven to equal N`` | [literals.md](../expressions/literals.md) |
 
 ### Foreign boundary errors
 

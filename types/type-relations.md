@@ -19,9 +19,13 @@ identical structure. Equality is written `A = B` and is an equivalence relation.
   `T?` and `T | null`; `number` and `int | float`; a function type written
   without a return type and the same type written `fn(…): unit`.
 - **Generic applications.** `C<A₁, …, Aₙ>` and `C<B₁, …, Bₙ>` are equal exactly
-  when the heads `C` are the same declaration and `Aᵢ = Bᵢ` for every `i`.
-  Different arguments give different types: `List<int>` and `List<string>` are
-  unrelated, as are `Pair<int, int>` and `Pair<int, string>`.
+  when the heads `C` are the same declaration and each argument is equal: a
+  type argument when `Aᵢ = Bᵢ`, and a const argument when its compile-time
+  `int` value is equal. So `Tagged<3, string>` and `Tagged<M, string>` with
+  `const M = 3` are the same type, while `Tagged<3, string>` and
+  `Tagged<4, string>` are different types. Different arguments give different
+  types: `List<int>` and `List<string>` are unrelated, as are `Pair<int, int>`
+  and `Pair<int, string>`.
 - **Nominal types.** A `struct`, `enum`, or `trait` is equal only to the type
   introduced by its own declaration (and to aliases of it). Two declarations with
   identical members are still distinct types.
@@ -94,9 +98,9 @@ Rules by type family:
 - **Bounds are not supertypes.** A bound `T: Area` constrains which types may be
   substituted for `T`; it does not make `T` a subtype of `Area`. See
   [`traits.md`](traits.md).
-- **Built-in generics.** Whether subtyping lifts through `List<T>`, `Map<K, V>`,
-  `Set<T>`, `struct`s, `enum`s, and tuples is decided by their variance,
-  below.
+- **Built-in generics.** Whether subtyping lifts through `List<T>`, `Array<T, N>`,
+  `Map<K, V>`, `Set<T>`, `struct`s, `enum`s, and tuples is decided by their
+  variance, below.
 
 ## Assignability vs subtyping vs coercion
 
@@ -133,6 +137,7 @@ lifts except when `A = B`.
 | Constructor | Variance | Reason |
 |-------------|----------|--------|
 | `List<T>` | invariant in `T` | elements may be replaced through a `List` value |
+| `Array<T, N>` | invariant in `T`; N exact | elements are written through a subscript, and N is a const parameter |
 | `Map<K, V>` | invariant in `K` and `V` | entries may be inserted, replaced, and removed |
 | `Set<T>` | invariant in `T` | membership may be changed |
 | `(T₁, …, Tₙ)` | invariant in each element | elements may be written through a mutable tuple |
@@ -145,6 +150,9 @@ lifts except when `A = B`.
 | `struct S<T>` / `enum E<T>` | invariant in `T` | nominal, and fields may be written |
 | `Result<T, E>` | invariant in `T` and `E` | a built-in with fixed `Ok` and `Err` payloads |
 | `type X<T> = …` | follows its expansion | aliases are transparent |
+
+- `Array<T, N> <: Array<U, M>` holds exactly when `T = U` and `N = M`; there is
+  no subtyping between different lengths and no conversion to or from `List`.
 
 Consequences:
 
@@ -209,7 +217,9 @@ Checking a body generates constraints that are then solved.
    `return` expression against the declared return type, an assignment target,
    the elements of a literal against the expected type, a `match` scrutinee
    against its patterns, the result types of `match` and `if` arms against each
-   other, and a generic argument against the type parameter it instantiates.
+   other, and a generic argument against the parameter it instantiates — a
+   type argument against its type parameter, or a const argument against its
+   const parameter's `int` value.
 2. **Unification.** Constraints between types containing type variables are
    solved by unification: equal constructors decompose into their arguments, a
    free variable binds to the type on the other side, and a variable already

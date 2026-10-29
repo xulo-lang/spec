@@ -146,7 +146,11 @@ evaluating the call (see [`path-and-access.md`](path-and-access.md)).
 Type arguments of a generic function are inferred at the call site from the
 actual arguments and from the expected type. A call MAY also write them
 explicitly, between the callee and the argument list, and the written list
-takes the place of inference for that call:
+takes the place of inference for that call. A callee that declares const
+parameters MUST be given a written list — `count<3>()` — because const
+arguments are never inferred (`E0816`). The written list covers type and
+const parameters together: its length is `E0808`, and a type/const kind
+mismatch is `E0813`:
 
 ```xulo
 fn first<T>(items: List<T>): T {
@@ -156,6 +160,10 @@ fn first<T>(items: List<T>): T {
 let n: int = first([1, 2, 3])    // T is int, inferred
 let t = first<int>([1, 2, 3])    // T is int, written
 let s = first(["a", "b"])        // T is string, inferred
+
+fn count<const N: int>(): int { N }
+
+let c = count<3>()          // N is 3, a const argument is always written
 ```
 
 Whether a `<` after a callee begins such a list is decided by a purely
@@ -174,7 +182,7 @@ consult name resolution, and backtracking from the type-argument reading to
 the comparison reading is allowed whenever the call parse does not complete.
 The rule is scoped to an identifier in call position: a callee reached through
 a subscript or any other postfix that does not end in an identifier takes no
-list, and a call through a value of function type has no type parameters and
+list, and a call through a value of function type has no generic parameters and
 accepts none. `>>` and `>=` are single tokens, so the nested-bracket spacing
 rule applies — `first<Map<string, int> >(m)` is well-formed and
 `first<Map<string, int>>(m)` is not. The production is given in

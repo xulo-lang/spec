@@ -408,7 +408,8 @@ FnTypeParams   = FnTypeParam { "," FnTypeParam } ;
 FnTypeParam    = [ Identifier ":" ] [ "mut" | "shared" ] Type ;
 
 GenericParams  = "<" GenericParam { "," GenericParam } [ "," ] ">" ;
-GenericParam   = Identifier [ ":" TraitBound ] ;
+GenericParam   = Identifier [ ":" TraitBound ]
+               | "const" Identifier ":" Type ;
 TraitBound     = Type { "+" Type } ;
 WhereClause    = "where" WhereItem { "," WhereItem } ;
 WhereItem      = Identifier ":" TraitBound ;
@@ -421,6 +422,21 @@ in a `where` clause, joined with `+` when a parameter has several. A
 `WhereClause` follows a function's signature only — every other parameterized
 declaration uses the inline form — and a bound never carries type arguments
 (`E0811`).
+
+A const parameter's `Type` MUST be `int`; any other type is a compile-time
+error (`E0812`, [`types/generics.md`](types/generics.md)). Both
+`TypeArgs` (named-type applications) and `CallTypeArgs` (call applications)
+keep their existing shape: a const argument is written in their shared
+`TypeList` and interpreted by the callee's parameter kind — an integer
+literal, a `const` binding, or a const parameter name at a const position. A
+kind mismatch is `E0813`.
+
+Because an integer literal has no sign, `-1` is a unary-minus expression, not
+a const argument; a negative value is written through a `const` binding. An
+integer literal has no type meaning outside a const position; literal types
+the language otherwise defines remain usable at a type position. A call to a
+callee with const parameters that omits the list is `E0816`, and an `impl`
+const parameter that does not occur in the implemented type is `E0817`.
 
 ## Expressions
 
@@ -479,10 +495,19 @@ postfix reading survives only when the ternary reading fails, so
 `c ? a : b` is never ambiguous with `f()?`.
 
 `CallTypeArgs` is recognized only in call position, and only when the
-expression before it ends in an identifier — a bare identifier or a member
-access — so that a callee reached through a subscript, a call, or a closing
-bracket takes no list. Whether a `<` after such a callee starts a
-`CallTypeArgs` is decided by two conditions:
+expression before it ends in an identifier — a bare identifier, the final
+segment of a `::`-path (`Array::filled`), or a member access — so that a
+callee reached through a subscript, a call, or a closing bracket takes no
+list.
+
+A path callee reaches the list through `PostfixOperand`
+(`PathExpr` stops at the path when the next token is `<`, and the list
+follows as the operand's `CallTypeArgs`); the two disambiguation conditions
+below apply unchanged, and a `<` after a path that fails either condition is
+the relational operator, exactly as after a bare identifier.
+
+Whether a `<` after such a callee starts a `CallTypeArgs` is decided by two
+conditions:
 
 1. the material between that `<` and the matching `>` parses as a
    comma-separated list of types — the empty material counts as a zero-length

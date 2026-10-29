@@ -26,7 +26,8 @@ required, is a compile-time error (`E0101`)
 never into a namespace:
 
 ```xulo
-user.name            // field of a struct, or an entry of a map
+user.name            // field of a struct
+counts.get("a")      // built-in Map member
 r.area()             // method declared in an `impl` block
 getBox().width       // member access through a call result
 ```
@@ -35,21 +36,27 @@ Member access is a postfix operator of the highest precedence, so it groups
 from the left: `a.b.c()` selects `b` from `a`, then selects `c` from that
 result, and then calls it.
 
-The type of a field access is the declared type of that field. The type of a
-method access is the method's function type with `self` bound to the
-receiver (see [`../functions.md`](../functions.md)); the call itself is
-specified in [`calls.md`](calls.md).
-
-When the receiver has type `Map<string, V>`, `expr.name` is the **member form
-of a map entry**: it is exactly `expr["name"]` — type `V`, and a missing key
-is the same runtime error as the subscript read of that key. On a map whose
-key type is not `string` no member form exists
-([`../types/composite-types.md`](../types/composite-types.md)).
-
-A member that does not exist on the receiver's type is a compile-time error (`E0102`)
+The type of a field access is the declared type of that field. On a built-in
+type, the member's declared type is the type of the access: `.len`, `.size`,
+and `.byteLen` are read-only properties of type `int`, and a property is not a
+place — assigning to one is `E0402`. A method access has the method's function
+type with `self` bound to the receiver (see
+[`../functions.md`](../functions.md)); the call itself is specified in
+[`calls.md`](calls.md). A name that is not in the receiver's member set is a
+compile-time error (`E0102`)
 (see [`../type-system/errors.md`](../type-system/errors.md)). Members are
 private by default, so a member that is not `pub` is accessible only inside
 the module that declares it (see [`../modules/README.md`](../modules/README.md)).
+
+The built-in collections and `string` have closed inherent member sets,
+specified with their types
+([`../types/composite-types.md`](../types/composite-types.md),
+[`../types/primitive-types.md`](../types/primitive-types.md)). A program
+cannot add an inherent member to a built-in type; a trait implementation for
+one is an ordinary trait method. These members resolve before inherent
+`impl` methods and trait methods. There is no map entry member form: on
+`Map<K, V>`, `m.name` is a member lookup, never the entry `"name"`; a key is
+read with `m.get("name")`.
 
 ## Positional access `.0`
 
@@ -93,9 +100,10 @@ Shape::Circle(2)         // variant construction: path plus arguments
 ```
 
 A path head is a package name (through the manifest mapping), a root module
-of this package, `self`, or `super`; the head and its resolution — including
-the hyphen rule that keeps `lsp-server::run()` a path and
-`total - Math::PI` subtraction — are specified in
+of this package, `self`, `super`, or a type name — for a variant or an
+associated member, as in `Theme::Dark` and `Map::fromEntries`; the head and
+its resolution — including the hyphen rule that keeps `lsp-server::run()` a
+path and `total - Math::PI` subtraction — are specified in
 [`../modules/import-export.md`](../modules/import-export.md).
 
 - A variant without a payload denotes a value of the enum type directly; a
@@ -119,35 +127,34 @@ previous segment was a local name or a module
 
 ## Subscript `[]`
 
-`expr[index]` reads an element of a collection.
+`expr[index]` reads an element of a `List<T>` or an `Array<T, N>`.
 
 ```xulo
 xs[0]          // list element
-counts[key]    // map value
+a[0]           // array element
 ```
 
-The index type follows the collection: a `List<T>` is indexed by `int` and
-yields `T`; a `Map<K, V>` is indexed by `K` and yields `V`. Strings are not
-indexable (see [`../types/primitive-types.md`](../types/primitive-types.md));
-inspect one with the prelude string functions — `stringSize`,
-`stringCodeAt`, `stringSlice` — and reach its bytes with `stringBytes` (see
-[`../builtins/prelude.md`](../builtins/prelude.md)).
+The index MUST have type `int` and the result is `T`. A subscript on a `Map`,
+on a `string`, or on any other type is a compile-time error (`E0215`); a map
+key is read with `m.get(k)`, and a string is inspected through its members —
+`.len`, `.codeAt(i)`, `.slice(start, end)`, `.byteLen`, `.bytes()`.
 
 Element access yields the element type directly — there is no automatic
-optional. Reading past the end of a `List` (a negative index included), or
-reading a `Map` key that is absent, is a runtime error as defined in
+optional. Reading past the end of a `List` or `Array` (a negative index
+included) is a runtime error as defined in
 [`../memory-and-runtime.md`](../memory-and-runtime.md); a lookup that may be
-absent is therefore guarded by an explicit presence test before the subscript
-is evaluated.
+absent is not a subscript.
 
 Assigning to a subscript writes an element: the base MUST be a place
-expression backed by a mutable binding, the index MUST have the collection's
-index type, and the value MUST have the element type. Writing outside the
-bounds of the target is a runtime error.
+expression backed by a mutable binding, the index MUST be an `int`, and the
+value MUST have the element type. Writing outside the bounds of the target is
+a runtime error.
 
 ```xulo
 let mut xs = [1, 2, 3]
 xs[0] = 9
+let mut a: Array<int, 3> = [1, 2, 3]
+a[0] = 9
 ```
 
 ## Optional chaining

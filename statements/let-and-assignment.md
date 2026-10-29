@@ -189,7 +189,7 @@ print(age)         // 30
 - Destructuring binds one level of fields. Deeper structure is obtained with
   field access, or with `match` when the value is an enum or a list.
 - **Map, list, and enum values are not deconstructed with `let`.** Map keys
-  are not statically declared — read entries with the subscript or member form
+  are not statically declared — read entries with `m.get(k)`
   ([`../expressions/path-and-access.md`](../expressions/path-and-access.md));
   lists and enums come apart with `match`, whose patterns are specified in
   [`../expressions/control-flow.md`](../expressions/control-flow.md).

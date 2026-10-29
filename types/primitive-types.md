@@ -40,7 +40,26 @@ let greeting = `Hello, ${a}!`
 
 - A string literal is written with `"` or `'`. Neither form interpolates; the backtick template form interpolates `${expr}`. Literal and template syntax is specified in [`../expressions/literals.md`](../expressions/literals.md).
 - The `+` operator concatenates two strings: both operands MUST have type `string`, and the result is `string`. Mixed operands are a compile-time error (`E0227`) — `"count=" + 1` MUST NOT be written; render the value with a template — `` `count=${n}` `` — or a conversion function such as `str` (see [`../builtins/prelude.md`](../builtins/prelude.md)).
-- **Strings are not indexable.** `s[i]` is NOT a defined operation for a value of type `string` and is a compile-time error (`E0215`). The language defines no indexing, slicing, or character-access syntax on `string`; inspection is done with the prelude functions `stringSize`, `stringCodeAt`, and `stringSlice`, and byte access with `stringBytes` (see [`../builtins/prelude.md`](../builtins/prelude.md)).
+- **Strings are not indexable.** `s[i]` is NOT a defined operation for a value
+  of type `string` and is a compile-time error (`E0215`). The language defines
+  no indexing syntax on `string`; a string is inspected through its inherent
+  members:
+  - `.len` — a read-only property of type `int`, the number of Unicode
+    scalar values;
+  - `.byteLen` — a read-only property of type `int`, the number of UTF-8
+    bytes, O(1) and allocation-free;
+  - `.codeAt(i: int)` — the Unicode scalar value at index `i`, counting from
+    0 in scalar order; type `int`;
+  - `.slice(start: int, end: int)` — the substring containing the scalars at
+    indices `start … end − 1`; type `string`;
+  - `.bytes()` — a `List<u8>` holding the UTF-8 bytes, in order.
+- Indices count Unicode scalar values, not bytes or UTF-16 code units;
+  `codeAt` yields the scalar's value — its code point — as an `int`. An index
+  outside `0 … s.len − 1`, slice bounds outside `0 … s.len`, or
+  `start > end` is a runtime failure
+  ([`../memory-and-runtime.md`](../memory-and-runtime.md), closed tables);
+  `s.slice(n, n)` is the empty string for every `n` in range, and
+  `s.slice(0, s.len)` is `s` itself.
 - `==` and `!=` are defined for two `string` operands and compare by content. The quote form is irrelevant to both type and equality: `"hello" == 'hello'` is `true`.
 
 ## Numeric Types
@@ -242,6 +261,6 @@ for i in a {
 
 The names of the built-in composite types are reserved for the language. A module-scope `struct`, `enum`, `trait`, or `type` declaration MUST NOT use any of the following names:
 
-`List`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error`, `Ptr`
+`List`, `Array`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error`, `Ptr`
 
-Declaring a type with one of these names at module scope is a compile-time error (`E0106`). The primitive value types need no entry in this list: their spellings are keywords, stopped at the lexical layer before a declaration is ever checked. `List`, `Map`, and `Set` are specified in [`composite-types.md`](composite-types.md), `Task<T>` in [`function-types.md`](function-types.md), `Result` and `Error` in [`../error-handling.md`](../error-handling.md), and `View` in [`../components/view-syntax.md`](../components/view-syntax.md); `Range<T>` is specified above in this file. `Ptr` is specified in [`../ffi.md`](../ffi.md); it names an opaque foreign handle, not a value type, and is reserved for that reason. Elsewhere — as a type parameter name or an ordinary value binding — a built-in type name is an ordinary identifier, though using one conflicts with the naming conventions in [`../names.md`](../names.md).
+Declaring a type with one of these names at module scope is a compile-time error (`E0106`). The primitive value types need no entry in this list: their spellings are keywords, stopped at the lexical layer before a declaration is ever checked. `List`, `Array`, `Map`, and `Set` are specified in [`composite-types.md`](composite-types.md), `Task<T>` in [`function-types.md`](function-types.md), `Result` and `Error` in [`../error-handling.md`](../error-handling.md), and `View` in [`../components/view-syntax.md`](../components/view-syntax.md); `Range<T>` is specified above in this file. `Ptr` is specified in [`../ffi.md`](../ffi.md); it names an opaque foreign handle, not a value type, and is reserved for that reason. Elsewhere — as a type parameter name or an ordinary value binding — a built-in type name is an ordinary identifier, though using one conflicts with the naming conventions in [`../names.md`](../names.md).

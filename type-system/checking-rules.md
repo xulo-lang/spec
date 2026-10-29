@@ -23,8 +23,8 @@ diagnostic named at that rule. `⊢` never appears in source code.
 `Γ` is what checking a body may consult; it contains:
 
 - **Value bindings** — name to type and mutability: `let`/`let mut` bindings,
-  `const`s, parameters, loop variables, pattern bindings,
-  component state declarations, and `self`.
+  `const`s, generic const parameters, parameters, loop variables, pattern
+  bindings, component state declarations, and `self`.
 - **Type bindings** — `struct`, `enum`, and `trait` declarations, type aliases,
   and type parameters with their bounds (`<T: Area>` or a `where` clause).
 - **Declarations** — the signatures of every module-level `fn` and every method
@@ -76,13 +76,25 @@ annotation.
   `E0101`.
 - `Γ ⊢ e.m : U` when `e : T` and `T` (after alias expansion) declares member
   `m` of type `U`; unknown member → `E0102`, a non-`pub` member examined
-  outside its module → `E0602`. When `e : Map<string, V>`, `e.m` reads the
-  entry `e["m"]` with `U = V`; on `e : unknown` there is no member at all, so
-  `e.m` is `E0102`. Method resolution is inherent `impl` methods
-  first, then trait methods in scope, with explicit `Trait.method(recv)` always
-  available; a method used without a call has its function type
-  with the receiver bound. On a type parameter, access succeeds only
-  through a bound.
+  outside its module → `E0602`. On `e : unknown` there is no member at all,
+  so `e.m` is `E0102`. The built-in collection and string types declare their
+  inherent members with their types; a read-only property is not a place, and
+  there is no map entry member form — `e.m` on a `Map` is a member lookup,
+  never the entry `"m"`. On a `List<T>` or `Array<T, N>`,
+  `indexOf`/`lastIndexOf`/`includes` require `T` to admit `==`, and `join`
+  requires `T` to have a string form (`E0212`). The callback members check
+  their function argument against `fn(T): unit`, `fn(T): U`,
+  `fn(T): bool`, `fn(U, T): U`, or `fn(T, T): int`; `map` and `reduce`
+  introduce a method type parameter inferred from the callback and initial
+  value. The receiver is borrowed for the call, so a callback that mutably
+  borrows the same collection is `E0404`/`E0405`. An `Array` has no dynamic
+  members. Method resolution is the receiver type's built-in inherent member
+  first, then inherent `impl` methods, then trait methods in scope, with
+  explicit `Trait.method(recv)` always available; a method used without a call
+  has its function type with the receiver bound. On a type parameter, access
+  succeeds only through a bound. A built-in static member (`Map::fromEntries`,
+  `Set::fromList`, `Array::filled`) is reached through `::`; it has
+  no receiver.
 - `Γ ⊢ p.i : Tᵢ` when `p : (T₁, …, Tₙ)` and `i` is a decimal literal naming
   an existing position — `0 ≤ i < n`; a positional access on a non-tuple
   type or at or past the arity → `E0220`
@@ -96,11 +108,19 @@ payload is a constructor whose call must supply exactly the declared payload
 arguments (`E0202`, `E0207`, `E0208`). `::` is used only for variants, in
 expressions and patterns alike.
 
-For `a[i]`: `a : List<T>` requires `i : int` and yields `T`;
-`a : Map<K, V>` requires `i : K` and yields `V`; any other type — `string`
-included — is `E0215`. The read adds no optional: an out-of-range index or
-absent key is a runtime error. As an assignment target the subscript is a
-place, so its base must be mutable and its value assignable to the element type.
+For `a[i]`: `a : List<T>` or `a : Array<T, N>` requires `i : int` and yields
+`T`; any other type — `Map<K, V>` and `string` included — is `E0215`. The read
+adds no optional: an out-of-range index is a runtime error. As an assignment
+target the subscript is a place, so its base must be mutable and its value
+assignable to the element type.
+
+- An `Array<T, N>` type application requires the const argument N to be
+  non-negative; a concrete negative N is `E0814`.
+- A list literal checked against an expected `Array<T, N>` must have exactly N
+  written elements and no spread; a mismatch is `E0815`, and a literal whose
+  length cannot be compared statically — it contains a spread, or N is an
+  abstract const parameter — is `E0818`. Its elements check against T in
+  order, and `[]` is the N = 0 case.
 
 ### Calls
 
@@ -115,8 +135,11 @@ place, so its base must be mutable and its value assignable to the element type.
   receiver is supplied to `self` and checked the same way. A call through a
   value of type `fn(...)` accepts positional arguments only.
 - Generic calls solve type arguments by unification against the argument types,
-  aided by the expected type ([`../types/generics.md`](../types/generics.md)),
-  and then every bound of every parameter must be satisfied (`E0801`).
+  aided by the expected type
+  ([`../types/generics.md`](../types/generics.md)), and then every bound of
+  every parameter must be satisfied (`E0801`). Const arguments are never
+  inferred: a callee that declares a const parameter MUST be given a written
+  generic-argument list (`E0816`).
 
 ### Operators
 
@@ -196,10 +219,10 @@ literal ([`../types/composite-types.md`](../types/composite-types.md)).
   position all arm bodies must have a common type (`E0211`); in statement
   position the rule below applies. In statement position the branches and arms
   of `if`, `match`, `for`, and `while` MAY be of unrelated types.
-- The iterable of a `for` must be `List<T>`, `Map<K, V>` (iterating keys),
-  `Set<T>`, or `Range<T>` — anything else is `E0213`. The loop
-  variable is a fresh immutable binding of the element type, added to `Γ` for
-  the body; the loop itself has type `unit`.
+- The iterable of a `for` must be `List<T>`, `Array<T, N>`, `Map<K, V>`
+  (iterating keys), `Set<T>`, or `Range<T>` — anything else is `E0213`. The
+  loop variable is a fresh immutable binding of the element type, added to `Γ`
+  for the body; the loop itself has type `unit`.
 
 ### Closures, `await`, templates, spread
 
@@ -322,41 +345,53 @@ that disagree on what they bind are `E0304`.
 - **Bounds.** Every type argument — inferred at a call or written in a type
   application — MUST satisfy its parameter's bounds (`E0801`); a bound that is
   not a visible `trait` is `E0806`, and a bound that applies type arguments to
-  a trait is `E0811`. A `trait` declaration that declares type parameters is
-  `E0810`
+  a trait is `E0811`. A const argument has no bound. A `trait` declaration
+  that declares a generic parameter list is `E0810`
   ([`../types/generics.md`](../types/generics.md), [`../types/traits.md`](../types/traits.md)).
-- **Explicit type arguments.** A call MAY write its callee's type arguments,
-  in which case they are checked in this order, before any constraint exists
-  for the call:
+- **Explicit generic arguments.** A call MAY write its callee's generic
+  arguments, in which case they are checked in this order, before any
+  constraint exists for the call:
 
-  - **Arity.** The list length MUST equal the number of type parameters the
-    callee declares; a longer or shorter list is `E0808`. Every parameter is
-    written or none is — a partial list is the same failure, not a hybrid
-    form that leaves the remainder to inference.
-  - **Bounds.** Each written argument MUST satisfy every bound of its
+  - **Arity.** The list length MUST equal the number of generic parameters the
+    callee declares, type and const combined; a longer or shorter list is
+    `E0808`. Every parameter is written or none is — a partial list is the
+    same failure, not a hybrid form that leaves the remainder to inference.
+  - **Kinds.** At a type parameter position the argument MUST be a type; at a
+    const parameter position it MUST be an integer literal, a `const` binding
+    (module-level or block-level), or a const parameter name, evaluated to a
+    compile-time `int`. A mismatch is `E0813`; a const parameter whose
+    declared type is not `int` is `E0812`.
+  - **Bounds.** Each written type argument MUST satisfy every bound of its
     parameter, reported as `E0801`, exactly as an inferred argument must be;
-    a bound that is not a visible `trait` is `E0806`.
-  - **Substitution without inference.** For each parameter the binding
+    a bound that is not a visible `trait` is `E0806`. A written const
+    argument has no bound.
+  - **Substitution without inference.** For each type parameter the binding
     `Tᵢ := Aᵢ` is made before any constraint is generated: no type variable is
     introduced for it, no unification constraint is raised against the value
-    arguments, and no expected type may override it. The value arguments are
-    then checked against the substituted parameter types, and a mismatch is
-    the ordinary argument error (`E0202`).
+    arguments, and no expected type may override it. A written const argument
+    is used as given; no const variable is introduced. The value arguments
+    are then checked against the substituted parameter types, and a mismatch
+    is the ordinary argument error (`E0202`).
   - **Result.** The type of the call is the declared return type with every
-    `Tᵢ := Aᵢ` substituted; an expected type checks that result and feeds
-    nothing back into the written arguments.
+    `Tᵢ := Aᵢ` substituted and every const parameter replaced by its value; an
+    expected type checks that result and feeds nothing back into the written
+    arguments.
 
-  A list written before a callee that declares no type parameters is `E0807`,
-  including a value of function type (`f<int>(…)` where `f: fn(int): int`) and
-  a `struct` or `enum` constructor. The rule applies wherever the callee ends
-  in an identifier — a method (`r.first<int>(xs)`), a trait static
-  (`Trait.method<int>(x)`), a namespace member (`Task.all<int>(…)`), or a
-  component (`Counter<int>() { … }`).
+  A call to a callee that declares a const parameter and writes no list is
+  `E0816`; const arguments are never inferred. A list written before a callee
+  that declares no generic parameters is `E0807`, including a value of
+  function type (`f<int>(…)` where `f: fn(int): int`) and a `struct` or `enum`
+  constructor. The rule applies wherever the callee ends in an identifier — a
+  method (`r.first<int>(xs)`), a trait static (`Trait.method<int>(x)`), a
+  namespace member (`Task.all<int>(…)`), or a component
+  (`Counter<int>() { … }`).
 - **Type applications.** Every type application MUST be well-formed: the
-  argument count equals the declaration's type-parameter count, a generic
-  name never appears without its arguments, and a type parameter is never
-  applied — all `E0230`
-  ([`../types/generics.md`](../types/generics.md)).
+  argument count equals the declaration's generic-parameter count, type and
+  const combined; a generic name never appears without its arguments; and a
+  type or const parameter is never applied — all `E0230`
+  ([`../types/generics.md`](../types/generics.md)). A const argument in a
+  type application is checked by kind exactly as at a call; a mismatch is
+  `E0813`.
 - **`impl` completeness.** A trait `impl` MUST declare every method of the
   trait (`E0802`) and no others (`E0804`), each signature — parameters, return
   type, receiver form — being mutually assignable with the declared one
@@ -364,17 +399,18 @@ that disagree on what they bind are `E0304`.
   `E0805`; one in each of two modules is legal, since an `impl` is module-scoped
   ([`../types/traits.md`](../types/traits.md)). A generic `impl` contributes
   its methods or its trait implementation only when it applies to the type in
-  question — its parameters instantiate to the type and its bounds are
-  satisfied — and otherwise is invisible to member lookup and to explicit
-  dispatch ([`../types/traits.md`](../types/traits.md)).
+  question — its type and const parameters instantiate to match the type and
+  its bounds are satisfied — and otherwise is invisible to member lookup and
+  to explicit dispatch ([`../types/traits.md`](../types/traits.md)).
 - **Type aliases.** Expanding aliases MUST terminate: an alias that expands,
   directly or through a chain, to itself is `E0105`; recursion through a type
   constructor is not a cycle.
 - **Value composition.** A struct's field types MUST NOT reach the declaring
-  struct through field positions, tuple elements, and alias expansion without
-  an intervening indirection (`E0113`); recursion through `List<T>`,
-  `Map<K, V>`, `Set<T>`, `T?`, a function type, or an enum payload is
-  well-formed
+  struct through field positions, tuple elements, array element positions, and
+  alias expansion without an intervening indirection (`E0113`); recursion
+  through `List<T>`, `Map<K, V>`, `Set<T>`, `T?`, a function type, or an enum
+  payload is well-formed, but an `Array<T, N>` element position is inline and
+  therefore is not an indirection
   ([`../types/composite-types.md`](../types/composite-types.md)).
 - **Duplicates and visibility.** Two declarations of one name in one scope
   are `E0103`, and a collision involving a `mod` or `use` binding — two

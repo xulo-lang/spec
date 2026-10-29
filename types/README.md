@@ -15,7 +15,7 @@ The kinds of type in Xulo form a closed set; a program cannot introduce a new ki
 | Top | `unknown` | [`primitive-types.md`](primitive-types.md) |
 | Range | `Range<T>` | [`primitive-types.md`](primitive-types.md) |
 | View | `View` | [`primitive-types.md`](primitive-types.md) |
-| Collection | `List<T>`, `Map<K, V>`, `Set<T>` | [`composite-types.md`](composite-types.md) |
+| Collection | `List<T>`, `Array<T, N>`, `Map<K, V>`, `Set<T>` | [`composite-types.md`](composite-types.md) |
 | Tuple (positional) | `(int, string)`, `p.0` | [`composite-types.md`](composite-types.md) |
 | Struct (nominal) | `struct User { … }` | [`composite-types.md`](composite-types.md) |
 | Optional | `T?` (shorthand for `T \| null`) | [`composite-types.md`](composite-types.md) |
@@ -26,7 +26,10 @@ The kinds of type in Xulo form a closed set; a program cannot introduce a new ki
 | Task | `Task<T>` | [`function-types.md`](function-types.md) |
 | Enum | `enum Theme { … }` | [`enums.md`](enums.md) |
 | Trait | `trait Area { … }` | [`traits.md`](traits.md) |
-| Type parameter | `T`, `<T: Area>` | [`generics.md`](generics.md) |
+| Generic parameter | type parameter `T`, `<T: Area>`; const parameter `const N: int` | [`generics.md`](generics.md) |
+
+A const parameter is not a type kind: `const N: int` is a compile-time value
+in a generic parameter list, not a type. See [`generics.md`](generics.md).
 
 Assignability, subtyping, and inference constraints between these kinds are specified in [`type-relations.md`](type-relations.md).
 
@@ -64,16 +67,24 @@ TypeList        = Type { "," Type } ;
 - A binding without an annotation takes the type of its initializer: `let x = 42` infers `int`, `let s = "hi"` infers `string`, `let xs = [1, 2]` infers `List<int>`.
 - Literals default by form: integer forms (including `0xff`, `0b1010`, `0o77`) default to `int`, float forms to `float` (see [`primitive-types.md`](primitive-types.md)).
 - Parameter types of a declared `fn` are never inferred; they MUST be annotated. The return type is declared or omitted, in which case it is `unit`. A closure MAY omit annotations that the expected type or its body determines (see [`type-relations.md`](type-relations.md)).
-- Generic type arguments are inferred at each call site; a call MAY instead write them explicitly, in a list between the callee and the argument list — `first<int>(…)`, `Map<string, int>(…)` — which takes the place of inference for that call (see [`generics.md`](generics.md)).
+- Type arguments are inferred at each call site; a call MAY instead write
+  them explicitly, in a list between the callee and the argument list —
+  `first<int>(…)`, `Map<string, int>(…)` — which takes the place of inference
+  for that call. A const argument is never inferred and MUST be written
+  (`count<3>()`); see [`generics.md`](generics.md).
 - An annotation supplies context outward: `let w: u32 = 800` checks `800` as `u32` and coerces it (see [`../type-system/coercion.md`](../type-system/coercion.md)).
 - The complete rules for checking, compatibility, and subtyping are in [`type-relations.md`](type-relations.md).
 
 ## How to Read This Chapter
 
 - [`primitive-types.md`](primitive-types.md) — `bool`, `string`, the two-layer numeric system, `null`, `unit`, `unknown`, `View`, and `Range<T>`.
-- [`composite-types.md`](composite-types.md) — `List`, `Map`, `Set`, positional tuples, nominal `struct` records, optional/union/intersection types, and type aliases.
+- [`composite-types.md`](composite-types.md) — `List`, `Array`, `Map`, `Set`,
+  positional tuples, nominal `struct` records, optional/union/intersection
+  types, and type aliases.
 - [`function-types.md`](function-types.md) — the syntax and meaning of `fn(...)` types, function and closure values, default and named parameters, `async`/`Task<T>` types, subtyping, and method types.
-- [`generics.md`](generics.md) — type parameters, bounds (`<T: Trait>`, `where` clauses), and call-site inference.
+- [`generics.md`](generics.md) — type and const parameters, bounds
+  (`<T: Trait>`, `where` clauses), and call-site inference for type
+  parameters; const arguments are explicit.
 - [`enums.md`](enums.md) — enum declarations, variants with payloads, and `Enum::Variant` paths.
 - [`traits.md`](traits.md) — trait declarations, `impl` blocks, and explicit `Trait.method` dispatch.
 - [`type-relations.md`](type-relations.md) — assignability, subtyping, structural vs. nominal identity, and how inference interacts with each kind.

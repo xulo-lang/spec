@@ -251,9 +251,10 @@ fn Banner(loggedIn: bool): View {
   contributes its children when the condition is `true` and **no** children
   when it is `false`.
 - A `for` in a block renders one child per element. The iterable MUST be a
-  `List<T>`, a `Map<K, V>` (visiting its keys), a `Set<T>`, or a `Range<T>`;
-  the loop variable is a fresh binding for each iteration, and the body's block
-  is evaluated once per element, contributing its items in order.
+  `List<T>`, an `Array<T, N>`, a `Map<K, V>` (visiting its keys), a `Set<T>`,
+  or a `Range<T>`; the loop variable is a fresh binding for each iteration, and
+  the body's block is evaluated once per element, contributing its items in
+  order.
 - Both constructs are ordinary control flow: nesting, `break`/`continue`, and
   scoping work as specified in
   [`../expressions/control-flow.md`](../expressions/control-flow.md).

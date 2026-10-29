@@ -28,9 +28,10 @@ Rules:
   types, and a value of one is never usable where the other is expected. The
   enum name is a type name and follows the naming conventions of
   [`../names.md`](../names.md), as do the variant names.
-- An enum is generic when a type parameter list follows its name — for example
-  `enum Either<L, R> { Left(L), Right(R) }` — and the parameters are then in
-  scope in every payload type.
+- An enum is generic when a generic parameter list follows its name — for
+  example `enum Either<L, R> { Left(L), Right(R) }` or
+  `enum Packet<const N: int, T> { Fixed(T) }` — and the type and
+  const parameters are then in scope in every payload type.
 - Visibility uses `pub` (see [`../modules/README.md`](../modules/README.md)):
   `pub enum …` exports the enum and its variants from the module, and without
   `pub` the enum is private to it. Variants have no visibility modifier of their

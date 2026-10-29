@@ -56,6 +56,7 @@ of a container is built from the renderings of its elements.
 | `List<T>` | `[`, then the renderings of the elements separated by `, `, then `]` — `[1, 2]` |
 | `Map<K, V>` | `{`, then the entries in insertion order as `key: value` pairs separated by `, `, each side rendered by this table, then `}` — `{ name: "lyy", age: 30 }` |
 | `Set<T>` | as a list, in an unspecified order |
+| `Array<T, N>` | `[`, then the renderings of the elements in index order separated by `, `, then `]` — `[1, 2]` |
 | an `enum` value | `Enum::Variant`, or `Enum::Variant(p, …)` when the variant has payloads, each payload rendered by this table |
 | a function, a `Task`, a `View` | `<function>`, `<task>`, `<view>` |
 
@@ -88,8 +89,8 @@ println("done")                 // done, then a line terminator
 - A base type is rendered exactly as in the table under [Output](#output); for
   a `ToString` implementor the result is the value of `toString` on the
   operand.
-- Any other operand is a compile-time error (`E0212`) — a `List`, a `Map`, a `Set`, an
-  `enum` with no `impl ToString`, or `null`
+- Any other operand is a compile-time error (`E0212`) — a `List`, an `Array`, a
+  `Map`, a `Set`, an `enum` with no `impl ToString`, or `null`
   ([`../type-system/errors.md`](../type-system/errors.md)).
 
 There is no implicit conversion anywhere else in the language: `+` concatenates
@@ -125,8 +126,8 @@ let bad = str([1, 2])                  // error: List<int> has no string form
 
 ```xulo
 let xs = [2, 4, 6]
-assert(listSize(xs) == 3, "three items")  // ok: no effect
-assert(listSize(xs) == 4, "not four")     // false: stops with `panic("not four")`
+assert(xs.len == 3, "three items")  // ok: no effect
+assert(xs.len == 4, "not four")     // false: stops with `panic("not four")`
 ```
 
 ## `Math` namespace

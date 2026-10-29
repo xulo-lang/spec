@@ -45,9 +45,9 @@ fn testParse() {
 }
 
 #Test
-fn mapGetAnswersNull() {
+fn absentKeyIsNull() {
   let m = { a: 1 }
-  assert(mapGet(m, "z") == null, "absent key is null")
+  assert(m.get("z") == null, "absent key is null")
 }
 
 #Test()

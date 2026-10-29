@@ -96,9 +96,6 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
-| [change-collection-members/](change-collection-members/proposal.md) | draft | List is the growable sequence with Array-style dynamic and callback members; Map/Set have no key subscript or member form (`.get`/`.set` only); sequences use `.len`, containers `.size`; the prelude collection/string functions are removed. |
-| [add-const-generics/](add-const-generics/proposal.md) | draft | const parameters `<const N: int>`; mixed type/const generic lists; explicit const arguments (integer literals, `const` bindings, const parameter names); impl matching of const parameters; no const arithmetic or call-site inference; `E0812`/`E0813`/`E0816`/`E0817` (`E0814`/`E0815`/`E0818` reserved for `add-fixed-array`); a fixed-array consumer is a separate change. |
-| [add-fixed-array/](add-fixed-array/proposal.md) | draft | builds on `add-const-generics` and `change-collection-members`; inline `Array<T, N>` with a const N, context-typed literal, `Array::filled`, read/callback/sort members, value copy, no dynamic members; `E0814`/`E0815`/`E0818`; depends on both prerequisites. |
 
 ## Archived
 
@@ -122,3 +119,6 @@ with their final status.
 | [archive/change-shift-count/](archive/change-shift-count/proposal.md) | accepted | pin the shift-amount domain (`0 … width−1`): a constant violation is `E0210`, a non-constant one a runtime trap — the same shape as division by zero; shifts in range never overflow. |
 | [archive/change-test-to-attribute/](archive/change-test-to-attribute/proposal.md) | accepted | the test declaration is `#Test [async] fn name() { … }` from the attribute registry; `test` leaves the keyword set (42 → 41). |
 | [archive/lowercase-primitive-keywords/](archive/lowercase-primitive-keywords/proposal.md) | accepted | Primitive value types become lowercase keywords (`bool`, `string`, `int`, `i8`…`f64`, `unit`, `unknown`); `View`, `Range<T>`, composites, and user types stay UpperCamelCase; 41 → 58 keywords. |
+| [archive/change-collection-members/](archive/change-collection-members/proposal.md) | accepted | List is the growable sequence with Array-style dynamic and callback members; Map/Set have no key subscript or member form (`.get`/`.set` only); sequences use `.len`, containers `.size`; the prelude collection/string functions are removed. |
+| [archive/add-const-generics/](archive/add-const-generics/proposal.md) | accepted | const parameters `<const N: int>`; mixed type/const generic lists; explicit const arguments (integer literals, `const` bindings, const parameter names); impl matching of const parameters; no const arithmetic or call-site inference; `E0812`/`E0813`/`E0816`/`E0817`. |
+| [archive/add-fixed-array/](archive/add-fixed-array/proposal.md) | accepted | inline `Array<T, N>` with a const N, context-typed literal, `Array::filled`, read/callback/sort members, value copy, no dynamic members; propagates `Array` through reserved names, type kinds, iteration, equality, recursion, and rendering; `E0814`/`E0815`/`E0818`. |

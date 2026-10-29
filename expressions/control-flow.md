@@ -326,15 +326,16 @@ for item in items {
 | Iterable type | Loop binding | Iteration order |
 |---------------|--------------|-----------------|
 | `List<T>` | `T` | index order |
+| `Array<T, N>` | `T` | index order |
 | `Map<K, V>` | `K` | insertion order of keys |
 | `Set<T>` | `T` | unspecified; programs MUST NOT depend on one |
 | `Range<T>` | `T` | ascending from `start` |
 
-- Iterating a `Map` visits its **keys**; the corresponding values are read with
-  a subscript (see [`path-and-access.md`](path-and-access.md)). Iterating a
-  `List`, `Map`, or `Range` is core syntax; the other operations on `Map` and
-  `Set` are prelude functions (see
-  [`../types/composite-types.md`](../types/composite-types.md)).
+- Iterating a `Map` visits its **keys**; the corresponding values are read
+  with `m.get(k)` (see [`path-and-access.md`](path-and-access.md)). Iterating
+  a `List`, `Array`, `Map`, `Set`, or `Range` is core syntax; the other
+  operations on the collections are inherent members
+  (see [`../types/composite-types.md`](../types/composite-types.md)).
 - The loop variable is a fresh **immutable** binding for every iteration. It
   MAY shadow an outer binding of the same name, MUST NOT be assigned, and is
   not visible after the loop. To accumulate across iterations, use a `let mut`

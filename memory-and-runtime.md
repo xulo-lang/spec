@@ -43,7 +43,7 @@ holds and what an assignment does.
 
 | Category | Types | A binding denotes | `let x = e` and assignment |
 |----------|-------|-------------------|----------------------------|
-| **Value** | `bool`, `string`, `int`, `float`, `number`, fixed-bit numerics, `null`, `unit`, `struct`, `enum`, `Range<T>`, tuples | the value itself | a fresh, independent copy of `e`'s value; a `struct`, `enum`, or tuple copy is shallow — each field or element is copied by its own category |
+| **Value** | `bool`, `string`, `int`, `float`, `number`, fixed-bit numerics, `null`, `unit`, `struct`, `enum`, `Array<T, N>`, `Range<T>`, tuples | the value itself | a fresh, independent copy of `e`'s value; a `struct`, `enum`, `Array`, or tuple copy is shallow — each field or element is copied by its own category |
 | **Reference** | `List<T>`, `Map<K, V>`, `Set<T>` | a reference to one shared value | the same value, shared: `x` and `e` then denote the one underlying value |
 
 Four further values carry **identity** rather than content — function values
@@ -83,8 +83,8 @@ and never copies it, whatever the category ([Borrowing](#borrowing)).
 ## Equality and identity
 
 `==` compares by content for every value-carrying type — primitives, `string`,
-`struct`, `enum`, `Range`, `List`, `Map`, `Set`, and tuples (element-wise,
-equal arity) — as specified in
+`struct`, `enum`, `Range`, `List`, `Array`, `Map`, `Set`, and tuples
+(element-wise, equal arity) — as specified in
 [`expressions/operators.md`](expressions/operators.md). Identity-carrying
 values — function values, `Task<T>`, `View`, and `Error` — are compared by
 identity: `==` is `true` exactly when both operands denote the same value.
@@ -158,8 +158,8 @@ any expression as its operand and, like `move`, appears only as a `let`
 initializer, an argument, or a `return` operand.
 
 - Deep copying follows references through `List`, `Map`, and `Set` values,
-  through `struct` and `enum` fields, and through tuple elements, and duplicates
-  their contents. Copying a cyclic
+  through `struct` and `enum` fields, through tuple elements, and through
+  `Array` elements, and duplicates their contents. Copying a cyclic
   structure terminates: a value already being copied is represented by the
   copy made for it, so the copy graph mirrors the original.
 - Identity-carrying values — function values, `Task<T>`, `View`, `Error` — are
@@ -414,9 +414,9 @@ condition occurs, and there is no handler for it.
 
 | Condition | When it occurs | Specified in |
 |-----------|----------------|--------------|
-| List index out of bounds | reading or writing `xs[i]` where `i` is negative or at or past the list's length | [`types/composite-types.md`](types/composite-types.md) |
-| Absent map key | reading `m[k]` for a key with no binding | [`expressions/path-and-access.md`](expressions/path-and-access.md) |
-| String index out of range | `stringCodeAt` with an index outside `0 … stringSize(s) − 1`, or `stringSlice` with bounds outside `0 … stringSize(s)` or with `start > end` | [`builtins/prelude.md`](builtins/prelude.md) |
+| List index or length out of range | a subscript `xs[i]` with `i` negative or at or past the list's length; a `splice` or `slice` index/count outside its stated bounds; or a negative `resize`/`truncate` length | [`types/composite-types.md`](types/composite-types.md) |
+| Array index out of bounds | reading or writing `a[i]` where `i` is negative or at or past N | [`types/composite-types.md`](types/composite-types.md) |
+| String index out of range | `s.codeAt(i)` with an index outside `0 … s.len − 1`, or `s.slice(start, end)` with bounds outside `0 … s.len` or with `start > end` | [`types/primitive-types.md`](types/primitive-types.md) |
 | Division or remainder by zero | `/` or `%` on non-constant operands whose value is zero | [`expressions/operators.md`](expressions/operators.md) |
 | Shift amount out of range | `<<` or `>>` whose amount is negative or at or past the operands' bit width, on non-constant operands | [`expressions/operators.md`](expressions/operators.md) |
 | Arithmetic overflow | an `int` or fixed-bit operation whose result exceeds its type, on non-constant operands | [`types/primitive-types.md`](types/primitive-types.md) |
