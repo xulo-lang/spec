@@ -48,7 +48,7 @@ Each literal has a default type, which an expected type may adapt exactly as
 | `42`, `0xff`, `0b1010`, `0o77` | `int` | adapts to a numeric `T` containing the value; otherwise `E0209` |
 | `3.14` | `float` | adapts to `float`, `f32`, `f64`, or `number` when in range |
 | `"ok"`, `'ok'` | `string` | takes the matching member when `T` is a union of string-literal types |
-| `` `…${e}…` `` | `string` | always `string`; each `e` must be a base type or `ToString` (`E0212`) |
+| `` `…${e}…` `` | `string` | always `string`; each `e` must be a base type or `Display` (`E0212`) |
 | `true`, `false` | `bool` | checks only if `bool ≼ T` |
 | `null` | `null` | checks only against an optional `T?` or `unknown` |
 | `[e₁, …]` | `List<C>`, `C` the join of the element types | each element checks against the expected element type |
@@ -241,7 +241,7 @@ literal ([`../types/composite-types.md`](../types/composite-types.md)).
   a call, a value use, or a path — is `E0107`
   ([`../testing.md`](../testing.md)).
 - Every `${e}` in a template requires `e : int | float | bool | string` or a
-  type implementing the built-in `ToString` trait; anything else is `E0212`
+  type implementing the built-in `Display` trait; anything else is `E0212`
   ([`../expressions/literals.md`](../expressions/literals.md)). A template
   literal always has type `string`.
 - Prefix `...e` is well-formed only as a list-literal element (`e` a `List`) or

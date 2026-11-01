@@ -212,7 +212,7 @@ fn message(e: LoadError): string {
   ```
 
 - An enum value is never implicitly converted to `string`. Interpolation of an
-  enum value requires an `impl ToString for …` as described in
+  enum value requires an `impl Display for …` as described in
   [`traits.md`](traits.md).
 
 ## Comparison and equality

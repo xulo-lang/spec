@@ -63,7 +63,7 @@ specification ([`README.md`](README.md), § 1.1).
 | Argument labels and attributes | lowerCamelCase | `spacing`, `variant`, `onClick` |
 
 Traits are named for the capability they describe, without an `I` prefix:
-`Area`, not `IArea`; `Display`, not `IDisplay`. Component names follow
+`Area`, not `IArea`; `Clone`, not `IClone`. Component names follow
 UpperCamelCase, which is how a reader recognizes a component at a use site;
 concrete component names such as `Text` and `Button` are ordinary imported
 names, not reserved words. Names SHOULD be descriptive rather than abbreviated,

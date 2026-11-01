@@ -12,7 +12,7 @@ specification (see [`../README.md`](../README.md), §1.1).
 
 | Layer | Contains | Chapter |
 |-------|----------|---------|
-| **Prelude** | the built-in types, the built-in protocol `ToString`, and the built-in namespaces — in scope in every module | [`prelude.md`](prelude.md) |
+| **Prelude** | the built-in types, the built-in protocols `Display` and `Debug` with `Format`, and the built-in namespaces — in scope in every module | [`prelude.md`](prelude.md) |
 | **Intrinsics** | the compiler-provided functions `print`, `println`, and `str`, together with the members of `Math`, `Time`, and `Task`, each with a defined signature | [`intrinsic-functions.md`](intrinsic-functions.md) |
 
 The prelude decides *which names* every module has; the intrinsic chapter
@@ -78,5 +78,5 @@ fn remaining(): string {
 
 | File | Contents |
 |------|----------|
-| [`prelude.md`](prelude.md) | what the prelude contains — built-in types, `ToString`, the built-in namespaces — the reserved-name list, the built-in members, prelude visibility, and shadowing |
+| [`prelude.md`](prelude.md) | what the prelude contains — built-in types, `Display`, `Debug`, and `Format`, the built-in namespaces — the reserved-name list, the built-in members, prelude visibility, and shadowing |
 | [`intrinsic-functions.md`](intrinsic-functions.md) | signature conventions, `print`/`println`, `str`, the `Math`, `Time`, and `Task` namespaces, and the complete signature index |

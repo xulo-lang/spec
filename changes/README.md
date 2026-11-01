@@ -104,6 +104,7 @@ with their final status.
 
 | Change | Status | Summary |
 |--------|--------|---------|
+| [archive/change-tostring-to-display/](archive/change-tostring-to-display/proposal.md) | accepted | `Display`/`Debug`/`Format` — the string-form hook becomes `Display`, which carries `Format`; `toString` is the derived action; `#Derive` re-targets to `Debug`; `print` consults `Display` then `Debug`; `E0106` reserves `Format`/`Display`/`Debug`; no new codes, no grammar delta. |
 | [archive/add-declaration-attributes/](archive/add-declaration-attributes/proposal.md) | accepted | `#Derive(ToString)` — declarations MAY carry `#Name` attributes from a closed, checker-interpreted registry; `E0108`–`E0112` registered. |
 | [archive/add-foreign-function-interface/](archive/add-foreign-function-interface/proposal.md) | accepted | `extern "C" { … }` imports and `pub extern "C" fn …` exports behind a closed ABI registry (`"C"`, `"system"`); ABI-safe signature whitelist, opaque non-null `Ptr`/`Ptr?`, `usize`/`isize`; `E0901`–`E0903` registered; zero-UB claim gains a foreign-boundary carve-out. |
 | [archive/add-explicit-type-arguments/](archive/add-explicit-type-arguments/proposal.md) | accepted | a call MAY write explicit type arguments — `first<Int>(…)` — which replace inference; `E0807`/`E0808` registered. |

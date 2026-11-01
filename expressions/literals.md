@@ -89,7 +89,7 @@ all normal rules, and it MAY itself contain a template — for example
 `` `${`inner: ${n * 2}`}` ``.
 
 Every expression interpolated by `${}` MUST be a base type (`int`, `float`,
-`bool`, `string`) or a type that implements the built-in `ToString`
+`bool`, `string`) or a type that implements the built-in `Display`
 protocol; otherwise the program is ill-formed at compile time.
 
 ```xulo

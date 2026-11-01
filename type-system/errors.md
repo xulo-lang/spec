@@ -115,23 +115,28 @@ the source line, a caret line, and optional notes.
 | `E0106` | a module-scope declaration bears a reserved name | `fn print(…)` at file scope | ``the name `print` is reserved by the prelude`` | [prelude.md](../builtins/prelude.md) |
 | `E0107` | a reference to the name of a `#Test` function — a call, a value use, a path, or any other mention | `helperCheck()` where `#Test fn helperCheck` exists | `` `helperCheck` is a test function and cannot be referenced `` | [testing.md](../testing.md) |
 | `E0108` | an attribute name that is in no registry | `#Inline` | `` attribute `Inline` is not defined `` | [traits.md](../types/traits.md) |
-| `E0109` | a registered attribute on a declaration the registry does not allow it on | `#Derive(ToString) fn main()` | `` attribute `Derive` is not valid on a function `` | [traits.md](../types/traits.md) |
+| `E0109` | a registered attribute on a declaration the registry does not allow it on | `#Derive(Debug) fn main()` | `` attribute `Derive` is not valid on a function `` | [traits.md](../types/traits.md) |
 | `E0110` | a registered attribute whose arguments do not fit the registered shape | `#Derive` | `` attribute `Derive` takes a parenthesized list of trait names `` | [traits.md](../types/traits.md) |
 | `E0111` | a well-shaped argument that names a reserved, unregistered derive target | `#Derive(Display)` | `` `Display` is not a registered derive target `` | [traits.md](../types/traits.md) |
-| `E0112` | `#Derive` on a type that declares generic parameters | `#Derive(ToString) struct Box<const N: int> { v: int }` | `` cannot derive `ToString` for a generic type `` | [traits.md](../types/traits.md) |
+| `E0112` | `#Derive` on a type that declares generic parameters | `#Derive(Debug) struct Box<const N: int> { v: int }` | `` cannot derive `Debug` for a generic type `` | [traits.md](../types/traits.md) |
 | `E0113` | a struct whose field types reach the declaring struct through fields, tuple elements, array element positions, and alias expansion with no intervening indirection | `struct Node { node: Node }` | ``type `Node` has a cyclic field definition`` | [composite-types.md](../types/composite-types.md) |
 
-`E0111` carries the note `` = note: registered targets: `ToString` ``.
+`E0111` carries the note `` = note: registered targets: `Debug` ``.
 
-`Display` and `Debug` are reserved names in the derive-target registry of
-[traits.md](../types/traits.md). Written as targets they are `E0111`; nothing
-else in the language refers to them, and a future change that registers them
-specifies what they mean.
+`Display` and `ToString` are reserved names in the derive-target registry of
+[traits.md](../types/traits.md). Written as targets they are `E0111`;
+`Debug` is the registry's one registered target, and a change that registers
+a further target specifies what it means. (`Display` is a language protocol
+regardless — see [traits.md](../types/traits.md) — but its form is the
+author's to write and it is never derived.)
 
-The expansion of `#Derive` is an ordinary impl and its interpolations are
-ordinary template positions, so it reuses the codes those constructs already
-own: a collision with a hand-written `impl ToString` is `E0805`, and a field
-or payload type with no string form is `E0801`.
+The expansion of `#Derive` is an ordinary impl, so it reuses the codes the
+impl rules own: a collision with a hand-written `impl Debug` — or a second
+`#Derive(Debug)` — is `E0805`, and a field or payload that is a `struct`
+with no `Debug` impl is `E0801`, whose message shape
+(`` `X` does not implement `Y` ``) it shares. Template interpolation, `str`,
+and a rendering position that meets `unknown` — printed, expanded by a
+derive, or interpolated — own `E0212` and give it the same message.
 
 ### Type and expression errors
 
@@ -148,7 +153,7 @@ or payload type with no string form is `E0801`.
 | `E0209` | a literal does not fit the type it is given — its default type or a type it is coerced into | `let b: u8 = 300` | ``literal `300` does not fit in `u8` `` | [literals.md](../expressions/literals.md) |
 | `E0210` | constant arithmetic divides by zero, takes a remainder by zero, overflows its type, or shifts by a negative or out-of-range amount | `const H = 1 / 0` | ``division by zero in constant expression`` | [operators.md](../expressions/operators.md) |
 | `E0211` | operands, branches, or arms have no common type | `flag ? 1 : "x"` | `` `int` and `string` have no common type `` | [checking-rules.md](checking-rules.md) |
-| `E0212` | a value has no string form, in `${…}` or in `str` | `` `${user}` `` without `ToString` | `` `User` has no string form; implement `ToString` `` | [traits.md](../types/traits.md) |
+| `E0212` | a value has no string form, in `${…}`, in `str`, at `print`, or in a `#Derive` expansion | `` `${user}` `` without `Display` | `` `User` has no string form; implement `Display` `` | [traits.md](../types/traits.md) |
 | `E0213` | the iterable of a `for` loop is not a supported type | `for x in 42` | `` `int` is not iterable `` | [control-flow.md](../expressions/control-flow.md) |
 | `E0214` | `break`, `continue`, or `return` is written outside its context | `return` at file scope | `` `return` outside of a function `` | [return-and-block.md](../statements/return-and-block.md) |
 | `E0215` | a subscript is applied to a type that is not a `List` or an `Array` | `"abc"[0]`, `m[k]` | `` `string` and `Map` cannot be indexed `` | [checking-rules.md](checking-rules.md) |
@@ -167,6 +172,17 @@ or payload type with no string form is `E0801`.
 | `E0228` | a parameter's default value does not fit the parameter's declared type | `fn f(name: string = 42)` | ``expected `string`, found `int` `` | [calls.md](../expressions/calls.md) |
 | `E0229` | `return`, `break`, `continue`, or `?` appears in a `defer` operand | `defer { return }` | ``cannot transfer control out of a `defer` operand`` | [return-and-block.md](../statements/return-and-block.md) |
 | `E0230` | a type application is ill-formed: the argument count differs from the declared generic-parameter count, a generic name is written without its arguments, a non-generic name is given arguments, or the head is a type parameter | `Map<string>` | `` `Map` expects 2 generic arguments, found 1 `` | [generics.md](../types/generics.md) |
+
+`E0212` carries one of two notes, each only where its condition holds:
+
+- raised at `print`, the note `` = note: `print` accepts a type implementing
+  `Display` or `Debug` ``;
+- raised anywhere for a type that implements `Debug`, the note
+  `` = note: `User` implements `Debug`, which `print` accepts; string form
+  requires `Display` ``.
+
+The two never combine: a `Debug` implementor is never rejected by `print`,
+so the first note implies the type has neither implementation.
 
 ### Pattern errors
 

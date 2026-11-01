@@ -59,7 +59,7 @@ type.
 | a string literal | a union of string-literal types | subtyping | the literal is one of the members | `E0201` |
 | `T` | `T?` | subtyping | always; `null <: T?` likewise | — |
 | `int`, `float` | `number` | subtyping | union membership, `number = int \| float` | — |
-| a value with a string form | `string`, inside `${…}` | coercion | the operand is `int`, `float`, `bool`, `string`, or `ToString` | `E0212` |
+| a value with a string form | `string`, inside `${…}` | coercion | the operand is `int`, `float`, `bool`, `string`, or `Display` | `E0212` |
 
 - The numeric rules concern **literals**, not values. A variable of type `int`
   has no adaptation to any other numeric type, however small its value is
@@ -132,7 +132,7 @@ combine the same two operands in an expression.
 Two positions convert a value to text, and they accept exactly the same
 operands: the intrinsic `str(value)` and the interpolation `${value}` of a
 template literal. The operand MUST be `int`, `float`, `bool`, `string`, or a
-type implementing the built-in `ToString` protocol; anything else is `E0212`
+type implementing the built-in `Display` protocol; anything else is `E0212`
 ([`../expressions/literals.md`](../expressions/literals.md),
 [`../builtins/intrinsic-functions.md`](../builtins/intrinsic-functions.md)).
 
@@ -144,7 +144,7 @@ let bad = `user: ${user}`       // error[E0212]: User has no string form
 
 This is the only implicit conversion admitted for a type outside the primitive
 numeric and string families: an `enum` or a `struct` carrying
-`impl ToString` renders in `${…}` without an explicit call, and no other
+`impl Display` renders in `${…}` without an explicit call, and no other
 complex type is converted implicitly. A template literal always has type
 `string`, and nowhere else does the language convert to text — `+`
 concatenates two `string`s and never converts its operands.

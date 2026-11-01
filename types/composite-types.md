@@ -64,7 +64,7 @@ let names: List<string> = []
   - `.includes(v: T)` — whether some element is `== v`; type `bool`;
   - `.join(separator: string = ",")` — the elements' string forms joined by
     `separator`, with `""` for an empty list; type `string`. The element type
-    MUST be a base type or implement `ToString` (the `str` domain); otherwise
+    MUST be a base type or implement `Display` (the `str` domain); otherwise
     the call is a compile-time error (`E0212`);
   - `.reverse()` — reverse the list in place; mutating; returns `unit`;
   - `.entries()` — a `List<(int, T)>` of `(index, element)` pairs, in order;

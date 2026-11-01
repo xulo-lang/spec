@@ -1,7 +1,7 @@
 # Prelude
 
 The prelude is what a module knows before it imports anything: the built-in
-types, the built-in protocol, and the built-in namespaces. Nothing declares
+types, the built-in protocols, and the built-in namespaces. Nothing declares
 the prelude, no import introduces it, and no import can take it away; it is
 the constant background of name resolution
 ([`../names.md`](../names.md)). This chapter lists what the prelude contains
@@ -36,6 +36,7 @@ written; `null` additionally has a literal form usable in expression position.
 | `Result<T, E>` | the built-in result of a fallible operation: `Ok(T)` or `Err(E)` | [`../error-handling.md`](../error-handling.md) |
 | `View` | the marker type a component returns | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `Error` | the conventional error payload of `Result<T, Error>` | [`../error-handling.md`](../error-handling.md) |
+| `Format` | the formatting context a `display` receives | [`../types/traits.md`](../types/traits.md) |
 
 `struct`, `enum`, `trait`, and `type` declarations introduce further types, but
 a program declares them itself; they are not part of the prelude (see
@@ -45,17 +46,26 @@ a program declares them itself; they are not part of the prelude (see
 
 | Protocol | Method | Required by |
 |----------|--------|-------------|
-| `ToString` | `fn toString(self): string` | interpolation in a template literal, and the intrinsic `str` |
+| `Display` | `fn display(self, format: Format): string` | interpolation in a template literal, the intrinsic `str`, the `str` domain of `List.join`, and `print` |
+| `Debug` | `fn debug(self, format: Format): string` | the field rule of `#Derive(Debug)`, and `print` |
 
-- A type implements `ToString` with `impl ToString for T`, whose `toString`
-  returns the string form of the receiver
+- A type implements `Display` with `impl Display for T`, whose `display`
+  returns the string form of the receiver at the `Format` it is given
   ([`../types/traits.md`](../types/traits.md)).
 - The base types — `int`, `float`, `bool`, `string` — convert to text
   without an implementation; every other type needs one.
 - A value interpolated by `${…}` MUST be a base type or implement
-  `ToString` ([`../expressions/literals.md`](../expressions/literals.md));
+  `Display` ([`../expressions/literals.md`](../expressions/literals.md));
   the same requirement is stated for `str` in
   [`intrinsic-functions.md`](intrinsic-functions.md#conversion).
+- `toString` is the derived **action**, never written: every type that
+  implements `Display` has `value.toString()`, defined as `display` at the
+  default `Format` — `Format(precision: null, alternate: false)` — and no
+  `impl` declares the method.
+- A type implements `Debug` with `impl Debug for T`, or by `#Derive(Debug)`:
+  `debug` returns the value's structural form, the counterpart of
+  `Display`'s user-facing one. Nothing requires `Debug` for string form;
+  the derive's field rule and `print` are its consumers.
 
 ### Built-in namespaces
 
@@ -78,8 +88,8 @@ in [`../type-system/errors.md`](../type-system/errors.md).
 
 | Category | Names |
 |----------|-------|
-| Value and marker types | `List`, `Array`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error` |
-| Protocols | `ToString` |
+| Value and marker types | `List`, `Array`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error`, `Format` |
+| Protocols | `Display`, `Debug`, `ToString` |
 | Namespaces | `Math`, `Time`, `Task` |
 | Intrinsic functions | `print`, `println`, `str`, `assert` |
 
@@ -87,6 +97,12 @@ in [`../type-system/errors.md`](../type-system/errors.md).
 intrinsic listed in
 [`intrinsic-functions.md`](intrinsic-functions.md#complete-signature-index)
 is reserved under the same rule.
+
+`ToString` stays reserved although it resolves to nothing as a trait: the
+`toString` method belongs to the language, and a module-scope `trait
+ToString` would take the name while no rule uses it. Written where a trait
+name is expected — `impl ToString for …` — it is an unresolved name
+(`E0101`).
 
 ## Built-in members
 
