@@ -172,8 +172,7 @@ attribute, diagnostic, and change proposal.
 ### Sections
 
 Prose that is not bound to a particular symbol is written as a Markdown
-heading, following the Rust convention. These headings are RECOMMENDED, not
-required:
+heading. These headings are RECOMMENDED, not required:
 
 | Heading | Use |
 |---------|-----|
@@ -378,26 +377,14 @@ tell different stories about the same declaration.
 - The convention adds no tokens. `///`, `//!`, `/**`, and `/*!` are all
   written with the existing `//` and `/* */` productions; the extractor
   classifies comment text above the lexer.
+- Documentation is comment text, not a declaration attribute. The attribute
+  registry is closed and checker-interpreted
+  ([`types/traits.md`](types/traits.md)); this convention adds no attribute to
+  it.
 - Tool-level findings — an orphaned comment, a `@param` that names no
   parameter, an unresolvable `@see`, a documentation block cut short by `*/` —
   are tool warnings. They are not `E` or `W` codes and are not registered in
   [`type-system/errors.md`](type-system/errors.md).
-
-## Borrowed from Rust, and where we differ
-
-The convention follows Rust's comment shapes, with one deliberate difference.
-
-| Rust | Here | Note |
-|------|------|------|
-| `//`, `/* … */` | same | Ordinary comments. |
-| block comments nest | **they do not** | [`lexical-structure.md`](lexical-structure.md) ends a block at the first `*/`. |
-| `///` outer documentation | same, first-class | Markdown-complete, including code that contains `*/`. |
-| `//!` inner documentation | same, first-class | Documents the file's module. |
-| `/** … */`, `/*! … */` | accepted | Prose only; the body MUST NOT contain `*/`. |
-| Markdown body, `# Examples`, `# Panics` | same | Sections are prose; `@param`/`@returns` carry symbol-bound data. |
-| `#[doc = "…"]` | **not adopted** | Attributes are a closed, language-level registry; documentation stays in comments. |
-| doc tests | **not adopted** | Documentation code is inert; tests are `#Test` functions. |
-| `#[deprecated]` | **not adopted** | `@deprecated` is tooling-only; compiler-enforced deprecation would be a separate language change. |
 
 ## Style recommendation
 
