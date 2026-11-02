@@ -9,6 +9,8 @@ This document defines the abstract syntax tree (AST) representation for Xulo pro
 
 Every construct named by [`grammar.md`](grammar.md) has a node here, and a node's shape mirrors the production it comes from: a field is `null` or an empty array exactly where the production makes its piece optional. Where the grammar names a construct but the AST has no node for it, the section says why.
 
+Lexical productions are token classes rather than syntax-tree constructs, so they get no nodes of their own. Those that carry a value appear through the nodes named below: `Identifier` is an `IdentifierNode`, `IntegerLiteral` and `FloatLiteral` are `NumberLiteral` with `kind`, and `StringLiteral`, `BooleanLiteral`, `NullLiteral`, and `TemplateLiteral` have nodes of their own. Productions such as `DecInt`, `Keyword`, `Operator`, and `Delimiter` decide token boundaries and are not represented in the tree.
+
 ## Node Base
 
 All AST nodes share a common base:
@@ -100,23 +102,30 @@ interface ExternBlockDeclaration extends BaseNode {
 interface ExternItemNode extends BaseNode {
   type: 'ExternItem';
   name: IdentifierNode;
-  params: ParameterNode[];
+  params: ExternParamNode[];
   returnType: TypeNode | null;
   localName: IdentifierNode | null;
+}
+
+interface ExternParamNode extends BaseNode {
+  type: 'ExternParam';
+  name: IdentifierNode;
+  paramType: TypeNode;
 }
 
 interface ExternFunctionDeclaration extends BaseNode {
   type: 'ExternFunctionDeclaration';
   abi: StringLiteral;
   name: IdentifierNode;
-  params: ParameterNode[];
+  params: ExternParamNode[];
   returnType: TypeNode | null;
   body: BlockNode;
 }
 ```
 
 `abi` carries the grammar's `AbiTag` as a bare `StringLiteral`; an extern
-parameter's `mode` and `default` are always `null`. `ExternItemNode.localName`
+parameter is a name and a type only — no mode, no default, and no receiver —
+so both extern forms use `ExternParamNode`. `ExternItemNode.localName`
 is the `as` target, `null` when an item binds its declared name;
 `ExternFunctionDeclaration` has no `isPub` because the `pub` is mandatory —
 its absence is a syntax failure, so no boolean distinguishes the cases.
@@ -366,7 +375,7 @@ interface GenericParamNode extends BaseNode {
   type: 'GenericParam';
   kind: 'type' | 'const';
   name: IdentifierNode;
-  bound: TypeNode | null;      // type parameters only
+  bounds: TypeNode[];          // type parameters only; empty when absent
   constType: TypeNode | null;  // const parameters only
 }
 
@@ -400,11 +409,12 @@ interface EnumPayloadSlotNode extends BaseNode {
 - `Receiver` is the `self` / `mut self` alternative of `Parameter`; a parameter list that begins with one carries `Receiver` rather than a name and a type.
 - A closure's parameter is written `ClosureParam = Identifier [ ":" Type ]`, so its annotation may be omitted and `ClosureParamNode.paramType` is `null` in that case; the two parameter nodes are separate because the grammar gives the two forms separately.
 - `kind` distinguishes a type parameter from a const parameter. A type
-  parameter has `bound` (or `null`) and `constType` is `null`; a const
-  parameter has `constType` naming its value type (`int`) and `bound` is
-  `null`. A written generic argument keeps its syntax node — an integer
-  literal or a path — and the checker interprets it by the callee's parameter
-  kind; there is no separate const-argument node.
+  parameter has `bounds` — the one or more types its `TraitBound` joins with
+  `+`, or an empty array when no bound is written — and `constType` is
+  `null`; a const parameter has `constType` naming its value type (`int`) and
+  an empty `bounds`. A written generic argument keeps its syntax node — an
+  integer literal or a path — and the checker interprets it by the callee's
+  parameter kind; there is no separate const-argument node.
 - A `TraitDeclaration`'s `genericParams` remains empty: a trait may not
   declare type or const parameters, and an attempt is diagnosed after parsing
   (`E0810`; [`types/traits.md`](types/traits.md)).
@@ -418,7 +428,8 @@ interface EnumPayloadSlotNode extends BaseNode {
 
 ```typescript
 type TypeNode =
-  | IdentifierType
+  | NamedType
+  | PrimitiveType
   | GenericType
   | OptionalType
   | UnionType
@@ -427,14 +438,22 @@ type TypeNode =
   | LiteralType
   | FnType;
 
-interface IdentifierType extends BaseNode {
-  type: 'IdentifierType';
-  name: string;
+interface NamedType extends BaseNode {
+  type: 'NamedType';
+  path: PathNode;
+}
+
+interface PrimitiveType extends BaseNode {
+  type: 'PrimitiveType';
+  name: 'bool' | 'string' | 'number' | 'int' | 'float'
+      | 'i8' | 'i16' | 'i32' | 'i64'
+      | 'u8' | 'u16' | 'u32' | 'u64'
+      | 'f32' | 'f64' | 'null' | 'unit' | 'unknown';
 }
 
 interface GenericType extends BaseNode {
   type: 'GenericType';
-  base: TypeNode;
+  path: PathNode;
   args: TypeNode[];
 }
 
@@ -479,6 +498,11 @@ interface FnTypeParamNode extends BaseNode {
   paramType: TypeNode;
 }
 ```
+
+`NamedType` carries the `Path` of a named type, so `ui::Thing` keeps its
+head and segments; `GenericType` adds the `TypeArgs` of an application to the
+same path. `PrimitiveType` is the keyword form (`int`, `string`, `unit`, …), so
+a primitive is not flattened into a named type.
 
 `UnionType` and `IntersectionType` are binary because the productions are
 left-nesting lists: `A | B | C` is `UnionType(UnionType(A, B), C)`. A tuple
@@ -555,7 +579,7 @@ interface BinaryExpr extends BaseNode {
 
 interface RangeExpr extends BaseNode {
   type: 'RangeExpr';
-  op: '..' | '..<';
+  op: '...' | '..<';
   start: ExpressionNode;
   end: ExpressionNode;
 }
@@ -581,6 +605,7 @@ interface AwaitExpr extends BaseNode {
 interface CallExpr extends BaseNode {
   type: 'CallExpr';
   callee: ExpressionNode;
+  typeArgs: TypeNode[] | null;  // null: no <...>; empty: <>
   args: ArgNode[];
 }
 
@@ -651,14 +676,13 @@ type MapExpr = TypedMapExpr | BraceMapExpr;
 
 interface TypedMapExpr extends BaseNode {
   type: 'TypedMapExpr';
-  keyType: TypeNode;
-  valueType: TypeNode;
+  typeArgs: TypeNode[];
   entries: MapEntryNode[];
 }
 
 interface BraceMapExpr extends BaseNode {
   type: 'BraceMapExpr';
-  entries: (MapEntryNode | MapFieldNode | SpreadNode)[];
+  entries: (MapFieldNode | SpreadNode)[];
 }
 
 interface MapEntryNode extends BaseNode {
@@ -681,8 +705,9 @@ interface TupleExpr extends BaseNode {
 interface PathExpr extends BaseNode {
   type: 'PathExpr';
   path: PathNode;
-  args: ArgNode[] | null;
+  args: ArgNode[] | null;  // null: no parentheses; array: parenthesized call
 }
+```
 
 `PathExpr` replaces `VariantPathExpr` in the `ExpressionNode` union and in
 the grammar's `PrimaryExpression`: the same node now carries enum variants
@@ -693,6 +718,16 @@ after the head, so a variant path is a two-segment path with `args`.
 Pattern nodes are unchanged: a match pattern's variant spelling keeps its
 own pattern node.
 
+`PathExpr.args` is `null` when the path is not followed by parentheses and an
+array when it is; the array is empty for `Foo::bar()` and holds the arguments
+for `Math::max(a, b)` or `form::validate(1, 2)`. An explicit type-argument list
+changes the shape: the `<` stops `PathExpr` at the path, and the following
+`PostfixOperand` produces a `CallExpr` whose `callee` is a `PathExpr` with
+`args: null`, while the `CallExpr` carries `typeArgs` and `args`.
+`Array::filled<int>(3)` is therefore a `CallExpr`, not a `PathExpr` with
+arguments.
+
+```typescript
 type SpawnExpr = BlockSpawnExpr | ServiceSpawnExpr;
 
 interface BlockSpawnExpr extends BaseNode {
@@ -717,8 +752,9 @@ interface LockExpr extends BaseNode {
 interface ComponentExpr extends BaseNode {
   type: 'ComponentExpr';
   name: IdentifierNode;
-  args: ArgNode[];
-  children: ComponentBlockNode | null;
+  typeArgs: TypeNode[] | null;  // null: no <...>; empty: <>
+  args: ArgNode[] | null;       // null: bare block form `Foo { … }`
+  children: ComponentBlockNode;
 }
 
 interface TemplateLiteralNode extends BaseNode {
@@ -737,14 +773,15 @@ interface TemplateElementNode extends BaseNode {
 }
 ```
 
-- `BinaryExpr.op` is the operator as written, and the node covers every level of the precedence table that takes two expressions: arithmetic, the word operators `and` / `or`, bitwise and shift, `==` / `!=`, the relational operators, and the nullish `??`. `is` is not one of them — it takes a type on the right, which is why it is `IsExpr` — and neither is a range, which is `RangeExpr` with `op` naming which end is open.
+- `BinaryExpr.op` is the operator as written, and the node covers every level of the precedence table that takes two expressions: arithmetic, the word operators `and` / `or`, bitwise and shift, `==` / `!=`, the relational operators, and the nullish `??`. `is` is not one of them — it takes a type on the right, which is why it is `IsExpr` — and neither is a range, which is `RangeExpr` with `op` naming which end is open: `...` is closed and `..<` is half-open.
 - `UnaryExpr.op` covers the prefix operators that are not `await`: `await` has its own node because it is the only one whose operand must be a `Task`.
+- `CallExpr.typeArgs` and `ComponentExpr.typeArgs` carry an explicit `CallTypeArgs` list; `null` means no list is written and an empty array is the written `<>`.
 - `MemberExpr.optional` distinguishes `.` from `?.`. The property is a name or an integer literal, since the production admits both.
-- `MapExpr` is a union because `Map<K, V>{ … }` and a brace map take different pieces: a typed map has type arguments and entries only, while a brace map has fields, entries written as `key: value`, and spreads.
+- `MapExpr` is a union because `Map<K, V>{ … }` and a brace map take different pieces: a typed map records its written `TypeArgs` and entries only, while a brace map has identifier-keyed fields and spreads. The two types of a `Map<K, V>` application are checked from `TypedMapExpr.typeArgs`, so a wrong count survives to the diagnostic rather than being lost at parse time.
 - `SpawnExpr` is a union because `SpawnExpression` has two unrelated forms: `spawn [mode] async Block` runs a block, and `spawn .process Type { … }` starts a service. `BlockSpawnExpr.mode` is `default` when the target is written bare, and `on` is the only mode that carries an expression.
 - `LockExpr.target` is a bare identifier, matching `LockExpression = "lock" Identifier Block`.
-- A component invocation that carries a children block is a `ComponentExpr`; one written with an argument list and no block parses as an ordinary call through `PostfixOperand` and is therefore a `CallExpr`. The two read the same ([`grammar.md`](grammar.md), [`components/view-syntax.md`](components/view-syntax.md)).
-- The union has no node for `AssignmentExpression`: an assignment is written only through the `Assignment` statement, and `ExpressionStatement = TernaryExpression` stops below it ([`grammar.md`](grammar.md)).
+- A component invocation that carries a children block is a `ComponentExpr`; one written with an argument list and no block parses as an ordinary call through `PostfixOperand` and is therefore a `CallExpr`. The two read the same, and a `ComponentExpr` always has its children block, so `children` is never `null`. Its `args` is `null` for the bare-block form `Foo { … }` and an array for the parenthesized form, empty for `Foo() { … }` ([`grammar.md`](grammar.md), [`components/view-syntax.md`](components/view-syntax.md)).
+- The union has no node for `AssignmentExpression` as a general expression: an assignment is written only through the `Assignment` statement and its right-hand side. `ExpressionStatement = TernaryExpression` stops below assignment, while `AssignmentNode.value` is an `ExpressionNode` or another `AssignmentNode`, so `a = b = c` nests as `a = (b = c)` ([`grammar.md`](grammar.md)).
 
 ## Patterns
 
@@ -790,7 +827,7 @@ interface VariantPattern extends BaseNode {
 interface StructPattern extends BaseNode {
   type: 'StructPattern';
   name: IdentifierNode;
-  bindings: PatternNode[] | null;
+  bindings: PatternNode[];
 }
 
 interface TypePattern extends BaseNode {
@@ -806,14 +843,14 @@ interface OrPattern extends BaseNode {
 
 interface PatternDesignatorNode extends BaseNode {
   type: 'PatternDesignator';
-  name: IdentifierNode;
+  name: IdentifierNode | PrimitiveType;
   optional: boolean;
 }
 ```
 
-`Pattern = PatternAlt { "|" PatternAlt }` has eight `PatternAlt` alternatives — the wildcard is one of them even though it lexes as an identifier: `_` is `WildcardPattern`, any other bare identifier is `IdentifierPattern`, which binds — and a disjunction of two or more alternatives parses as one `OrPattern` whose `alternatives` is a flat list, so `a | b | c` is three alternatives and never nested pairs. A parenthesized alternative parses as the pattern inside it and adds no node of its own. `MatchArmNode.guard` is the arm's guard expression, `null` when the arm has none. `RangePattern.endInclusive` records `...` versus `..<`, and both operands are numeric literals, matching the production. `bindings` is `null` when the pattern writes no parentheses and an array otherwise.
+`Pattern = PatternAlt { "|" PatternAlt }` has eight `PatternAlt` alternatives — the wildcard is one of them even though it lexes as an identifier: `_` is `WildcardPattern`, any other bare identifier is `IdentifierPattern`, which binds — and a disjunction of two or more alternatives parses as one `OrPattern` whose `alternatives` is a flat list, so `a | b | c` is three alternatives and never nested pairs. A parenthesized alternative parses as the pattern inside it and adds no node of its own. `MatchArmNode.guard` is the arm's guard expression, `null` when the arm has none. `RangePattern.endInclusive` records `...` versus `..<`, and both operands are numeric literals, matching the production. `VariantPattern.bindings` is `null` when the variant writes no parentheses and an array otherwise; `StructPattern.bindings` is always an array, empty when its mandatory parentheses hold no patterns.
 
-`TypePattern.binder` is the name or `_` that follows the designators, and `designators` is the possibly unioned list of type names, each with the `optional` flag its `?` carries.
+`TypePattern.binder` is the name or `_` that follows the designators, and `designators` is the possibly unioned list of type names, each with the `optional` flag its `?` carries. A designator's `name` is an `IdentifierNode` for the identifier alternative or a `PrimitiveType` for the keyword alternative.
 
 ## Statements
 
@@ -850,15 +887,18 @@ interface DeferStatement extends BaseNode {
   operand: ExpressionNode | BlockNode;
 }
 
+type AssignmentExpressionNode = ExpressionNode | AssignmentNode;
+
 interface AssignmentNode extends BaseNode {
   type: 'Assignment';
   target: PlaceNode;
-  value: ExpressionNode;
+  value: AssignmentExpressionNode;
 }
 
 interface ExpressionStatement extends BaseNode {
   type: 'ExpressionStatement';
   expression: ExpressionNode;
+  hasSemicolon: boolean;
 }
 
 interface ForStatement extends BaseNode {
@@ -875,7 +915,7 @@ interface WhileStatement extends BaseNode {
 }
 ```
 
-`Statement = ( FnDecl | LetDecl | ConstDecl | ComponentDecl | ReturnStmt | BreakStmt | ContinueStmt | DeferStmt | Assignment | ExpressionStatement | ForStmt | WhileStmt ) StatementEnd`. A `Block` is not one of them — a block is the body of a construct, never a statement — and the trailing `;` is an optional terminator the AST does not store, since `span` already covers it. `AssignmentNode.target` is a `PlaceNode`, not a general expression, which is what makes an assignment a statement rather than an expression. `DeferStatement.operand` is an `ExpressionNode` or a `BlockNode`, recorded as written; the operand's value is discarded when it runs.
+`Statement = ( FnDecl | LetDecl | ConstDecl | ComponentDecl | ReturnStmt | BreakStmt | ContinueStmt | DeferStmt | Assignment | ExpressionStatement | ForStmt | WhileStmt ) StatementEnd`. A `Block` is not one of them — a block is the body of a construct, never a statement. The optional terminator is recorded as `ExpressionStatement.hasSemicolon`, because only there does it decide whether a final expression yields the block's value; for every other statement it is unobservable and `span` covers it. `AssignmentNode.target` is a `PlaceNode`, not a general expression, which is what makes an assignment a statement rather than an expression. `AssignmentNode.value` is an `ExpressionNode` or another `AssignmentNode`, so a chained assignment keeps its nesting. `DeferStatement.operand` is an `ExpressionNode` or a `BlockNode`, recorded as written; the operand's value is discarded when it runs.
 
 ## Common Nodes
 
@@ -908,12 +948,18 @@ interface BindingExprNode extends BaseNode {
   place: PlaceNode;
 }
 
-type PlaceNode = IdentifierNode | MemberPlaceNode;
+type PlaceNode = IdentifierNode | MemberPlaceNode | IndexPlaceNode;
 
 interface MemberPlaceNode extends BaseNode {
   type: 'MemberPlace';
   object: PlaceNode;
   property: IdentifierNode | NumberLiteral;
+}
+
+interface IndexPlaceNode extends BaseNode {
+  type: 'IndexPlace';
+  object: PlaceNode;
+  index: ExpressionNode;
 }
 
 interface SpreadNode extends BaseNode {
@@ -939,11 +985,11 @@ assignments ([`grammar.md`](grammar.md),
 Its `value` is an expression, or — when the argument is written `$place` — a
 `BindingExprNode`, which is not an expression: a `$` argument does not evaluate
 to something a program may bind, store, index, or pass on, and its `place` is
-the `Place` the grammar accepts there, so a dotted place such as `user.name`
-is representable and is rejected by the checker as `E0712`
-([`components/binding.md`](components/binding.md)).
+the `Place` the grammar accepts there, so a dotted or indexed place such as
+`user.name` or `xs[0]` is representable and is rejected by the checker as
+`E0712` ([`components/binding.md`](components/binding.md)).
 
-`PlaceNode` mirrors `Place = Identifier | Place "." Identifier | Place "." IntegerLiteral`, so it is never a general expression; it is what an assignment target and a `$` place are made of.
+`PlaceNode` mirrors `Place = Identifier | Place "." Identifier | Place "." IntegerLiteral | Place "[" Expression "]" | "(" Place ")"`; the parenthesized form adds no node (the inner place is used), and `IndexPlaceNode` carries a subscript. It is never a general expression; it is what an assignment target and a `$` place are made of.
 
 ## Serialization Format
 
