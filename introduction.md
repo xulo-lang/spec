@@ -155,10 +155,12 @@ language as it grows.
   remain library and host concerns. The boundary carries value copies and
   opaque handles only: no string, buffer, or callback crosses it, and no
   foreign ABI annotation exists beyond the registry.
-- **No documentation comments.** A comment carries no meaning to the language:
-  [`lexical-structure.md`](lexical-structure.md) defines only `//` and
-  `/* … */` and states that there is no documentation-comment syntax.
-  Documentation tooling may read them, but the language does not.
+- **No language-level documentation comments.** A comment carries no meaning
+  to the language: [`lexical-structure.md`](lexical-structure.md) defines only
+  `//` and `/* … */` and states that there is no documentation-comment syntax.
+  Documentation tooling may read them by convention
+  ([`documentation-comments.md`](documentation-comments.md), informative), but
+  the language does not.
 - **The standard library is out of scope.** As stated in
   [README §1.1](README.md), the standard library (`std/*`) and library-level
   APIs (JSON, regular expressions, I/O) are documented outside this

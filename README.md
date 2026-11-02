@@ -44,6 +44,7 @@ The following are deliberately **not** specified here:
 | Package registry protocol and tooling | xulo-website ecosystem documentation |
 | Projects, workspaces, and the manifest file format itself — the language specifies packages and modules; how a project or workspace composes them, and the TOML file a manifest is, belong to tooling. The compiler consumes only the manifest's name mapping (dependency path name → module path), whose shape is specified in [`modules/import-export.md`](modules/import-export.md) | implementation repository (`xulo`), xulo-website ecosystem documentation |
 | The machine-readable grammar files themselves (`xulo.ebnf`, `xulo.pest`, the tree-sitter grammar) — [`machine-readable.md`](machine-readable.md) links to them and is informative | implementation repository (`xulo`), xulo.org |
+| Documentation generation and IDE hint rendering built from comments — [`documentation-comments.md`](documentation-comments.md) records a tooling convention for comment text and is informative | implementation repository (`xulo`), xulo-website ecosystem documentation |
 
 **Self-hosting note (informative).** A self-hosted implementation — a
 compiler or tool written in Xulo itself — depends on services the language
@@ -156,6 +157,7 @@ and the xulo-website documents named in § 6.
 | [`grammar.md`](grammar.md) | Complete EBNF grammar |
 | [`ast.md`](ast.md) | Abstract syntax tree node definitions and data structures |
 | [`machine-readable.md`](machine-readable.md) | Links to downloadable grammar files for parser generators (EBNF, Pest, tree-sitter) — informative; the files live in the implementation repository |
+| [`documentation-comments.md`](documentation-comments.md) | A tooling convention for reading comment text as documentation, and the structured model shared by documentation generators and IDEs — informative; the language assigns comments no meaning |
 | [`changes/`](changes/README.md) | Incremental change proposals (OpenSpec style) |
 
 ## 5. Terminology

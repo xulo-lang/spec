@@ -33,6 +33,10 @@ never changes how it parses.
   `*/` ends the comment, and any `/*` inside it is ordinary comment text.
 - An unterminated block comment is a lexical error, and there is no
   documentation-comment syntax: a comment carries no meaning to the language.
+- (Informative.) Documentation tooling MAY read comment text by convention for
+  generated documentation and editor hints
+  ([`documentation-comments.md`](documentation-comments.md)); no rule of this
+  specification depends on it.
 
 ## Identifiers
 
