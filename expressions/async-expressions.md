@@ -15,9 +15,9 @@ An `async` function is a function declaration written with the `async` keyword
 before `fn` (after `pub` when present):
 
 ```xulo
-async fn fetchUser(id: int): User {
+async fn fetch_user(id: int): User {
   let raw = await request(`/users/${id}`)
-  decodeUser(raw)
+  decode_user(raw)
 }
 
 async fn notify() {
@@ -77,13 +77,13 @@ async fn main() {
 
 ```xulo
 async fn greet(id: int): string {
-  let user = await fetchUser(id)   // suspends here until the task settles
+  let user = await fetch_user(id)   // suspends here until the task settles
   "hello " + user.name
 }
 
-async fn sumPrices(a: int, b: int): int {
-  let x = await priceOf(a)         // the second await does not begin
-  let y = await priceOf(b)         //   until the first has completed
+async fn sum_prices(a: int, b: int): int {
+  let x = await price_of(a)         // the second await does not begin
+  let y = await price_of(b)         //   until the first has completed
   x + y
 }
 ```
@@ -92,7 +92,7 @@ async fn sumPrices(a: int, b: int): int {
 async fn demo(a: Task<int>, b: Task<int>) {
   let r1 = await cache.get("k")    // == await (cache.get("k"))
   let r2 = await a + await b       // == (await a) + (await b)
-  print(await fetchCount())        // await in argument position
+  print(await fetch_count())        // await in argument position
 }
 ```
 
@@ -143,9 +143,9 @@ Generic type arguments are inferred at the call site. `Task::all` and
 `Task::race` are commonly combined with `await`:
 
 ```xulo
-async fn fetchAll(): List<User> {
-  let a = fetchUser(1)
-  let b = fetchUser(2)
+async fn fetch_all(): List<User> {
+  let a = fetch_user(1)
+  let b = fetch_user(2)
   await Task::all([a, b])
 }
 ```
@@ -180,8 +180,8 @@ and its failure model is the synchronous one:
   ([`../concurrency.md`](../concurrency.md)).
 
 ```xulo
-async fn logUser(id: int) {
-  match await findUser(id) {
+async fn log_user(id: int) {
+  match await find_user(id) {
     Result::Ok(user) => print(user.name)
     Result::Err(reason) => print(reason)
   }
@@ -201,15 +201,15 @@ its call, and awaiting their tasks afterwards lets the started work overlap:
 ```xulo
 // sequential: each await completes before the next call is made
 async fn sequential(): int {
-  let a = await stepA()
-  let b = await stepB()
+  let a = await step_a()
+  let b = await step_b()
   a + b
 }
 
 // concurrent: both tasks start at their calls, then both are awaited
 async fn concurrent(): int {
-  let ta = stepA()
-  let tb = stepB()
+  let ta = step_a()
+  let tb = step_b()
   await ta + await tb
 }
 ```
@@ -242,9 +242,9 @@ contains no suspension point, and `await` inside it is a compile-time error
 
 ```xulo
 async fn cached(id: int): User {
-  if await isCached(id) {
-    return await readCache(id)
+  if await is_cached(id) {
+    return await read_cache(id)
   }
-  await fetchUser(id)
+  await fetch_user(id)
 }
 ```

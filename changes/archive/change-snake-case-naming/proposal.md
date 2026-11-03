@@ -1,6 +1,6 @@
 # Change Snake-Case Naming
 
-**Status:** draft · **Date:** 2026-11-03 · **Affects:** `names.md`,
+**Status:** accepted · **Date:** 2026-11-03 · **Affects:** `names.md`,
 `builtins/prelude.md`, `builtins/intrinsic-functions.md`, `builtins/README.md`,
 `types/traits.md`, `types/composite-types.md`, `types/primitive-types.md`,
 `functions.md`, `expressions/path-and-access.md`,

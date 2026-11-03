@@ -61,7 +61,7 @@ The environment designates the root file; how it does so is tooling
 ```xulo
 mod tests {
   use form::validate;
-  fn rejectsEmpty() { … }
+  fn rejects_empty() { … }
 }
 ```
 
@@ -236,7 +236,7 @@ pub enum Status { Active, Inactive }
 pub trait Shape { fn area(self): float }
 pub type Score = int
 pub const PI = 3.14
-pub let appName = "xulo"
+pub let app_name = "xulo"
 pub mod form;             // the namespace and its pub members
 ```
 

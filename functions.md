@@ -140,7 +140,7 @@ fn main() {
   ([`types/composite-types.md`](types/composite-types.md),
   [`types/primitive-types.md`](types/primitive-types.md)); the methods among
   them are methods in the call and method-value sense, while `.len`, `.size`,
-  and `.byteLen` are read-only properties. None is an `impl` declaration, and
+  and `.byte_len` are read-only properties. None is an `impl` declaration, and
   a program cannot add an inherent member to them; `impl Trait for` a built-in
   type is an ordinary trait implementation. The first parameter is
   the **receiver**, written `self` (an immutable borrow) or `mut self` (a
@@ -164,7 +164,7 @@ fn main() {
 - The receiver is the first parameter of the method's function type; using a
   method as a value with the receiver bound is specified in
   [`expressions/calls.md`](expressions/calls.md).
-- **Static members.** `Map::fromEntries(entries)`, `Set::fromList(values)`, and
+- **Static members.** `Map::from_entries(entries)`, `Set::from_list(values)`, and
   `Array::filled<T, const N: int>(value: T)` are associated members of the
   built-in types, reached through `::` like the associated names of an `impl`
   block. They have no receiver and are never selected by `.`.
@@ -210,8 +210,8 @@ impl Greet for Person {
 trait Area { fn area(self): float; fn perimeter(self): float }
 
 fn first<T>(xs: List<T>): T { xs[0] }
-fn areaOf<T: Area>(shape: T): float { Area::area(shape) }           // explicit dispatch
-fn perimeterOf<T>(shape: T): float where T: Area { shape.perimeter() }  // member form
+fn area_of<T: Area>(shape: T): float { Area::area(shape) }           // explicit dispatch
+fn perimeter_of<T>(shape: T): float where T: Area { shape.perimeter() }  // member form
 
 let n = first([1, 2, 3])        // T = int
 let s = first(["a", "b"])       // T = string
@@ -250,10 +250,10 @@ Bounds, inference, and nested-angle-bracket spelling are specified in
 ## Async functions
 
 ```xulo
-async fn doubleAsync(n: int): int {
+async fn double_async(n: int): int {
   await Task::resolve(n * 2)
 }
-async fn main() { print(await doubleAsync(21)) }   // 42
+async fn main() { print(await double_async(21)) }   // 42
 ```
 
 - An `async` function is declared with `async` before `fn` (after `pub` when
@@ -355,17 +355,17 @@ fn fib(n: int): int {
   if n <= 1 { n } else { fib(n - 1) + fib(n - 2) }
 }
 
-fn areaOf<T: Area>(shape: T): float { Area::area(shape) }
-fn perimeterOf<T>(shape: T): float where T: Area { shape.perimeter() }
+fn area_of<T: Area>(shape: T): float { Area::area(shape) }
+fn perimeter_of<T>(shape: T): float where T: Area { shape.perimeter() }
 
 fn main() {
   let r = Rect(w: 3.0, h: 4.0)
-  print(areaOf(r))          // 12: generic bound, explicit dispatch
-  print(perimeterOf(r))     // 14: where clause, member form through the bound
+  print(area_of(r))          // 12: generic bound, explicit dispatch
+  print(perimeter_of(r))     // 14: where clause, member form through the bound
   print(fib(10))            // 55: recursion
 }
 ```
 
-`areaOf` and `perimeterOf` are checked once per instantiation against the
+`area_of` and `perimeter_of` are checked once per instantiation against the
 `Area` bound; `Rect` satisfies that bound through its `impl`. `fib` recurses
 with no static bound. Both dispatch forms are permitted inside the bound.

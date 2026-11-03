@@ -188,7 +188,7 @@ fn weight(level: Level): int {
 }
 
 // `let mut` makes a binding assignable; `let` bindings are not.
-fn sumTo(n: int): int {
+fn sum_to(n: int): int {
   let mut acc = 0
   for i in 1...n {
     acc = acc + i
@@ -201,7 +201,7 @@ fn Counter(): View {
   @State let count: int = 0
 
   VStack(spacing: 8) {
-    Text(`count = ${count}, sum = ${sumTo(count)}`)
+    Text(`count = ${count}, sum = ${sum_to(count)}`)
     Button("More", onClick: fn() { count = count + 1 })
     Text(str(weight(Level::High)))
   }

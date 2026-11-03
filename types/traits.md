@@ -189,12 +189,12 @@ explicit dispatch `Trait.method(receiver)`.
 
 Beyond the two steps — when neither finds a candidate — a receiver whose
 type implements `Display`, through its own type or through a `T: Display`
-bound, resolves `toString(…)` to the derived action of that impl: the
+bound, resolves `to_string(…)` to the derived action of that impl: the
 member is found without appearing in any trait's declared members,
 dispatches to `display` at the default `Format`, and yields to anything
-either step found (an inherent `toString` wins at step 1, one declared by
+either step found (an inherent `to_string` wins at step 1, one declared by
 another in-scope trait at step 2). An `impl Display` that declares
-`fn toString` remains `E0804`: the action is provided, not declared.
+`fn to_string` remains `E0804`: the action is provided, not declared.
 
 There is no implicit method resolution through an unbounded generic parameter:
 for `fn f<T>(x: T)`, `x.method()` is an error (`E0102`), because a type parameter has no
@@ -216,11 +216,11 @@ Inside a body that carries the bound, values of type `T` expose the members the
 bound declares, and either spelling denotes the same static call:
 
 ```xulo
-fn areaOf<T: Area>(shape: T): float {
+fn area_of<T: Area>(shape: T): float {
   Area::area(shape)      // explicit static dispatch
 }
 
-fn areaTwice<T: Area>(shape: T): float {
+fn area_twice<T: Area>(shape: T): float {
   shape.area() + shape.area()   // member form, resolves through the bound
 }
 ```
@@ -266,7 +266,7 @@ The language rule for calls that depend on a type parameter is:
   type an alias expands to, never to the alias itself (see
   [`composite-types.md`](composite-types.md)).
 - `Display`, `Debug`, and `Format` are built-in; no declaration introduces
-  them, and the string-form rule, the derived `toString`, and the formatting
+  them, and the string-form rule, the derived `to_string`, and the formatting
   contracts are stated in
   [Built-in formatting traits](#built-in-formatting-traits).
 
@@ -297,7 +297,7 @@ trait Debug {
   string form at the `Format` it is given. Every consumer that renders with
   no directive — interpolation in `` `…${…}…` ``, the intrinsic `str` (and
   a member that spells its `str` domain, `List.join`), `print`, and the
-  derived `toString` — passes the **default** `Format`,
+  derived `to_string` — passes the **default** `Format`,
   `Format(precision: null, alternate: false)`.
 - `Format` carries **semantics only**. It has no width, alignment, fill, or
   padding field: layout is applied by the consumer to the string `display`
@@ -324,12 +324,12 @@ trait Debug {
   ([`../builtins/intrinsic-functions.md`](../builtins/intrinsic-functions.md#output)).
   The structural form does not read `format` in this version; the parameter
   is part of the signature so that a later rendering can.
-- Every `Display` impl makes the **action** available: `value.toString()` is
+- Every `Display` impl makes the **action** available: `value.to_string()` is
   `value.display` at the default `Format`. The language provides the method
   with the impl — it dispatches through that impl, is resolved wherever the
   impl is visible (see [Member calls](#member-calls)), and is declared by
   no impl: an `impl Display` that declares
-  `fn toString` is `E0804`, because `Display` declares no such method.
+  `fn to_string` is `E0804`, because `Display` declares no such method.
 - A value interpolated by `${…}`, passed to `str`, or rendered through a
   member that spells the `str` domain (`List.join`'s elements) MUST be a
   base type (`int`, `float`, `bool`, `string`) or a type that implements

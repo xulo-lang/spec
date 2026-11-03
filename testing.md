@@ -40,18 +40,18 @@ TestDecl = "#Test" [ "(" [ StringLiteral ] ")" ] [ "async" ] "fn"
 
 ```xulo
 #Test("parse test")
-fn testParse() {
-  assert(parseOk(), "parses")
+fn test_parse() {
+  assert(parse_ok(), "parses")
 }
 
 #Test
-fn absentKeyIsNull() {
+fn absent_key_is_null() {
   let m = { a: 1 }
   assert(m.get("z") == null, "absent key is null")
 }
 
 #Test()
-async fn delayedTaskFinishes() {
+async fn delayed_task_finishes() {
   await Time::sleep(1)
 }
 ```
@@ -126,22 +126,22 @@ A `#Test` function's identifier is declared but binds no value:
 
 ```xulo
 #Test
-fn awaitNeedsTheAsyncMarker() {
+fn await_needs_the_async_marker() {
   await Time::sleep(1) // error: `await` outside of an `async` context (E0501)
 }
 
 #Test
-async fn awaitWithTheAsyncMarker() {
+async fn await_with_the_async_marker() {
   await Time::sleep(1) // ok: the test passes when its task completes
 }
 
 #Test
-fn referenceIsForbidden() {
+fn reference_is_forbidden() {
   assert(true, "runs only under a tool")
 }
 
 fn main() {
-  referenceIsForbidden() // error: `referenceIsForbidden` is a test function and cannot be referenced (E0107)
+  reference_is_forbidden() // error: `reference_is_forbidden` is a test function and cannot be referenced (E0107)
 }
 ```
 

@@ -124,7 +124,7 @@ let ok: float = n * 1.0
 ```
 
 `int` → `float` promotion happens **only inside arithmetic operators, never in
-assignment**: `let f: float = someInt` is an error (`E0201`) however the language would
+assignment**: `let f: float = some_int` is an error (`E0201`) however the language would
 combine the same two operands in an expression.
 
 ## string interpolation

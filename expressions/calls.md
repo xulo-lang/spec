@@ -126,7 +126,7 @@ A method call writes `receiver.method(arguments)`.
 
 ```xulo
 r.area()
-r.isSquare()
+r.is_square()
 ```
 
 Resolution proceeds in this order: first the methods declared in `impl` blocks
@@ -203,7 +203,7 @@ closure, a list element, a subscript, and the result of another call.
 ```xulo
 double(21)
 xs[0](10)
-getFn()(x)
+get_fn()(x)
 (f)(5)
 (fn(x: int): int { x })(1)
 ```

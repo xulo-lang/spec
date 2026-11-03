@@ -19,8 +19,8 @@ and what foreign code does itself lies outside this specification.**
 extern "C" {
   fn abs(x: i32): i32
   fn getpid(): i32
-  fn malloc(size: usize): Ptr? as cMalloc
-  fn free(p: Ptr?) as cFree
+  fn malloc(size: usize): Ptr? as c_malloc
+  fn free(p: Ptr?) as c_free
 }
 
 // ok
@@ -163,11 +163,11 @@ names an address the language never lets a program inspect.
   later one.
 
 ```xulo
-fn roundTrip(p: Ptr): Ptr? { p }          // ok: `Ptr` is an ordinary value
+fn round_trip(p: Ptr): Ptr? { p }          // ok: `Ptr` is an ordinary value
 
 extern "C" {
-  fn asInt(p: Ptr): i32                   // ok
-  // fn asInt(p: Ptr<u8>): i32            // error[E0230]: `Ptr` takes no type arguments
+  fn as_int(p: Ptr): i32                   // ok
+  // fn as_int(p: Ptr<u8>): i32            // error[E0230]: `Ptr` takes no type arguments
   // fn boxed(p: Ptr): i32 { 0 }          // error: an import item has no body
 }
 ```
@@ -178,22 +178,22 @@ Four forms, all inherited from `T?`:
 
 ```xulo
 extern "C" {
-  fn malloc(size: usize): Ptr? as cMalloc
-  fn free(p: Ptr?) as cFree
+  fn malloc(size: usize): Ptr? as c_malloc
+  fn free(p: Ptr?) as c_free
 }
 
 fn store(size: usize) {
-  let p = cMalloc(size)
+  let p = c_malloc(size)
   if p != null {
     // `p` is `Ptr` here
-    cFree(p)                      // ok
+    c_free(p)                      // ok
   } else {
     print("out of memory")
   }
 }
 
-fn mustAllocate(size: usize): Ptr {
-  let p = cMalloc(size) ?? panic("out of memory")   // ok: `p` is `Ptr`
+fn must_allocate(size: usize): Ptr {
+  let p = c_malloc(size) ?? panic("out of memory")   // ok: `p` is `Ptr`
   p
 }
 ```
@@ -206,9 +206,9 @@ fn mustAllocate(size: usize): Ptr {
 
 ```xulo
 fn attempt(size: usize) {
-  let p = cMalloc(size)
+  let p = c_malloc(size)
   if p == null { return }
-  cFree(p)                        // error[E0201]: `p` is `Ptr?` here
+  c_free(p)                        // error[E0201]: `p` is `Ptr?` here
 }
 ```
 
@@ -218,8 +218,8 @@ fn attempt(size: usize) {
 
 ```xulo
 fn touch(size: usize): string {
-  match cMalloc(size) {
-    Ptr p => { cFree(p); "freed" }    // ok: `p` is `Ptr` within this arm
+  match c_malloc(size) {
+    Ptr p => { c_free(p); "freed" }    // ok: `p` is `Ptr` within this arm
     null => "allocation failed"
   }
 }
@@ -227,7 +227,7 @@ fn touch(size: usize): string {
 
 ## Calling
 
-An imported symbol is callable in **direct call position** only: `cMalloc(64)`
+An imported symbol is callable in **direct call position** only: `c_malloc(64)`
 is a call; binding it, storing it, or passing it as a value is a compile-time
 error (`E0903`). The reason is structural — an Xulo value of function type
 carries no ABI, so a call through it would use Xulo's own convention on a
@@ -317,8 +317,8 @@ that introduced this chapter ([`changes/`](changes/README.md)).
 ```xulo
 extern "C" {
   fn abs(x: i32): i32
-  fn malloc(size: usize): Ptr? as cMalloc
-  fn free(p: Ptr?) as cFree
+  fn malloc(size: usize): Ptr? as c_malloc
+  fn free(p: Ptr?) as c_free
 }
 
 pub extern "C" fn sum(xs: i32, n: i32): i32 {
@@ -331,10 +331,10 @@ pub extern "C" fn sum(xs: i32, n: i32): i32 {
   total
 }
 
-fn withBuffer(size: usize, body: fn(Ptr): i32): i32 {
-  let p = cMalloc(size) ?? panic("out of memory")
+fn with_buffer(size: usize, body: fn(Ptr): i32): i32 {
+  let p = c_malloc(size) ?? panic("out of memory")
   let result = body(p)            // Xulo closure over a `Ptr`: ordinary call
-  cFree(p)
+  c_free(p)
   result
 }
 // ok

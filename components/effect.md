@@ -52,7 +52,7 @@ written after a comma following the effect's closure.
 fn UserProfile(id: string): View {
   @State let profile: string = ""
 
-  @Effect fn() { fetchProfile(id) }, [id]
+  @Effect fn() { fetch_profile(id) }, [id]
 
   Text(profile)
 }
@@ -96,8 +96,8 @@ effect's **cleanup**:
 ```xulo
 fn UserProfile(id: string): View {
   @Effect fn() {
-    setupSubscription(id)
-    return fn() { cleanupSubscription() }
+    setup_subscription(id)
+    return fn() { cleanup_subscription() }
   }
   // …
 }
@@ -117,7 +117,7 @@ fn UserProfile(id: string): View {
   one tear down — either immediately before the effect runs again, or at
   unmount.
 
-In the example above, `setupSubscription` and `cleanupSubscription` are
+In the example above, `setup_subscription` and `cleanup_subscription` are
 library functions; the language contributes only the rule that the returned
 closure is the effect's cleanup.
 

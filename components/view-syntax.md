@@ -158,7 +158,7 @@ A component block may contain:
 | string | `"…"`, `'…'`, `` `…` `` | a text node |
 | `if` / `else` | `if cond { … } else { … }` | the children of the selected branch |
 | `for` | `for x in xs { … }` | one child per element |
-| Expression of type `View` | `makeRow(item)` | one child |
+| Expression of type `View` | `make_row(item)` | one child |
 | Expression of type `List<View>` | `rows` | one child per element, in list order |
 
 Anything else in a component block is a compile-time error (`E0702`)
@@ -230,15 +230,15 @@ They are the same constructs that shape ordinary computation
 are evaluated when the component's body runs.
 
 ```xulo
-fn Banner(loggedIn: bool): View {
+fn Banner(logged_in: bool): View {
   VStack {
-    if loggedIn {
+    if logged_in {
       Text("Welcome back!")
     } else {
-      Button("Sign in", onClick: fn() { signIn() })
+      Button("Sign in", onClick: fn() { sign_in() })
     }
 
-    for item in recentItems {
+    for item in recent_items {
       Text(item)
     }
   }

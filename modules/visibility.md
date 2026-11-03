@@ -42,7 +42,7 @@ pub enum Status { Active, Inactive }
 pub trait Shape { fn area(self): float }
 pub type Score = int
 pub const PI = 3.14
-pub let appName = "xulo"
+pub let app_name = "xulo"
 pub mod form;            // the namespace, and through it the `pub` members
 ```
 

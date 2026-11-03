@@ -81,7 +81,7 @@ annotation.
   inherent members with their types; a read-only property is not a place, and
   there is no map entry member form — `e.m` on a `Map` is a member lookup,
   never the entry `"m"`. On a `List<T>` or `Array<T, N>`,
-  `indexOf`/`lastIndexOf`/`includes` require `T` to admit `==`, and `join`
+  `index_of`/`last_index_of`/`includes` require `T` to admit `==`, and `join`
   requires `T` to have a string form (`E0212`). The callback members check
   their function argument against `fn(T): unit`, `fn(T): U`,
   `fn(T): bool`, `fn(U, T): U`, or `fn(T, T): int`; `map` and `reduce`
@@ -92,8 +92,8 @@ annotation.
   first, then inherent `impl` methods, then trait methods in scope, with
   explicit `Trait.method(recv)` always available; a method used without a call
   has its function type with the receiver bound. On a type parameter, access
-  succeeds only through a bound. A built-in static member (`Map::fromEntries`,
-  `Set::fromList`, `Array::filled`) is reached through `::`; it has
+  succeeds only through a bound. A built-in static member (`Map::from_entries`,
+  `Set::from_list`, `Array::filled`) is reached through `::`; it has
   no receiver.
 - `Γ ⊢ p.i : Tᵢ` when `p : (T₁, …, Tₙ)` and `i` is a decimal literal naming
   an existing position — `0 ≤ i < n`; a positional access on a non-tuple

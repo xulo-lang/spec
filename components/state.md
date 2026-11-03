@@ -124,15 +124,15 @@ destructuring binding, because a store is consumed by its fields:
 
 ```xulo
 fn Home(): View {
-  @Store let { user, theme } = useAppStore()
-  @Store let { setTheme } = useAppStore()
+  @Store let { user, theme } = use_app_store()
+  @Store let { set_theme } = use_app_store()
 
   VStack {
     Text(`signed in as ${user?.name ?? "guest"}`)
     if theme == Theme::Dark {
       Text("Dark mode")
     }
-    Button("Toggle theme", onClick: fn() { setTheme(Theme::Dark) })
+    Button("Toggle theme", onClick: fn() { set_theme(Theme::Dark) })
   }
 }
 ```
@@ -142,10 +142,10 @@ fn Home(): View {
   and they draw from the same per-body name pool as `@State` and
   `@Environment` ([`../names.md`](../names.md)).
 - A store binding may name values (`user`, `theme`) or functions the store
-  exposes (`setTheme`); both come from the same declaration form, and a body
+  exposes (`set_theme`); both come from the same declaration form, and a body
   MAY contain several `@Store` declarations.
 - **The initializer is an ordinary expression.** The language fixes the
-  declaration form and the re-run semantics below; `useAppStore()` in the
+  declaration form and the re-run semantics below; `use_app_store()` in the
   examples is a library function that supplies the store, not an intrinsic,
   and the store's contents are a library concern outside this specification
   ([`../grammar.md`](../grammar.md), [README §1.1](../README.md)).
@@ -283,7 +283,7 @@ re-runs the component, and the run re-reads the other.
 
 ```xulo
 fn ThemeToggle(): View {
-  @Store let { theme, setTheme } = useAppStore()
+  @Store let { theme, set_theme } = use_app_store()
 
   HStack {
     if theme == Theme::Dark {
@@ -291,7 +291,7 @@ fn ThemeToggle(): View {
     } else {
       Text("Light mode")
     }
-    Button("Toggle", onClick: fn() { setTheme(Theme::Dark) })
+    Button("Toggle", onClick: fn() { set_theme(Theme::Dark) })
   }
 }
 ```

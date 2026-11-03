@@ -158,8 +158,8 @@ written either inline after the parameter name or in a `where` clause that
 follows the whole signature.
 
 ```xulo
-fn areaOf<T: Area>(shape: T): float { Area::area(shape) }
-fn perimeterOf<T>(shape: T): float where T: Area { Area::perimeter(shape) }
+fn area_of<T: Area>(shape: T): float { Area::area(shape) }
+fn perimeter_of<T>(shape: T): float where T: Area { Area::perimeter(shape) }
 ```
 
 Rules:

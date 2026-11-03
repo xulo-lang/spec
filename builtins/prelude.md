@@ -58,8 +58,8 @@ a program declares them itself; they are not part of the prelude (see
   `Display` ([`../expressions/literals.md`](../expressions/literals.md));
   the same requirement is stated for `str` in
   [`intrinsic-functions.md`](intrinsic-functions.md#conversion).
-- `toString` is the derived **action**, never written: every type that
-  implements `Display` has `value.toString()`, defined as `display` at the
+- `to_string` is the derived **action**, never written: every type that
+  implements `Display` has `value.to_string()`, defined as `display` at the
   default `Format` — `Format(precision: null, alternate: false)` — and no
   `impl` declares the method.
 - A type implements `Debug` with `impl Debug for T`, or by `#Derive(Debug)`:
@@ -99,7 +99,7 @@ intrinsic listed in
 is reserved under the same rule.
 
 `ToString` stays reserved although it resolves to nothing as a trait: the
-`toString` method belongs to the language, and a module-scope `trait
+`to_string` method belongs to the language, and a module-scope `trait
 ToString` would take the name while no rule uses it. Written where a trait
 name is expected — `impl ToString for …` — it is an unresolved name
 (`E0101`).
@@ -113,7 +113,7 @@ inherent members, specified with their types: `List`, `Array`, `Map`, and
 are not prelude operations: they have no unqualified spelling, no import
 introduces them, and they are not module-scope names. A local binding named
 `len` or `get` does not shadow `xs.len` or `m.get`; a static member is reached
-through a type name, as in `Map::fromEntries`.
+through a type name, as in `Map::from_entries`.
 
 ## Prelude visibility
 

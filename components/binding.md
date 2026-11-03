@@ -14,7 +14,7 @@ This chapter specifies both, and contrasts them with plain one-way arguments.
 
 ```xulo
 Input(value: $name)
-Checkbox(checked: $isActive)
+Checkbox(checked: $is_active)
 ```
 
 - `$name` passes a **binding** of the source — the variable named `name` — to

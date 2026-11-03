@@ -105,11 +105,11 @@ binding's storage instead of copying the value.
   other (see [`control-flow.md`](control-flow.md)).
 
 ```xulo
-fn makeAdder(n: int): fn(int): int {
+fn make_adder(n: int): fn(int): int {
   (v: int) => v + n            // read capture of `n`
 }
 
-fn makeCounter(): fn(): int {
+fn make_counter(): fn(): int {
   let mut count = 0
   fn(): int {
     count = count + 1          // mutable capture of `count`
@@ -117,10 +117,10 @@ fn makeCounter(): fn(): int {
   }
 }
 
-let add5 = makeAdder(5)
+let add5 = make_adder(5)
 print(add5(10))                // 15
 
-let counter = makeCounter()
+let counter = make_counter()
 print(counter())               // 1
 print(counter())               // 2
 ```
@@ -162,8 +162,8 @@ bindings become part of the closure value and remain valid for as long as the
 closure exists:
 
 - storage for a captured binding is retained by any closure that captures it,
-  so a function may return a closure that uses its own locals — `makeCounter`
-  above returns a closure over `count` after `makeCounter` has returned;
+  so a function may return a closure that uses its own locals — `make_counter`
+  above returns a closure over `count` after `make_counter` has returned;
 - the enclosing scope and the closure share that storage while both are alive,
   which is what makes mutations through the closure visible to the binding;
 - once neither the binding nor any closure capturing it is reachable, the

@@ -29,7 +29,7 @@ cancellation, and services in [`concurrency.md`](concurrency.md).
 
 ```xulo
 // Ok(user) found, Ok(null) absent, Err(reason) the lookup itself failed
-fn findUser(id: int): Result<User?, LoadError> {
+fn find_user(id: int): Result<User?, LoadError> {
   if id < 0 { return Result::Err(LoadError::Denied("negative id")) }
   query(id)
 }
@@ -62,7 +62,7 @@ fn half(n: int): Result<int, string> {
   if n % 2 == 0 { Result::Ok(n / 2) } else { Result::Err("odd input") }
 }
 
-fn doubledHalf(n: int): int {
+fn doubled_half(n: int): int {
   match half(n) {
     Result::Ok(v) => v * 2
     Result::Err(reason) => { print(reason); 0 }
@@ -90,7 +90,7 @@ fn doubledHalf(n: int): int {
 ```xulo
 enum LoadError { Missing(string), Denied(string) }
 
-fn readConfig(path: string): Result<string, LoadError> {
+fn read_config(path: string): Result<string, LoadError> {
   if path == "" { return Result::Err(LoadError::Missing(path)) }
   load(path)
 }
@@ -149,12 +149,12 @@ fn quarter(n: int): Result<int, string> {
   half(h)              // the trailing expression, itself a Result
 }
 
-fn fetchName(id: int): string? {
-  let u = findUser(id)?   // null propagates: `fetchName` returns null
+fn fetch_name(id: int): string? {
+  let u = find_user(id)?   // null propagates: `fetch_name` returns null
   u.name
 }
 
-fn stillWrong(n: int): int {
+fn still_wrong(n: int): int {
   half(n)?    // E0217: `Result::Err` is not assignable to `int`
 }
 ```
@@ -182,7 +182,7 @@ profile out of a function returning an optional, one step at a time.
 ```xulo
 let label = if n > 0 { "positive" } else { panic("n must be positive") }
 
-fn doubleOrStop(n: int): int {
+fn double_or_stop(n: int): int {
   if n < 0 { panic("negative input") }
   n * 2
 }
@@ -207,9 +207,9 @@ and its failure model is the same as a synchronous one:
   and `?` propagates from there — with parentheses, `(await t)?`.
 
 ```xulo
-async fn fetchUser(id: int): Result<User, LoadError> {
-  let raw = (await getJson(`/users/${id}`))?   // Err propagates out
-  decodeUser(raw)                              // Result<User, LoadError>
+async fn fetch_user(id: int): Result<User, LoadError> {
+  let raw = (await get_json(`/users/${id}`))?   // Err propagates out
+  decode_user(raw)                              // Result<User, LoadError>
 }
 ```
 
@@ -259,7 +259,7 @@ combine results and cancellation the way the operations they describe settle:
 - Cancelling the combined task cancels `t` in turn.
 
 ```xulo
-async fn pollWithDeadline(): Result<int, Error> {
+async fn poll_with_deadline(): Result<int, Error> {
   await Task::timeout(poll(), 2000)   // Ok(n) in time, Err("timed out") otherwise
 }
 ```
@@ -276,11 +276,11 @@ operations themselves.
 |-----------|----------------|--------------|
 | List index or length out of range | a subscript `xs[i]` with `i` negative or at or past the list's length; a `splice` or `slice` index/count outside its stated bounds; or a negative `resize`/`truncate` length | [`types/composite-types.md`](types/composite-types.md) |
 | Array index out of bounds | reading or writing `a[i]` where `i` is negative or at or past N | [`types/composite-types.md`](types/composite-types.md) |
-| String index out of range | `s.codeAt(i)` with an index outside `0 … s.len − 1`, or `s.slice(start, end)` with bounds outside `0 … s.len` or with `start > end` | [`types/primitive-types.md`](types/primitive-types.md) |
+| String index out of range | `s.code_at(i)` with an index outside `0 … s.len − 1`, or `s.slice(start, end)` with bounds outside `0 … s.len` or with `start > end` | [`types/primitive-types.md`](types/primitive-types.md) |
 | Division or remainder by zero | `/` or `%` on non-constant operands whose value is zero | [`expressions/operators.md`](expressions/operators.md) |
 | Shift amount out of range | `<<` or `>>` whose amount is negative or at or past the operands' bit width, on non-constant operands | [`expressions/operators.md`](expressions/operators.md) |
 | Arithmetic overflow | an `int` or fixed-bit operation whose result exceeds its type, on non-constant operands | [`types/primitive-types.md`](types/primitive-types.md) |
-| `Math::toFixed` digits out of range | `Math::toFixed` is called with `digits` outside `0...=15` | [`builtins/intrinsic-functions.md`](builtins/intrinsic-functions.md) |
+| `Math::to_fixed` digits out of range | `Math::to_fixed` is called with `digits` outside `0...=15` | [`builtins/intrinsic-functions.md`](builtins/intrinsic-functions.md) |
 | Unprovided environment key | reading an `@Environment` key no provision supplies | [`components/environment.md`](components/environment.md) |
 | Stack or task exhaustion | recursion depth or the runtime's task limit is exceeded | [`functions.md`](functions.md) |
 

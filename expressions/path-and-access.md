@@ -29,7 +29,7 @@ never into a namespace:
 user.name            // field of a struct
 counts.get("a")      // built-in Map member
 r.area()             // method declared in an `impl` block
-getBox().width       // member access through a call result
+get_box().width       // member access through a call result
 ```
 
 Member access is a postfix operator of the highest precedence, so it groups
@@ -38,7 +38,7 @@ result, and then calls it.
 
 The type of a field access is the declared type of that field. On a built-in
 type, the member's declared type is the type of the access: `.len`, `.size`,
-and `.byteLen` are read-only properties of type `int`, and a property is not a
+and `.byte_len` are read-only properties of type `int`, and a property is not a
 place — assigning to one is `E0402`. A method access has the method's function
 type with `self` bound to the receiver (see
 [`../functions.md`](../functions.md)); the call itself is specified in
@@ -101,7 +101,7 @@ Shape::Circle(2)         // variant construction: path plus arguments
 
 A path head is a package name (through the manifest mapping), a root module
 of this package, `self`, `super`, or a type name — for a variant or an
-associated member, as in `Theme::Dark` and `Map::fromEntries`; the head and
+associated member, as in `Theme::Dark` and `Map::from_entries`; the head and
 its resolution — including the hyphen rule that keeps `lsp-server::run()` a
 path and `total - Math::PI` subtraction — are specified in
 [`../modules/import-export.md`](../modules/import-export.md).
@@ -137,7 +137,7 @@ a[0]           // array element
 The index MUST have type `int` and the result is `T`. A subscript on a `Map`,
 on a `string`, or on any other type is a compile-time error (`E0215`); a map
 key is read with `m.get(k)`, and a string is inspected through its members —
-`.len`, `.codeAt(i)`, `.slice(start, end)`, `.byteLen`, `.bytes()`.
+`.len`, `.code_at(i)`, `.slice(start, end)`, `.byte_len`, `.bytes()`.
 
 Element access yields the element type directly — there is no automatic
 optional. Reading past the end of a `List` or `Array` (a negative index

@@ -126,7 +126,7 @@ use type router::Router;
 
 fn NavBar(): View {
   @Environment let router: Router
-  @Store let { theme, setTheme } = useAppStore()
+  @Store let { theme, set_theme } = use_app_store()
 
   HStack(spacing: 8) {
     Button("About", onClick: fn() { router.push("/about") })
@@ -134,7 +134,7 @@ fn NavBar(): View {
     if theme == Theme::Dark {
       Text("Dark mode")
     }
-    Button("Dark", onClick: fn() { setTheme(Theme::Dark) })
+    Button("Dark", onClick: fn() { set_theme(Theme::Dark) })
   }
 }
 ```

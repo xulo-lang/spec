@@ -96,7 +96,6 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
-| [change-snake-case-naming/](change-snake-case-naming/proposal.md) | draft | Functions, methods, variables, parameters, and fields use snake_case; official built-in names follow; types, variants, constants, and labels keep their present casing; no new diagnostic. |
 
 ## Archived
 
@@ -105,6 +104,7 @@ with their final status.
 
 | Change | Status | Summary |
 |--------|--------|---------|
+| [archive/change-snake-case-naming/](archive/change-snake-case-naming/proposal.md) | accepted | Functions, methods, variables, parameters, and fields use snake_case; official built-in names follow; types, variants, and constants keep their present casing, while parameters declared as component attributes keep lowerCamelCase; no new diagnostic. |
 | [archive/change-tostring-to-display/](archive/change-tostring-to-display/proposal.md) | accepted | `Display`/`Debug`/`Format` — the string-form hook becomes `Display`, which carries `Format`; `toString` is the derived action; `#Derive` re-targets to `Debug`; `print` consults `Display` then `Debug`; `E0106` reserves `Format`/`Display`/`Debug`; no new codes, no grammar delta. |
 | [archive/add-declaration-attributes/](archive/add-declaration-attributes/proposal.md) | accepted | `#Derive(ToString)` — declarations MAY carry `#Name` attributes from a closed, checker-interpreted registry; `E0108`–`E0112` registered. |
 | [archive/add-foreign-function-interface/](archive/add-foreign-function-interface/proposal.md) | accepted | `extern "C" { … }` imports and `pub extern "C" fn …` exports behind a closed ABI registry (`"C"`, `"system"`); ABI-safe signature whitelist, opaque non-null `Ptr`/`Ptr?`, `usize`/`isize`; `E0901`–`E0903` registered; zero-UB claim gains a foreign-boundary carve-out. |

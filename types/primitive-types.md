@@ -46,15 +46,15 @@ let greeting = `Hello, ${a}!`
   members:
   - `.len` — a read-only property of type `int`, the number of Unicode
     scalar values;
-  - `.byteLen` — a read-only property of type `int`, the number of UTF-8
+  - `.byte_len` — a read-only property of type `int`, the number of UTF-8
     bytes, O(1) and allocation-free;
-  - `.codeAt(i: int)` — the Unicode scalar value at index `i`, counting from
+  - `.code_at(i: int)` — the Unicode scalar value at index `i`, counting from
     0 in scalar order; type `int`;
   - `.slice(start: int, end: int)` — the substring containing the scalars at
     indices `start … end − 1`; type `string`;
   - `.bytes()` — a `List<u8>` holding the UTF-8 bytes, in order.
 - Indices count Unicode scalar values, not bytes or UTF-16 code units;
-  `codeAt` yields the scalar's value — its code point — as an `int`. An index
+  `code_at` yields the scalar's value — its code point — as an `int`. An index
   outside `0 … s.len − 1`, slice bounds outside `0 … s.len`, or
   `start > end` is a runtime failure
   ([`../memory-and-runtime.md`](../memory-and-runtime.md), closed tables);

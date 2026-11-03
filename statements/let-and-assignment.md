@@ -144,12 +144,12 @@ xs[0] = 9
   does the write occur.
 
 ```xulo
-fn getRow(): List<int> { [0, 0, 0] }
-fn getIndex(): int { 0 }
+fn get_row(): List<int> { [0, 0, 0] }
+fn get_index(): int { 0 }
 
-let mut grid = getRow()
-grid[getIndex()] = 1
-// evaluates `1`, then `grid`, then `getIndex()`, then writes grid[0]
+let mut grid = get_row()
+grid[get_index()] = 1
+// evaluates `1`, then `grid`, then `get_index()`, then writes grid[0]
 ```
 
 - The result of an assignment is `unit`. Assignment is a statement: it
@@ -194,7 +194,7 @@ print(age)         // 30
   lists and enums come apart with `match`, whose patterns are specified in
   [`../expressions/control-flow.md`](../expressions/control-flow.md).
 - Component state declarations use the same struct form with an `@` prefix —
-  `@Store let { user, theme } = useAppStore()` — and add the component rules
+  `@Store let { user, theme } = use_app_store()` — and add the component rules
   of [`../components/state.md`](../components/state.md).
 
 ### Tuple destructuring
@@ -322,7 +322,7 @@ extra rules:
 ```xulo
 fn Counter(): View {
   @State let count: int = 0
-  @Store let { user, theme } = useAppStore()
+  @Store let { user, theme } = use_app_store()
   @Environment let router: Router
 }
 ```

@@ -41,10 +41,10 @@ let names: List<string> = []
   - `.shift()` — remove and return the first element, or `null` when the list
     is empty; mutating; type `T?`;
   - `.unshift(v: T)` — insert `v` at the front; mutating; returns `unit`;
-  - `.splice(start: int, deleteCount: int, items: List<T> = [])` — remove
-    `deleteCount` elements at `start`, insert the elements of `items` there,
+  - `.splice(start: int, delete_count: int, items: List<T> = [])` — remove
+    `delete_count` elements at `start`, insert the elements of `items` there,
     and return the removed elements as a new `List<T>` in order; mutating.
-    `start` is in `0 …= len`, and `deleteCount` in `0 …= len − start`;
+    `start` is in `0 …= len`, and `delete_count` in `0 …= len − start`;
     outside is a runtime failure. `items` defaults to the empty list, so
     `splice(start, n)` only deletes and `splice(start, 0, items)` only
     inserts;
@@ -58,9 +58,9 @@ let names: List<string> = []
   - `.slice(start: int, end: int? = null)` — a new `List<T>` of the elements at
     `start … end − 1`, where `null` `end` means `len`; `start` and `end` are
     in `0 …= len` with `start <= end`; outside is a runtime failure;
-  - `.indexOf(v: T)` — the first index whose element is `== v`, or `-1`; type
+  - `.index_of(v: T)` — the first index whose element is `== v`, or `-1`; type
     `int`;
-  - `.lastIndexOf(v: T)` — the last such index, or `-1`; type `int`;
+  - `.last_index_of(v: T)` — the last such index, or `-1`; type `int`;
   - `.includes(v: T)` — whether some element is `== v`; type `bool`;
   - `.join(separator: string = ",")` — the elements' string forms joined by
     `separator`, with `""` for an empty list; type `string`. The element type
@@ -68,7 +68,7 @@ let names: List<string> = []
     the call is a compile-time error (`E0212`);
   - `.reverse()` — reverse the list in place; mutating; returns `unit`;
   - `.entries()` — a `List<(int, T)>` of `(index, element)` pairs, in order;
-  - `.forEach(f: fn(T): unit)` — call `f` on each element in order; returns
+  - `.for_each(f: fn(T): unit)` — call `f` on each element in order; returns
     `unit`;
   - `.map<U>(f: fn(T): U)` — a new `List<U>` of the callback results, in
     order;
@@ -76,7 +76,7 @@ let names: List<string> = []
     returns `true`, in order;
   - `.find(f: fn(T): bool)` — the first element for which `f` is `true`, or
     `null`; type `T?`;
-  - `.findIndex(f: fn(T): bool)` — the index of that element, or `-1`; type
+  - `.find_index(f: fn(T): bool)` — the index of that element, or `-1`; type
     `int`;
   - `.some(f: fn(T): bool)` — whether `f` is `true` for any element; `false`
     for an empty list;
@@ -88,13 +88,13 @@ let names: List<string> = []
     negative value when `a` sorts before `b`, zero when they are equal, and a
     positive value otherwise; mutating; returns `unit`.
   The mutating members require the receiver to be a mutable place.
-  `indexOf`, `lastIndexOf`, and `includes` require `T` to admit `==`; `NaN`
+  `index_of`, `last_index_of`, and `includes` require `T` to admit `==`; `NaN`
   never equals itself, so it is never found.
 - The callback members take a synchronous Xulo function value — `fn(T): U`,
   `fn(T): bool`, `fn(U, T): U`, or `fn(T, T): int` as the member states. The
   callback receives the element only, not its index (use `.entries()` for
-  index/value pairs). `forEach`/`map`/`filter`/`reduce` visit every element;
-  `find`/`findIndex`/`some`/`every` stop at the first decisive element. The
+  index/value pairs). `for_each`/`map`/`filter`/`reduce` visit every element;
+  `find`/`find_index`/`some`/`every` stop at the first decisive element. The
   receiver is borrowed for the duration of the call, so a callback cannot
   mutate it; an ordinary borrow conflict is reported (`E0404`/`E0405`). A
   callback that panics stops the call; the callback members do not return
@@ -130,8 +130,8 @@ laid out inline; the type is invariant in `T` and exact in N.
   order.
 - `.len` is a read-only `int` property equal to N, O(1).
 - The read, callback, and sort members are the List members — `.slice`,
-  `.indexOf`, `.lastIndexOf`, `.includes`, `.join`, `.entries`, `.reverse`,
-  `.sort`, `.forEach`, `.map`, `.filter`, `.find`, `.findIndex`, `.some`,
+  `.index_of`, `.last_index_of`, `.includes`, `.join`, `.entries`, `.reverse`,
+  `.sort`, `.for_each`, `.map`, `.filter`, `.find`, `.find_index`, `.some`,
   `.every`, `.reduce` — with these differences:
   - `.slice` and `.filter` return `List<T>`; `.map` returns `Array<U, N>`
     because the length is preserved;
@@ -212,7 +212,7 @@ let ages = Map<int, string>{ 30: "thirty" }     // typed form: keys are not iden
     when absent; mutating; type `V?`;
   - `.keys()`, `.values()`, `.entries()` — new `List`s of the keys, the
     values, and the `(key, value)` pairs, in insertion order;
-  - `Map::fromEntries(entries)` — a static constructor from a
+  - `Map::from_entries(entries)` — a static constructor from a
     `List<(K, V)>`, in list order; a repeated key keeps the later entry.
   The mutating members require the receiver to be a mutable place.
 - **There is no key access by subscript or by member.** `m[k]`,
@@ -242,7 +242,7 @@ for k in counts {                        // keys, in insertion order
 A `Set<T>` is an unordered collection of unique values: it contains each distinct value at most once.
 
 - The element type `T` MUST be hashable — the same set of types admitted as map keys: `string`, `int`, `float`, `bool`, and payload-free enums. Any other element type is a compile-time error (`E0225`). Element identity follows the key identity rule above: every `NaN` is one element of a `Set<float>`.
-- The language defines no set literal: the brace syntax belongs to `Map` — `{}` is its empty literal — so a set is constructed with the static member `Set::fromList(values)`.
+- The language defines no set literal: the brace syntax belongs to `Map` — `{}` is its empty literal — so a set is constructed with the static member `Set::from_list(values)`.
 - The type has inherent members: `.size` (a read-only property of type `int`,
   the number of elements, O(1)), `.has(v: T)` (membership; type `bool`),
   `.insert(v: T)` (add `v`; returns `true` when it was not present), and
@@ -323,7 +323,7 @@ A union type `T | U` describes a value that is a `T` or a `U`.
 ```xulo
 type Status = "active" | "inactive" | "pending"
 
-fn setStatus(s: Status) {
+fn set_status(s: Status) {
   match s {
     "active" => print("on")
     "inactive" => print("off")
