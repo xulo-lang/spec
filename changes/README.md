@@ -96,6 +96,7 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
+| [change-snake-case-naming/](change-snake-case-naming/proposal.md) | draft | Functions, methods, variables, parameters, and fields use snake_case; official built-in names follow; types, variants, constants, and labels keep their present casing; no new diagnostic. |
 
 ## Archived
 
