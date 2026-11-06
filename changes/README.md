@@ -97,7 +97,7 @@ never a version number or an implementation detail.
 | Change | Status | Summary |
 |--------|--------|---------|
 | [add-macro-system/](add-macro-system/proposal.md) | draft | Attribute and derive macros over sandboxed compile-time execution — `#Macro` declares a module-level `fn` taking `ast::DeriveInput`/`ast::AttributeInput` and returning generated AST; `name!(…)` function macros; `ast::quote!` with `${…}` holes; sandboxed, quota-bounded, 100-round expansion with a structured-input cache; `E1001`–`E1012` registered. |
-| [change-attribute-spelling/](change-attribute-spelling/proposal.md) | draft | Declaration attributes move from `#Name(args)` to lowercase `#[name(args)]` — `#[derive]`, `#[test]`, `#[macro]`; `derive`/`macro` stay reserved and are accepted only as attribute names; the test title moves inside the brackets; function macros stay `name!(…)`; old `#Name` forms become syntax errors; `add-macro-system` must be rebased. |
+| [change-attribute-spelling/](change-attribute-spelling/proposal.md) | draft | Declaration attributes move from `#Name(args)` to lowercase `#[name(args)]` — `#[derive]`, `#[test]`, `#[macro]`; `derive`/`macro` stay reserved and are accepted only as attribute names; the test attribute takes no arguments and loses its title; function macros stay `name!(…)`; old `#Name` forms become syntax errors; `add-macro-system` must be rebased. |
 
 ## Archived
 

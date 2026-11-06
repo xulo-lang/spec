@@ -1,7 +1,7 @@
 # AST Schema — Delta: Lowercase Attribute Brackets
 
 > **Delta** — replaces `AttributeNode`, adds `AttributeNameNode`, adds a
-> source note after them, replaces the `TestDeclaration.title` paragraph,
+> source note after them, removes `TestDeclaration.title` and its paragraph,
 > and replaces the declaration-attribute sentence in the component note of
 > `ast.md`.
 
@@ -27,14 +27,22 @@ not an `IdentifierNode`, because `derive` and `macro` are reserved words
 accepted only in the attribute-name position. `AttributeNode.args` are the
 arguments inside the parentheses, if any; the brackets add no AST node.
 
+Remove the `TestDeclaration.title` field:
+
+```typescript
+interface TestDeclaration extends BaseNode {
+  type: 'TestDeclaration';
+  name: IdentifierNode;
+  isAsync: boolean;
+  body: BlockNode;
+}
+```
+
 Replace the `TestDeclaration.title` paragraph with:
 
-`title` is `null` exactly when the attribute's parenthesized group is absent
-or empty — `#[test]` and `#[test()]` both mean no title. It is a dedicated
-field, not an `attributes` entry, and the note that `TestDeclaration` carries
-no `attributes` field is unchanged. The title is written inside the attribute
-brackets — `#[test("parse test")]` — and is metadata for reporting: it is not
-a name, and `TestDeclaration.name` keeps every rule it has.
+`TestDeclaration` carries no `title` field. The `#[test]` marker takes no
+arguments; `name` is the test's identity for tools, and the note that
+`TestDeclaration` carries no `attributes` field is unchanged.
 
 Replace the declaration-attribute sentence in the component note with:
 

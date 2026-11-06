@@ -24,13 +24,16 @@
         `AttributeNode { name: AttributeNameNode; args: AttributeArgNode[] |
         null }`: this change supplies `name`, `add-macro-system` supplies
         `args` and `AttributeArgNode`.
-      - Keep the title rule special after the widening: `#[test("…")]` outside
-        a full `TestDecl` remains a syntax error, not an `E0109`/`E0110`
-        ordinary attribute. The widened `AttributeArg` MUST NOT reinterpret
-        the test title as a string argument of a generic attribute.
+      - Do not restore a test title: `#[test]` takes no arguments, so
+        `#[test()]`, `#[test("…")]`, and `#[test(name, …)]` outside a full
+        `TestDecl` are ordinary attributes and `E0110`; the widened
+        `AttributeArg` must not create a title path.
       - Re-spell `#Macro` → `#[macro]`, `#Derive` → `#[derive]`, `#Test` →
         `#[test]`, every user-attribute example, and the prose in its
-        `proposal.md`, `design.md`, and `specs/`.
+        `proposal.md`, `design.md`, and `specs/`. Drop its test-title
+        references, including the fixed string-title form and the `#Test()`
+        example; `#[test]` takes no arguments and `TestDeclaration` loses
+        `title`.
 - [ ] Update `changes/README.md`: keep this change's draft row and, once
       accepted, replace `add-macro-system`'s “`#Macro`” wording with
       “`#[macro]`”.
@@ -55,22 +58,22 @@
 
 ## Tests
 
-- [ ] Parser tests: `#[derive(Debug)]`, `#[test]`, `#[test("parse test")]`,
-      `#[test()]`, `#[macro(...)]`, and a user attribute all parse;
-      `#[test]` with parameters, a return type, generics, a `where` clause, or
-      `pub` is `E0110`.
+- [ ] Parser tests: `#[derive(Debug)]`, `#[test]`, `#[macro(...)]`, and a
+      user attribute all parse; `#[test]` with parameters, a return type,
+      generics, a `where` clause, or `pub` is `E0110`; `#[test()]`,
+      `#[test("parse test")]`, and `#[test(name)]` are not `TestDecl`s and are
+      `E0110` when their argument group parses.
 - [ ] Parser tests: `#Derive`, `#Test`, `#Test("parse test")`, and `#Inline`
       are rejected as syntax errors; a bare `#` is rejected.
 - [ ] Reserved-word tests: `derive` and `macro` remain illegal as identifiers
       (`fn derive()`, `let macro = 1`), but are accepted as `#[derive]` and
       `#[macro]`; `#[test]` uses the ordinary identifier `test`.
 - [ ] AST tests: an attribute's span covers `#` through `]`;
-      `AttributeNameNode.name` is the lowercase string; the `TestDecl` title
-      field is `null` for `#[test]` and `#[test()]`, and is the string for
-      `#[test("…")]`.
+      `AttributeNameNode.name` is the lowercase string; `TestDeclaration` has
+      no `title` field.
 - [ ] Diagnostic tests: `E0107`–`E0112` examples and messages use lowercase
-      attribute names; `E0110`'s test-form message names `#[test]` /
-      `#[test("…")]`.
+      attribute names; `E0110`'s test-form message names `#[test]` and says
+      the attribute takes no arguments.
 - [ ] Update the external grammar snapshots (`xulo.ebnf`, `xulo.pest`,
       tree-sitter files) in the implementation repository after the grammar
       delta is folded.

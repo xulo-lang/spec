@@ -18,7 +18,7 @@ lowercase bracket spelling `#[name(args)]`:
 #[derive(Debug)]
 struct User { name: string, age: int }
 
-#[test("parse test")]
+#[test]
 fn parses_a_key() {
   assert(true, "runs only under a tool")
 }
@@ -29,7 +29,7 @@ this change, both kinds of macro use site read the Rust way: attributes and
 derives are `#[…]`, function macros are `xx!()`.
 
 The registered attribute names are lowercased with the brackets:
-`#[derive(Debug)]`, `#[test]`, `#[test("title")]`, `#[macro(…)]`, and user
+`#[derive(Debug)]`, `#[test]`, `#[macro(…)]`, and user
 attributes such as `#[route(…)]`. Derive targets are type names and keep
 their spelling: `#[derive(Debug)]`, not `#[derive(debug)]`.
 
@@ -58,7 +58,7 @@ let table = sql!(SELECT * FROM users);
 The second line is Rust's function-macro shape; the first is not Rust's
 attribute shape. The user-facing request is that macro use be written as in
 Rust: `#[…]` for attributes and derives, `xx!()` for function macros, with
-lowercase attribute names such as `#[test("test")]`. One of those two already
+lowercase attribute names such as `#[test]`. One of those two already
 holds; this change makes the other hold too.
 
 ### `#Test` is the same marker with an older spelling
@@ -88,33 +88,38 @@ an ordinary identifier, so `#[test]` uses the identifier arm.
 `AttributeName` production; the lowercase registered names `derive`, `test`,
 and `macro`; every declaration attribute occurrence in the chapters, examples,
 and tests; the `AttributeNameNode` in the AST; diagnostic examples and
-message shapes that quote the old spelling. The title group moves inside the
-brackets: `#Test("title")` becomes `#[test("title")]`.
+message shapes that quote the old spelling. The test title is removed:
+`TestDeclaration` no longer carries a title and `#[test]` takes no arguments.
 
 **Out of scope.** Unreserving `derive` or `macro`; any uppercase or bracketless
 aliases; changing derive targets (`Debug` stays `Debug`); attribute
-arguments, registry membership, placement, or argument shapes beyond the
-name spelling; derive expansion; test checking, discovery, or execution;
-function macro syntax (already `name!(…)`); the closed
+arguments for other attributes, registry membership, placement, or argument
+shapes beyond removing the test title; derive expansion; test checking,
+discovery, or execution; function macro syntax (already `name!(…)`); the closed
 `@State`/`@Store`/`@Effect`/`@Environment` component family; any new
 attribute.
 
 ## Compatibility
 
 This is a breaking source change against unreleased drafts. The rewrite is
-mechanical:
+mechanical except that test titles are dropped:
 
 | Before | After |
 |--------|-------|
 | `#Derive(Debug)` | `#[derive(Debug)]` |
 | `#Test` | `#[test]` |
-| `#Test("parse test")` | `#[test("parse test")]` |
-| `#Test()` | `#[test()]` |
+| `#Test()` | `#[test]` |
+| `#Test("parse test")` | `#[test]` (the title is removed) |
 | `#Macro(kind = "attribute")` | `#[macro(kind = "attribute")]` |
 | `#route(GET)` | `#[route(GET)]` |
 
 The `macro` row uses the argument shape introduced by `add-macro-system`;
-this change only re-spells the attribute name.
+this change only re-spells the attribute name. Test titles are dropped by this
+change: a test that carried a title keeps its identifier and body, and the
+title is removed. `#[test()]`, `#[test("…")]`, and `#[test(name, …)]` are not
+test declarations; they fall under `E0110` when the attribute argument syntax
+accepts them. This supersedes the optional title accepted by
+`archive/add-test-title`.
 
 The old forms are parse errors, never reinterpreted. An old capitalized
 bracket spelling such as `#[Derive]` parses as an attribute name but is not

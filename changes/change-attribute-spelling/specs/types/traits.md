@@ -119,15 +119,13 @@ Rules:
 ### Test
 
 `#[test]` marks a function as a test. It is spelled only by the test form —
-`#[test]` or `#[test("title")]`, followed by `[async] fn name() { … }` —
-whose shape is fixed ([`../testing.md`](../testing.md)):
+`#[test]`, followed by `[async] fn name() { … }` — whose shape is fixed
+([`../testing.md`](../testing.md)):
 
 - the declaration has no parameters, no return type, no generic parameters,
   no `where` clause, and no `pub`;
-- the optional group inside the brackets holds one `StringLiteral` — the
-  test's **title**, metadata for a tool's reporting, not a name; an empty
-  group `#[test()]` and an absent group `#[test]` both mean no title, and
-  the bare form `#[test]` is **RECOMMENDED** when no title is wanted;
+- the attribute takes no arguments: `#[test()]`, `#[test("…")]`, and
+  `#[test(name, …)]` do not form a `TestDecl`;
 - the identifier binds no value, and any reference to it is `E0107`.
 
 Written on a `struct`, `enum`, `trait`, or `impl`, `#[test]` is `E0109`
@@ -135,11 +133,11 @@ Written on a `struct`, `enum`, `trait`, or `impl`, `#[test]` is `E0109`
 does not match, a `#[test]`, `#[test()]`, or `#[test(name, …)]` on the
 non-matching `fn` — including a `fn` with parameters, a return type,
 generics, a `where` clause, or `pub` — is `E0110`
-(`` attribute `test` takes the form `#[test]` or `#[test("…")]`, followed
-by `[async] fn name() { … }` ``). A `#[test(...)]` group holding a
-non-identifier — notably a `StringLiteral` title or a numeral — is a syntax
-error when the full test form does not match; in particular,
-`#[test("title")]` followed by a `fn` with parameters is a syntax error, not
-`E0110`. When the sequence `#[test]` or `#[test("…")]` followed by `async`?
-`fn` Identifier `(` `)` Block appears at file scope, the declaration is a
+(`` attribute `test` takes no arguments and is written `#[test]`, followed
+by `[async] fn name() { … }` ``). A `#[test(...)]` group that the current
+`AttributeArg` grammar cannot parse — notably a `StringLiteral` or a numeral
+— is a syntax error when the full test form does not match; when
+`add-macro-system` widens `AttributeArg`, such a group parses and falls under
+the same `E0110` rule. When the sequence `#[test]` followed by `async`? `fn`
+Identifier `(` `)` Block appears at file scope, the declaration is a
 `TestDecl` and no registry lookup runs ([`../grammar.md`](../grammar.md)).

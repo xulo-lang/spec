@@ -18,7 +18,7 @@ enum Shape { Circle(float), Rect(float, float) }
 #[test]
 fn absent_key_is_null() { … }
 
-#[test("parse test")]
+#[test]
 fn parses_a_key() { … }
 
 #[macro(kind = "attribute")]
@@ -29,7 +29,7 @@ The `#[macro(kind = …)]` argument shape comes from `add-macro-system`;
 this change only re-spells the attribute name.
 
 - **Pro:** the use site is exactly Rust's: `#[derive(Debug)]` and
-  `#[test("parse test")]`, beside `sql!(…)` for function macros. The reader
+  `#[test]`, beside `sql!(…)` for function macros. The reader
   does not translate capitalization or add brackets mentally.
 - **Pro:** the semantics are unchanged. The registry still decides placement
   and argument shape; derive expansion, test checking, and macro semantics do
@@ -50,24 +50,23 @@ Attribute     = "#" "[" AttributeName [ "(" [ AttributeArgs ] ")" ] "]" ;
 AttributeName = Identifier | "derive" | "macro" ;
 ```
 
-The test declaration has one fixed shape whose title sits inside the
-brackets:
+The test declaration has one fixed shape:
 
 ```text
-TestDecl = "#" "[" "test" [ "(" [ StringLiteral ] ")" ] "]" [ "async" ] "fn"
-           Identifier "(" ")" Block ;
+TestDecl = "#" "[" "test" "]" [ "async" ] "fn" Identifier "(" ")" Block ;
 ```
 
-`#[test]` and `#[test()]` both mean no title; `#[test("parse test")]` carries
-the title. The title group is no longer written after the attribute; it is
-part of the attribute.
+The head is exactly `#[test]`, with no argument group. `#[test()]`,
+`#[test("…")]`, and `#[test(name, …)]` do not form a `TestDecl`; on a
+non-matching `fn` they are ordinary attribute uses and `E0110`, because the
+`test` attribute takes no arguments.
 
 The registry names change with the spelling:
 
 | Old name | New name | Form |
 |----------|----------|------|
 | `Derive` | `derive` | `#[derive(Debug)]` |
-| `Test` | `test` | `#[test]` / `#[test("title")]` |
+| `Test` | `test` | `#[test]` |
 | `Macro` | `macro` | `#[macro(kind = …)]` |
 | user attribute | user attribute | `#[route]`, `#[route(…)]` |
 
@@ -149,20 +148,16 @@ AttributeName = Identifier | "derive" | "macro" ;
   rules, so a user attribute cannot be named `derive` or `macro`; those two
   spellings belong to the built-in registry entries.
 
-## Title placement
+## No test title
 
-The title group moves with the attribute arguments:
+Tests align with the simple `#[test]` marker: the attribute takes no arguments
+and `TestDeclaration` loses its `title` field. A test that carried
+`#Test("parse test")` becomes `#[test]`; its identifier and body are unchanged
+and the title is discarded.
 
-| Before | After |
-|--------|-------|
-| `#Test` | `#[test]` |
-| `#Test()` | `#[test()]` |
-| `#Test("parse test")` | `#[test("parse test")]` |
-| `#Test("parse test") async fn` | `#[test("parse test")] async fn` |
-
-Keeping the title after the bracket — `#[test]("parse test")` — was rejected:
-it separates one attribute's name and arguments, and it would make the test
-form the only place where `(…)` follows a complete attribute.
+Keeping the title inside the brackets — `#[test("parse test")]` — was rejected
+because the requested form has no title. `#[test()]` is likewise not a test
+declaration; it is an ordinary attribute use and is `E0110`.
 
 ## Lexical consequences
 
@@ -201,9 +196,9 @@ interface AttributeNode extends BaseNode {
 - `args` are still the arguments inside the parentheses; the brackets add no
   argument node.
 - The attribute's span covers the leading `#` through the closing `]`.
-- `TestDeclaration` still carries its title in the dedicated field, not in
-  `attributes`; only the source spelling of the title group moves inside the
-  brackets.
+- `TestDeclaration` no longer carries a `title` field. The `#[test]` marker
+  takes no arguments, and the note that `TestDeclaration` carries no
+  `attributes` field is unchanged.
 
 ## Diagnostic consequences
 
@@ -221,13 +216,14 @@ the old spelling change to the lowercase names:
 
 `E0110`'s test-form message becomes the bracket shape:
 
-> attribute `test` takes the form `#[test]` or `#[test("…")]`, followed by
+> attribute `test` takes no arguments and is written `#[test]`, followed by
 > `[async] fn name() { … }`
 
 Outside a matching `TestDecl`, `#[test]`, `#[test()]`, and `#[test(name, …)]`
-are `E0110`; a string title or any other non-identifier group is a syntax
-error. The title belongs to `TestDecl` only, so this distinction survives the
-`AttributeArg` widening that `add-macro-system` introduces.
+are `E0110`; a group that the current `AttributeArg` grammar cannot parse —
+notably a `StringLiteral` or a numeral — is a syntax error. When
+`add-macro-system` widens `AttributeArg`, such a group parses and falls under
+the same `E0110` rule; no title special case remains.
 
 The old spelling is a syntax error and carries no language error code; a
 compiler MAY add a migration note. An old capitalized bracket spelling such
@@ -250,10 +246,10 @@ context, execution, quota, cache, sandbox — is independent of the spelling.
 | Chapter | Change |
 |---------|--------|
 | [`lexical-structure.md`](../../lexical-structure.md) | the `#` token's reading becomes “attribute opener, only in `#[…]`”; `derive`/`macro` remain reserved, accepted only in the attribute-name position; the old `#Name` form is called out as invalid |
-| [`grammar.md`](../../grammar.md) | `Attribute` gains brackets, `AttributeName` is added, `TestDecl` uses `#[test]` and moves its title group inside, and the prose around `#[test]` is re-spelled |
-| [`ast.md`](../../ast.md) | `AttributeNode.name` becomes `AttributeNameNode`; the declaration-attribute note names `#[…]`; attribute spans and the `TestDeclaration` title field are stated |
+| [`grammar.md`](../../grammar.md) | `Attribute` gains brackets, `AttributeName` is added, `TestDecl` uses `#[test]` and drops the title group, and the prose around `#[test]` is re-spelled |
+| [`ast.md`](../../ast.md) | `AttributeNode.name` becomes `AttributeNameNode`; the declaration-attribute note names `#[…]`; attribute spans are stated and the `TestDeclaration` title field is removed |
 | [`types/traits.md`](../../types/traits.md) | the Attributes section and its derive/test examples use `#[derive]` / `#[test]`; the test shape message changes |
-| [`testing.md`](../../testing.md) | the declaration grammar, title description, examples, and placement note use `#[test…]` |
+| [`testing.md`](../../testing.md) | the declaration grammar and examples use `#[test]`, and the title description is removed |
 | [`type-system/errors.md`](../../type-system/errors.md) | attribute examples and message shapes use the lowercase names |
 | [`type-system/checking-rules.md`](../../type-system/checking-rules.md) | the test-identifier bullet uses `#[test]` |
 | [`modules/source-files.md`](../../modules/source-files.md) | the test row and forward-reference bullet use `#[test]` |

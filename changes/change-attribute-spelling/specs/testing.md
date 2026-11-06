@@ -2,16 +2,15 @@
 
 > **Delta** — replaces the opening sentence, the **Declaration** section,
 > the **The name** opening sentence, and the **Example** block of
-> `testing.md` with the lowercase bracket spelling. The checking, `async`,
-> discovery, and pass/fail rules are unchanged.
+> `testing.md` with the lowercase bracket spelling and removes the test title.
+> The checking, `async`, discovery, and pass/fail rules are unchanged.
 
 ## Declaration
 
 The form is `TestDecl` in the grammar ([grammar.md](grammar.md)):
 
 ```text
-TestDecl = "#" "[" "test" [ "(" [ StringLiteral ] ")" ] "]" [ "async" ] "fn"
-           Identifier "(" ")" Block ;
+TestDecl = "#" "[" "test" "]" [ "async" ] "fn" Identifier "(" ")" Block ;
 ```
 
 - A `#[test]` function appears at file scope, among a module's top-level
@@ -23,20 +22,16 @@ TestDecl = "#" "[" "test" [ "(" [ StringLiteral ] ")" ] "]" [ "async" ] "fn"
   ([modules/visibility.md](modules/visibility.md)).
 - The identifier is the test's identity as a tool reports it. It need not be
   unique across a module — two tests MAY share a name, and a tool tells them
-  apart by their positions or their titles — but it is never a name in the
-  value namespace ([The name](#the-name) below).
-- An optional parenthesized string inside the attribute brackets —
-  `#[test("parse test")]` — is the test's **title**: metadata the declaration
-  carries for a tool's reporting. It is not a name in any namespace, it
-  binds nothing, and it need not be unique. An empty group `#[test()]` and
-  the bare form `#[test]` both mean no title; the bare form is
-  **RECOMMENDED** when no title is wanted.
+  apart by their positions — but it is never a name in the value namespace
+  ([The name](#the-name) below).
+- The attribute takes no arguments: `#[test()]`, `#[test("…")]`, and
+  `#[test(name, …)]` do not form a `TestDecl`.
 - The optional `async` marker says the body suspends; it is spelled exactly
   as `async` is spelled on a function, and it follows the attribute
-  (`#[test("…")] async fn`, never `async #[test] fn`).
+  (`#[test] async fn`, never `async #[test] fn`).
 
 ```xulo
-#[test("parse test")]
+#[test]
 fn test_parse() {
   assert(parse_ok(), "parses")
 }
@@ -47,7 +42,7 @@ fn absent_key_is_null() {
   assert(m.get("z") == null, "absent key is null")
 }
 
-#[test()]
+#[test]
 async fn delayed_task_finishes() {
   await Time::sleep(1)
 }
