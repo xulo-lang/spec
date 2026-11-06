@@ -1,4 +1,4 @@
-# Tasks — change-attribute-syntax-to-rust
+# Tasks — change-attribute-spelling
 
 ## Acceptance
 

@@ -1,4 +1,4 @@
-# Grammar — Delta: Rust-Style Attributes
+# Grammar — Delta: Lowercase Attribute Brackets
 
 > **Delta** — replaces the `Attribute` production, adds `AttributeName` to
 > the productions and the declarations index row, replaces the `TestDecl`

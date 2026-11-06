@@ -1,4 +1,4 @@
-# AST Schema — Delta: Rust-Style Attributes
+# AST Schema — Delta: Lowercase Attribute Brackets
 
 > **Delta** — replaces `AttributeNode`, adds `AttributeNameNode`, adds a
 > source note after them, replaces the `TestDeclaration.title` paragraph,

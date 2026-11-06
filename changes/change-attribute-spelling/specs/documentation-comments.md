@@ -1,4 +1,4 @@
-# Documentation Comments (Informative) — Delta: Rust-Style Attributes
+# Documentation Comments (Informative) — Delta: Lowercase Attribute Brackets
 
 > **Delta** — replaces the `#Test` mentions in the test paragraph and the
 > adjacency rule of `documentation-comments.md`.

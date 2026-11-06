@@ -1,4 +1,4 @@
-# Introduction — Delta: Rust-Style Attributes
+# Introduction — Delta: Lowercase Attribute Brackets
 
 > **Delta** — replaces the `#Test` mention in `introduction.md`.
 

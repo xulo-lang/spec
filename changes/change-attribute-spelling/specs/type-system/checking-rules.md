@@ -1,4 +1,4 @@
-# Checking Rules — Delta: Rust-Style Attributes
+# Checking Rules — Delta: Lowercase Attribute Brackets
 
 > **Delta** — replaces the test-identifier bullet in
 > `type-system/checking-rules.md`.

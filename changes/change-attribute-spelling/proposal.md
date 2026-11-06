@@ -1,7 +1,7 @@
-# Change Attribute Syntax to Rust
+# Change Attribute Spelling
 
 **Status:** draft · **Date:** 2026-11-05
-**Change ID:** `change-attribute-syntax-to-rust`
+**Change ID:** `change-attribute-spelling`
 **Affects:** `lexical-structure.md`, `grammar.md`, `ast.md`,
 `types/traits.md`, `testing.md`, `type-system/errors.md`,
 `type-system/checking-rules.md`, `modules/source-files.md`,
@@ -42,7 +42,7 @@ are not registered names.
 
 ## Motivation
 
-### The completed macro system should read like Rust
+### The completed macro system should use bracket attributes
 
 The draft `add-macro-system` change adds attribute macros and `name!(…)`
 function macros. It currently uses the old `#Name` spelling for the first, so

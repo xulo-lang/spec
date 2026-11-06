@@ -1,4 +1,4 @@
-# Prelude — Delta: Rust-Style Attributes
+# Prelude — Delta: Lowercase Attribute Brackets
 
 > **Delta** — replaces the two `#Derive(Debug)` mentions in
 > `builtins/prelude.md`.

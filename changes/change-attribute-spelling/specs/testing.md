@@ -1,4 +1,4 @@
-# Tests — Delta: Rust-Style Attributes
+# Tests — Delta: Lowercase Attribute Brackets
 
 > **Delta** — replaces the opening sentence, the **Declaration** section,
 > the **The name** opening sentence, and the **Example** block of

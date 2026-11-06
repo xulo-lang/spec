@@ -1,4 +1,4 @@
-# Type Errors and Diagnostics — Delta: Rust-Style Attributes
+# Type Errors and Diagnostics — Delta: Lowercase Attribute Brackets
 
 > **Delta** — replaces the `E0107`–`E0112` rows of the name and declaration
 > errors table, the `#[derive]` paragraph, the `E0212` row, and the `E0501`

@@ -1,4 +1,4 @@
-# Design: Rust-Style Attribute Syntax
+# Design: Lowercase Attribute Brackets
 
 This document records why declaration attributes become lowercase
 `#[name]`, how the reserved words `derive` and `macro` are accepted as

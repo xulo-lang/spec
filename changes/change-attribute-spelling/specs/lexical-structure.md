@@ -1,4 +1,4 @@
-# Lexical Structure — Delta: Rust-Style Attributes
+# Lexical Structure — Delta: Lowercase Attribute Brackets
 
 > **Delta** — replaces the Attributes row of the operator and delimiter table
 > in `lexical-structure.md` and adds the note that follows the table.

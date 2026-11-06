@@ -1,4 +1,4 @@
-# Async Expressions — Delta: Rust-Style Attributes
+# Async Expressions — Delta: Lowercase Attribute Brackets
 
 > **Delta** — replaces the two `#Test` mentions in
 > `expressions/async-expressions.md`.

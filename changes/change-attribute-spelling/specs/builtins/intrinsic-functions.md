@@ -1,4 +1,4 @@
-# Intrinsic Functions — Delta: Rust-Style Attributes
+# Intrinsic Functions — Delta: Lowercase Attribute Brackets
 
 > **Delta** — replaces the `#Derive(Debug)` example and the `#Test` sentence
 > in `builtins/intrinsic-functions.md`.

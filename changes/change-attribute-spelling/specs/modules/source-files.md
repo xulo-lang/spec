@@ -1,4 +1,4 @@
-# Source Files — Delta: Rust-Style Attributes
+# Source Files — Delta: Lowercase Attribute Brackets
 
 > **Delta** — replaces the Test row of the declaration table and the
 > `#Test` bullet in `modules/source-files.md`.

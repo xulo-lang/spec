@@ -1,4 +1,4 @@
-# Traits — Delta: Rust-Style Attributes
+# Traits — Delta: Lowercase Attribute Brackets
 
 > **Delta** — replaces the **Attributes**, **Derive**, and **Test** sections
 > of `types/traits.md` with the lowercase bracket spelling. The registry rules, derive
