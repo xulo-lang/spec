@@ -1,6 +1,6 @@
 # Change Attribute Spelling
 
-**Status:** draft · **Date:** 2026-11-05
+**Status:** accepted · **Date:** 2026-11-06
 **Change ID:** `change-attribute-spelling`
 **Affects:** `lexical-structure.md`, `grammar.md`, `ast.md`,
 `types/traits.md`, `testing.md`, `type-system/errors.md`,

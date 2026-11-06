@@ -2,7 +2,7 @@
 
 ## Acceptance
 
-- [ ] Fold the deltas under [`specs/`](specs/) into `grammar.md`,
+- [x] Fold the deltas under [`specs/`](specs/) into `grammar.md`,
       `lexical-structure.md`, `ast.md`, `introduction.md`,
       `documentation-comments.md`, `modules/source-files.md`,
       `type-system/checking-rules.md`, `type-system/errors.md`,
@@ -10,7 +10,7 @@
       `expressions/async-expressions.md`, `types/traits.md`, and
       `testing.md`. The old `#Name` spelling and the old capitalized
       built-in names must not survive outside historical change records.
-- [ ] Rebase `changes/add-macro-system` onto this spelling, merging its macro
+- [x] Rebase `changes/add-macro-system` onto this spelling, merging its macro
       deltas rather than overwriting them:
       - The grammar keeps this change's
         `Attribute = "#" "[" AttributeName [ "(" [ AttributeArgs ] ")" ] "]" ;`
@@ -34,29 +34,31 @@
         references, including the fixed string-title form and the `#Test()`
         example; `#[test]` takes no arguments and `TestDeclaration` loses
         `title`.
-- [ ] Update `changes/README.md`: keep this change's draft row and, once
+- [x] Update `changes/README.md`: keep this change's draft row and, once
       accepted, replace `add-macro-system`'s “`#Macro`” wording with
       “`#[macro]`”.
-- [ ] Remove this draft row from `changes/README.md`, add an `accepted`
+- [x] Remove this draft row from `changes/README.md`, add an `accepted`
       archive row, and move the directory to `archive/`.
 
 ## Cross-references
 
-- [ ] Check `documentation-comments.md`: attribute lines such as `#Test` are
+- [x] Check `documentation-comments.md`: attribute lines such as `#Test` are
       now `#[test]`, and the whitespace/comment rules that mention an
       attribute line must use the new spelling.
-- [ ] Check `types/traits.md` and `testing.md` for the test shape message:
+- [x] Check `types/traits.md` and `testing.md` for the test shape message:
       it MUST not quote `#Test` or `#[Test]`, and it MUST use `test`.
-- [ ] Check `type-system/errors.md` for every `#` attribute example, including
+- [x] Check `type-system/errors.md` for every `#` attribute example, including
       the gallery and the `E0107`–`E0112`, `E0212`, and `E0501` rows. Messages
       name the lowercase attribute; derive targets keep their case.
-- [ ] Check `grammar.md`'s production index for `AttributeName` and check
+- [x] Check `grammar.md`'s production index for `AttributeName` and check
       the `AttributeNameNode` definition in `ast.md`; no other node
       shape changes.
-- [ ] Check every `specs/` file's first heading and `> **Delta** — …`
+- [x] Check every `specs/` file's first heading and `> **Delta** — …`
       blockquote against the `changes/README.md` convention.
 
 ## Tests
+
+Implementation follow-ups; not run in this specification repository.
 
 - [ ] Parser tests: `#[derive(Debug)]`, `#[test]`, `#[macro(...)]`, and a
       user attribute all parse; `#[test]` with parameters, a return type,

@@ -35,7 +35,7 @@ this change only re-spells the attribute name.
   and argument shape; derive expansion, test checking, and macro semantics do
   not move. Only the spelling and the attribute-name AST node change.
 - **Con:** `derive` and `macro` are reserved words
-  ([lexical-structure.md](../../lexical-structure.md)). The grammar needs one
+  ([lexical-structure.md](../../../lexical-structure.md)). The grammar needs one
   small production, `AttributeName`, so those two spellings are accepted in
   the attribute-name position without becoming identifiers anywhere else.
 - **Con:** `AttributeNode.name` cannot remain an `IdentifierNode` for
@@ -245,17 +245,17 @@ context, execution, quota, cache, sandbox — is independent of the spelling.
 
 | Chapter | Change |
 |---------|--------|
-| [`lexical-structure.md`](../../lexical-structure.md) | the `#` token's reading becomes “attribute opener, only in `#[…]`”; `derive`/`macro` remain reserved, accepted only in the attribute-name position; the old `#Name` form is called out as invalid |
-| [`grammar.md`](../../grammar.md) | `Attribute` gains brackets, `AttributeName` is added, `TestDecl` uses `#[test]` and drops the title group, and the prose around `#[test]` is re-spelled |
-| [`ast.md`](../../ast.md) | `AttributeNode.name` becomes `AttributeNameNode`; the declaration-attribute note names `#[…]`; attribute spans are stated and the `TestDeclaration` title field is removed |
-| [`types/traits.md`](../../types/traits.md) | the Attributes section and its derive/test examples use `#[derive]` / `#[test]`; the test shape message changes |
-| [`testing.md`](../../testing.md) | the declaration grammar and examples use `#[test]`, and the title description is removed |
-| [`type-system/errors.md`](../../type-system/errors.md) | attribute examples and message shapes use the lowercase names |
-| [`type-system/checking-rules.md`](../../type-system/checking-rules.md) | the test-identifier bullet uses `#[test]` |
-| [`modules/source-files.md`](../../modules/source-files.md) | the test row and forward-reference bullet use `#[test]` |
-| [`documentation-comments.md`](../../documentation-comments.md) | the inert-code bullet and attribute-lines rule use `#[test]` |
-| [`builtins/prelude.md`](../../builtins/prelude.md) | the `Debug` protocol row and paragraph use `#[derive(Debug)]` |
-| [`builtins/intrinsic-functions.md`](../../builtins/intrinsic-functions.md) | the derive example and `assert` sentence use the lowercase forms |
-| [`expressions/async-expressions.md`](../../expressions/async-expressions.md) | the two `await` legality bullets use `#[test]` |
-| [`introduction.md`](../../introduction.md) | the test-framework sentence uses `#[test]` |
+| [`lexical-structure.md`](../../../lexical-structure.md) | the `#` token's reading becomes “attribute opener, only in `#[…]`”; `derive`/`macro` remain reserved, accepted only in the attribute-name position; the old `#Name` form is called out as invalid |
+| [`grammar.md`](../../../grammar.md) | `Attribute` gains brackets, `AttributeName` is added, `TestDecl` uses `#[test]` and drops the title group, and the prose around `#[test]` is re-spelled |
+| [`ast.md`](../../../ast.md) | `AttributeNode.name` becomes `AttributeNameNode`; the declaration-attribute note names `#[…]`; attribute spans are stated and the `TestDeclaration` title field is removed |
+| [`types/traits.md`](../../../types/traits.md) | the Attributes section and its derive/test examples use `#[derive]` / `#[test]`; the test shape message changes |
+| [`testing.md`](../../../testing.md) | the declaration grammar and examples use `#[test]`, and the title description is removed |
+| [`type-system/errors.md`](../../../type-system/errors.md) | attribute examples and message shapes use the lowercase names |
+| [`type-system/checking-rules.md`](../../../type-system/checking-rules.md) | the test-identifier bullet uses `#[test]` |
+| [`modules/source-files.md`](../../../modules/source-files.md) | the test row and forward-reference bullet use `#[test]` |
+| [`documentation-comments.md`](../../../documentation-comments.md) | the inert-code bullet and attribute-lines rule use `#[test]` |
+| [`builtins/prelude.md`](../../../builtins/prelude.md) | the `Debug` protocol row and paragraph use `#[derive(Debug)]` |
+| [`builtins/intrinsic-functions.md`](../../../builtins/intrinsic-functions.md) | the derive example and `assert` sentence use the lowercase forms |
+| [`expressions/async-expressions.md`](../../../expressions/async-expressions.md) | the two `await` legality bullets use `#[test]` |
+| [`introduction.md`](../../../introduction.md) | the test-framework sentence uses `#[test]` |
 | `changes/add-macro-system` | rebase its attribute examples and AST delta; see [tasks.md](tasks.md) |

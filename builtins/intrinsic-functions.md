@@ -112,7 +112,7 @@ let user = { name: "lyy", age: 30 }
 print(user)                     // { name: "lyy", age: 30 }
 println("done")                 // done, then a line terminator
 
-#Derive(Debug)
+#[derive(Debug)]
 struct Point { x: int, y: int }
 print(Point(x: 1, y: 2))         // Point(x: 1, y: 2)
 ```
@@ -164,7 +164,7 @@ let bad = str([1, 2])                  // error: List<int> has no string form
   `panic(message)` — the same effect as writing that `panic` directly
   ([`../error-handling.md`](../error-handling.md)).
 - When `condition` is `true`, the call has no effect beyond producing `unit`.
-- `assert` is how a `#Test` body states a requirement; the declaration that
+- `assert` is how a `#[test]` body states a requirement; the declaration that
   holds it, and what pass and fail mean, are specified in
   [`../testing.md`](../testing.md).
 

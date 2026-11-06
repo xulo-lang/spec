@@ -10,7 +10,7 @@ is in [specs/](specs/); the motivation and scope are in
 
 ## Goals and constraints
 
-1. **Low user-side load.** `#Derive(Serialize)`, `#route("/v1/users")`, and
+1. **Low user-side load.** `#[derive(Serialize)]`, `#[route("/v1/users")]`, and
    `sql!("…")` must read like ordinary attributes and calls.
 2. **Power for macro authors.** The author can inspect a declaration's fields,
    types, attributes, generics, and spans, and can return a structured AST.
@@ -30,7 +30,7 @@ macros.**
 
 - **Pro:** the macro author writes Xulo — `struct`, `if`, `Result`,
   `ast::quote!` — rather than a separate pattern/template language. The user
-  learns one invocation form per kind: `#Derive`, `#attr`, `name!`. The
+  learns one invocation form per kind: `#[derive]`, `#[attr]`, `name!`. The
   structured interface is inspectable and type-checked.
 - **Con:** simple substitution is more ceremony than a declarative macro. A
   one-line “wrap this expression” macro needs a function body.
@@ -46,29 +46,27 @@ syntactic sugar.
 
 ## Attribute surface
 
-**Decision: reuse Xulo's `#Name(args)` form; do not import Rust's `#[…]` or
-`[derive(…)]` spelling.**
+**Decision: reuse Xulo's accepted `#[name(args)]` form; do not add a second
+attribute syntax.**
 
-Xulo already has a declaration-attribute form (`#Derive(Debug)`, `#Test`)
-with its own grammar, AST node, registry, and errors (`E0108`–`E0112`). The
-draft's `[derive(Serialize)]` and `#[macro(…)]` would either duplicate that
-form or replace it. Duplicating gives two attribute syntaxes and two
-registries; replacing invalidates every existing attribute example and error.
-Reusing `#` keeps one form.
+Xulo already has a declaration-attribute form (`#[derive(Debug)]`, `#[test]`)
+with its own grammar, AST node, registry, and errors (`E0108`–`E0112`). A
+second `[derive(Serialize)]` form would duplicate that form and give two
+attribute syntaxes and two registries. Reusing `#[…]` keeps one form.
 
 The user-facing forms are therefore:
 
 ```xulo
-#Derive(Serialize)
+#[derive(Serialize)]
 struct User { name: string, age: int }
 
-#route("/v1/users", "GET")
+#[route("/v1/users", "GET")]
 fn get_users() { … }
 
 let table = sql!("SELECT * FROM users WHERE id = id")
 ```
 
-The definition form is `#Macro(kind = …, …)` on a module-level function. The
+The definition form is `#[macro(kind = …, …)]` on a module-level function. The
 kind is a string (`"derive"`, `"attribute"`, `"function"`) because `derive`,
 `trait`, and `function` are keywords or reserved words in Xulo
 ([`lexical-structure.md`](../../lexical-structure.md)). The target/name key
@@ -82,14 +80,14 @@ depends on the kind:
 
 Optional keys `max_steps`, `max_memory`, and `max_depth` set the
 macro-level quota ([builtins/quota.md](specs/builtins/quota.md)). The keys are written in the
-macro's own `#Macro` attribute, for example
-`#Macro(kind = "derive", target = Model, max_steps = 5000000)`.
+macro's own `#[macro]` attribute, for example
+`#[macro(kind = "derive", target = Model, max_steps = 5000000)]`.
 
 ### Attribute arguments
 
 The current grammar admits only identifiers as attribute arguments:
-`AttributeArg = Identifier`. That is enough for `#Derive(Debug)` but not for
-`#route("/v1/users")` or `#Macro(kind = "derive", target = Serialize)`. The change
+`AttributeArg = Identifier`. That is enough for `#[derive(Debug)]` but not for
+`#[route("/v1/users")]` or `#[macro(kind = "derive", target = Serialize)]`. The change
 widens the production to a value with an optional name:
 
 ```text
@@ -98,31 +96,31 @@ AttributeValue = Identifier | StringLiteral | IntegerLiteral
                | FloatLiteral | BooleanLiteral ;
 ```
 
-The registry entry decides the shape: `#Derive` still accepts only names,
-`#Test` keeps its fixed string-title form, and `#Macro` accepts the fixed keys
+The registry entry decides the shape: `#[derive]` still accepts only names,
+`#[test]` keeps its no-argument form, and `#[macro]` accepts the fixed keys
 above. A well-formed attribute with the wrong shape is the existing `E0110`;
-a macro whose `#Macro` metadata is malformed is `E1010`. Extending the
+a macro whose `#[macro]` metadata is malformed is `E1010`. Extending the
 attribute-value production is preferable to a macro-only second argument
 syntax: it keeps “one attribute form” true and leaves a future built-in
 attribute free to take a string or integer.
 
-**Rejected:** a separate `#Macro` mini-language with its own brackets. It
+**Rejected:** a separate `#[macro]` mini-language with its own brackets. It
 would be a second attribute grammar, and the existing registry already has a
 shape check.
 
 ## Definition: implementation functions
 
-**Decision: a macro is an ordinary module-level `fn` carrying `#Macro`.**
+**Decision: a macro is an ordinary module-level `fn` carrying `#[macro]`.**
 
 - The function remains an ordinary function. It is type-checked normally and
   can be called and tested at runtime. At expansion time the compiler executes
   it in the sandbox.
-- The macro is registered under the name in `#Macro`; the function's own
+- The macro is registered under the name in `#[macro]`; the function's own
   identifier is independent. A derive macro's name is its target trait; an
   attribute or function macro's name is the `name` string.
 - The function's `pub` controls the visibility of both the function value and
   the macro. A private macro cannot be reached from another module.
-- `#Macro` is registered on `fn` only (another host is `E0109`). On a
+- `#[macro]` is registered on `fn` only (another host is `E0109`). On a
   module-level, non-`async`, non-`extern`, non-generic function with exactly
   one parameter and a `Result<Output, ast::MacroFailure>` return type it is
   valid; anything else is `E1010`.
@@ -151,7 +149,7 @@ node it cannot return the decorated declaration. This change defines:
 - the missing field records (`ast::FieldInfo`, `ast::VariantInfo`,
   `ast::ParamInfo`, `ast::GenericParam`, `ast::AttributeInfo`);
 - `ast::AttributeInput` with positional `args` and a named `named_args` map,
-  instead of a single map that cannot express `#route("/v1/users")`'s positional
+  instead of a single map that cannot express `#[route("/v1/users")]`'s positional
   argument;
 - namespaced type names under `ast::` so the macro surface adds exactly one
   prelude name, `ast`.
@@ -177,7 +175,7 @@ built-in.
 - A plain `use m::w` imports the macro `w` as well as any value or type `w`;
   `use m::w as w2` aliases all three. `use type` imports no macro. A path
   that resolves only to a macro is a valid `use`.
-- `pub use` re-exports macros; `pub` on the `#Macro` function exports them.
+- `pub use` re-exports macros; `pub` on the `#[macro]` function exports them.
 - A macro may share a spelling with a value or type in the same module; the
   namespaces are independent. Two macros with one name in one module are
   `E1010`.
@@ -187,7 +185,7 @@ built-in.
   (`Debug`, `Display`, `ToString`).
 
 **Alternative considered: one namespace for macros, values, and types.**
-Rejected: `#Derive(Serialize)` needs the macro `Serialize` and the trait
+Rejected: `#[derive(Serialize)]` needs the macro `Serialize` and the trait
 `Serialize` to be usable under one spelling, exactly as `use serde::Serialize`
 brings both into scope in the draft. A single namespace would force a rename
 of one of them and make the common derive case awkward.
@@ -203,14 +201,14 @@ macros in expression order; new macro calls in the next round.**
 
 On one declaration:
 
-1. every `#Derive` target in written order, left to right;
+1. every `#[derive]` target in written order, left to right;
 2. every attribute macro in written order, top to bottom.
 
 Across the file, declarations are visited in source order. Function macro
 calls are expanded when the containing expression is visited.
 
-The reason for fixing source order is predictability: `#auth` followed by
-`#route` is a way for the author to say that the authentication wrapper must
+The reason for fixing source order is predictability: `#[auth]` followed by
+`#[route]` is a way for the author to say that the authentication wrapper must
 exist before the route macro runs. Leaving same-kind order to the
 implementation makes cross-macro dependencies non-portable.
 
@@ -342,7 +340,7 @@ intentional and is stated in
 [builtins/sandbox.md](specs/builtins/sandbox.md).
 
 **Alternative considered: forbid runtime calls to macro functions.** Rejected:
-it makes the implementation untestable with `#Test` and adds a second calling
+it makes the implementation untestable with `#[test]` and adds a second calling
 convention for no safety gain.
 
 ### Context
@@ -381,7 +379,7 @@ constructs that kind's input record from its public fields.
    calls;
 2. package configuration: tooling-supplied overrides (the manifest format is
    outside this specification);
-3. macro `#Macro` keys.
+3. macro `#[macro]` keys.
 
 A top-level macro expansion owns a budget initialized from the root macro's
 effective quota; nested calls through an `ast::call_*` entry point draw from
@@ -447,7 +445,7 @@ therefore `E1001`–`E1012`, a new range:
 | `E1007` | execution | sandbox violation |
 | `E1008` | macro author | `ast::MacroFailure` returned |
 | `E1009` | expansion | local name unresolved in a macro argument |
-| `E1010` | expansion | invalid `#Macro` definition |
+| `E1010` | expansion | invalid `#[macro]` definition |
 | `E1011` | expansion | malformed quote or unholeable value |
 | `E1012` | execution | macro execution trapped (index, division, `panic`) |
 
@@ -481,10 +479,10 @@ not have to guess whether a span came from the macro author or from the user.
 
 ## Consequences
 
-- The grammar gains one attribute-value shape, one `#Macro` usage, one
+- The grammar gains one attribute-value shape, one `#[macro]` usage, one
   `name!(…)` call form, and one quote form. It gains no new token.
 - The AST gains `MacroCallExpr`, `QuoteExpr`, `QuoteHole`, and a widened
-  `AttributeArg`; `#Macro` is an ordinary `FnDeclaration` with an attribute.
+  `AttributeArg`; `#[macro]` is an ordinary `FnDeclaration` with an attribute.
 - The attribute registry changes from “closed set” to “built-in set plus user
   attribute macros”. The built-in entries keep their positions and codes.
 - The macro namespace is separate; `use`/`pub use` and `pub` include it. The
@@ -524,14 +522,14 @@ implementation, because they do not affect the surface this change defines:
 | File | Gain |
 |------|------|
 | [`grammar.md`](../../grammar.md) | widened `AttributeArg`, attributes on `type`/`let`/`const`, `MacroCall`, `QuoteCall`, production index |
-| [`ast.md`](../../ast.md) | `MacroCallExpr`, `QuoteExpr`, `AttributeArgNode`, note on `#Macro` as `FnDeclaration` |
+| [`ast.md`](../../ast.md) | `MacroCallExpr`, `QuoteExpr`, `AttributeArgNode`, note on `#[macro]` as `FnDeclaration` |
 | [`introduction.md`](../../introduction.md) | the macro non-goal becomes “no declarative macros; procedural macros are compile-time functions” |
 | [`type-system/errors.md`](../../type-system/errors.md) | `E1001`–`E1012`, the family row, the three error-source enums |
 | [`type-system/checking-rules.md`](../../type-system/checking-rules.md) | macro definition, invocation, expansion-order, and duplicate rules |
 | [`expressions/calls.md`](../../expressions/calls.md) | macro call syntax, argument passing, `ast::quote!`, expansion typing |
 | [`testing.md`](../../testing.md) | the three test layers for macros |
 | [`memory-and-runtime.md`](../../memory-and-runtime.md) | `ast::` macro values and their fields |
-| [`types/traits.md`](../../types/traits.md) | extensible attribute registry, `#Macro`, user derive targets, deletion rule |
+| [`types/traits.md`](../../types/traits.md) | extensible attribute registry, `#[macro]`, user derive targets, deletion rule |
 | [`names.md`](../../names.md) | macro namespace and naming |
 | [`modules/import-export.md`](../../modules/import-export.md) | macro export/import, collisions, unused use |
 | [`modules/visibility.md`](../../modules/visibility.md) | `pub` macro visibility |

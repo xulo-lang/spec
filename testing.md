@@ -1,6 +1,6 @@
 # Tests
 
-A program's tests are declarations in its source: the `#Test` form marks a
+A program's tests are declarations in its source: the `#[test]` form marks a
 function to be checked with the rest of the file and to be executed only by a
 test tool. This chapter specifies the declaration's form, when its body is
 checked, what the `async` marker adds, and what it means for a test to pass or
@@ -13,11 +13,10 @@ this specification ([README §1.1](README.md)).
 The form is `TestDecl` in the grammar ([grammar.md](grammar.md)):
 
 ```text
-TestDecl = "#Test" [ "(" [ StringLiteral ] ")" ] [ "async" ] "fn"
-           Identifier "(" ")" Block ;
+TestDecl = "#" "[" "test" "]" [ "async" ] "fn" Identifier "(" ")" Block ;
 ```
 
-- A `#Test` function appears at file scope, among a module's top-level
+- A `#[test]` function appears at file scope, among a module's top-level
   declarations ([modules/source-files.md](modules/source-files.md)); it is
   not a statement and appears nowhere else.
 - It carries no `pub`, no parameters, no return type, no generic parameters,
@@ -26,40 +25,36 @@ TestDecl = "#Test" [ "(" [ StringLiteral ] ")" ] [ "async" ] "fn"
   ([modules/visibility.md](modules/visibility.md)).
 - The identifier is the test's identity as a tool reports it. It need not be
   unique across a module — two tests MAY share a name, and a tool tells them
-  apart by their positions or their titles — but it is never a name in the
-  value namespace ([The name](#the-name) below).
-- An optional parenthesized string between the attribute and the signature —
-  `#Test("parse test")` — is the test's **title**: metadata the declaration
-  carries for a tool's reporting. It is not a name in any namespace, it
-  binds nothing, and it need not be unique. An empty group `#Test()` and the
-  bare form both mean no title; the bare form is **RECOMMENDED** when no
-  title is wanted.
+  apart by their positions — but it is never a name in the value namespace
+  ([The name](#the-name) below).
+- The attribute takes no arguments: `#[test()]`, `#[test("…")]`, and
+  `#[test(name, …)]` do not form a `TestDecl`.
 - The optional `async` marker says the body suspends; it is spelled exactly
-  as `async` is spelled on a function, and it follows the attribute and its
-  optional title group (`#Test("…") async fn`, never `async #Test fn`).
+  as `async` is spelled on a function, and it follows the attribute
+  (`#[test] async fn`, never `async #[test] fn`).
 
 ```xulo
-#Test("parse test")
+#[test]
 fn test_parse() {
   assert(parse_ok(), "parses")
 }
 
-#Test
+#[test]
 fn absent_key_is_null() {
   let m = { a: 1 }
   assert(m.get("z") == null, "absent key is null")
 }
 
-#Test()
+#[test]
 async fn delayed_task_finishes() {
   await Time::sleep(1)
 }
 ```
 
-The examples write `#Test` on its own line directly above `fn`, and that
+The examples write `#[test]` on its own line directly above `fn`, and that
 placement is **RECOMMENDED**: the attribute marks the whole declaration and
 reads better apart from the signature. The grammar is newline-insensitive
-([lexical-structure.md](lexical-structure.md)), so `#Test fn name() { … }` on
+([lexical-structure.md](lexical-structure.md)), so `#[test] fn name() { … }` on
 one line is equally well-formed.
 
 ## Checking
@@ -79,16 +74,13 @@ one line is equally well-formed.
 
 ## The name
 
-A `#Test` function's identifier is declared but binds no value:
+A `#[test]` function's identifier is declared but binds no value:
 
 - Any reference to it — a call, a value use, a path, or any other mention —
   is a compile-time error (`E0107`)
   ([type-system/errors.md](type-system/errors.md)). This includes a
   self-reference inside the test's own body: a recursive check is written as
   an ordinary helper function, which the test calls.
-- The title, when written, is not a name either — it lives in metadata
-  position and cannot be referenced; every rule above is about the
-  identifier.
 - The declaration is still well-formed without any reference: the name
   exists for the tool's discovery and reporting, and for nothing else.
 - The restriction is the declaration's inertness in one rule — no execution
@@ -125,17 +117,17 @@ A `#Test` function's identifier is declared but binds no value:
 ## Example
 
 ```xulo
-#Test
+#[test]
 fn await_needs_the_async_marker() {
   await Time::sleep(1) // error: `await` outside of an `async` context (E0501)
 }
 
-#Test
+#[test]
 async fn await_with_the_async_marker() {
   await Time::sleep(1) // ok: the test passes when its task completes
 }
 
-#Test
+#[test]
 fn reference_is_forbidden() {
   assert(true, "runs only under a tool")
 }

@@ -217,7 +217,7 @@ without surrounding whitespace and followed by `::` — the rule of
 
 Every alternative of `Declaration` MAY carry `pub`, except `impl` and
 `TestDecl`: `impl` introduces no name and is never part of an interface, and
-a `#Test` declaration is never part of an interface either
+a `#[test]` declaration is never part of an interface either
 ([visibility.md](modules/visibility.md)); the four component declarations
 carry no visibility marker either
 ([state.md](components/state.md)). An `ExternFnDecl` is the exception in the
@@ -238,7 +238,8 @@ whose `GenericParams?` exists only so that an attempt can be diagnosed
 ([generics.md](types/generics.md), [traits.md](types/traits.md)).
 
 ```text
-Attribute     = "#" Identifier [ "(" [ AttributeArgs ] ")" ] ;
+Attribute     = "#" "[" AttributeName [ "(" [ AttributeArgs ] ")" ] "]" ;
+AttributeName = Identifier | "derive" | "macro" ;
 AttributeArgs = AttributeArg { "," AttributeArg } [ "," ] ;
 AttributeArg  = Identifier ;
 AttributeList = { Attribute } ;
@@ -314,9 +315,16 @@ IdentifierList       = Identifier { "," Identifier } [ "," ] ;
 
 ConstDecl = [ "pub" ] "const" Identifier [ ":" Type ] "=" Expression ;
 
-TestDecl = "#Test" [ "(" [ StringLiteral ] ")" ] [ "async" ] "fn"
-           Identifier "(" ")" Block ;
+TestDecl = "#" "[" "test" "]" [ "async" ] "fn" Identifier "(" ")" Block ;
 ```
+
+An attribute is written `#[name]` or `#[name(args)]`. The built-in attribute
+names are lowercase. `derive` and `macro` are reserved words accepted only in
+the attribute-name position; `test` is an ordinary identifier. Attribute names
+occupy their own namespace and bind nothing. The argument list keeps its
+existing shape; a change that widens `AttributeArg` for macro metadata is a
+separate change. The declarations that carry an `AttributeList` are
+unchanged.
 
 `:=` appears only directly after `let`, never after `let mut` or `const`, and
 `let x := e` means exactly `let mut x = e`
@@ -325,32 +333,36 @@ required. A `DestructuringBinding` deconstructs a `struct` with `{ … }` or a
 tuple with `( … )`; the two forms take an initializer of the matching shape
 and nothing else.
 
-A `TestDecl` is a function declaration with a fixed shape: `#Test` precedes
-its optional title group, `async`, and `fn` (never `async #Test fn`), the
-parameter list and the return type are absent — the body is an implicit
-`fn(): unit` — and it carries no `pub`, no generic parameters, and no
-`where` clause. The identifier is the test's identity as a tool reports it,
-not a name in the value namespace: referencing it is a compile-time error
-(`E0107`). The optional `async` marker makes the body an `async` context
+A `TestDecl` is a function declaration with a fixed shape: `#[test]` precedes
+`async` and `fn` (never `async #[test] fn`), the parameter list and the
+return type are absent — the body is an implicit `fn(): unit` — and it
+carries no `pub`, no generic parameters, and no `where` clause. The
+identifier is the test's identity as a tool reports it, not a name in the
+value namespace: referencing it is a compile-time error (`E0107`). The
+optional `async` marker makes the body an `async` context
 ([async-expressions.md](expressions/async-expressions.md)); the declaration's
 checking, inertness, and pass/fail criterion are specified in
 [testing.md](testing.md).
 
-The head token is written exactly `#Test`; the production carries the
-attribute name as a literal, so the test form accepts no other attributes,
-and its optional parenthesized group carries a `StringLiteral` title — an
-absent group and an empty group `()` both mean no title. When the token
-sequence `#Test` `("(" StringLiteral? ")")?` `async`? `fn` Identifier `(` `)`
-Block appears at file scope, the declaration is a `TestDecl` and no
-attribute lookup runs. A `#Test` whose group holds an identifier parses as
-an ordinary `FnDecl` carrying the attribute, and the registry rules of
-[traits.md](types/traits.md) diagnose it (`E0110` —
-`` attribute `Test` takes the form `#Test ("…")? [async] fn name() { … }` ``);
-a group holding anything else — a numeral, for instance — is a syntax error.
-A `#Test` that precedes a `fn` with parameters, a return type, generic
-parameters, a `where` clause, or `pub` does not match `TestDecl` and is the
-same `E0110`. Written on a `struct`, `enum`, `trait`, or `impl`, `#Test` is
-`E0109`.
+The head is written exactly `#[test]`, with no argument group. The production
+carries the attribute name as a literal, so the test form accepts no other
+attributes. When the token sequence `#[test]` followed by `async`? `fn`
+Identifier `(` `)` Block appears at file scope, the declaration is a
+`TestDecl` and no attribute lookup runs.
+
+When the full test form does not match, `#[test]` and `#[test(...)]` are
+ordinary attributes on the `FnDecl`. A bare `#[test]` before a `fn` with
+parameters, a return type, generic parameters, a `where` clause, or `pub` is
+`E0110`; so are `#[test()]` and `#[test(name, …)]`, because the test attribute
+takes no arguments. A `#[test(...)]` group that the current `AttributeArg`
+grammar cannot parse — notably a `StringLiteral` or a numeral — is a syntax
+error. When the `add-macro-system` change widens `AttributeArg`, such a group
+parses and falls under the same `E0110` rule. The registry rules of
+[traits.md](types/traits.md) give the message for the `E0110` case
+(`` attribute `test` takes no arguments and is written `#[test]`, followed by
+`[async] fn name() { … }` ``).
+
+Written on a `struct`, `enum`, `trait`, or `impl`, `#[test]` is `E0109`.
 
 ### Component declarations
 
@@ -767,7 +779,7 @@ production itself appears exactly once, in its own section.
 | `StringLiteral`, `StringChar`, `EscapeSeq`, `TemplateLiteral`, `TemplateText`, `TemplateEscape`, `Interpolation` | [Lexical structure](#lexical-structure) |
 | `DQuote`, `SQuote`, `Backslash`, `Backtick`, `Operator`, `WordOperator`, `SymbolOperator`, `Delimiter` | [Lexical structure](#lexical-structure) |
 | `Program`, `HeaderItem`, `Declaration`, `Entry`, `EntryPoint`, `ModDecl`, `ModuleBody`, `UseDecl`, `PubUse`, `UseTarget`, `UsePath`, `UseGroup`, `UseGlob`, `UseEntry`, `PubUseLocal`, `PathHead`, `Path`, `PackageName` | [Program and modules](#program-and-modules) |
-| `Attribute`, `AttributeArgs`, `AttributeArg`, `AttributeList`, `FnDecl`, `AbiTag`, `ExternBlock`, `ExternItem`, `ExternParamList`, `ExternParam`, `ExternFnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl`, `TestDecl` | [Declarations](#declarations) |
+| `AttributeName`, `Attribute`, `AttributeArgs`, `AttributeArg`, `AttributeList`, `FnDecl`, `AbiTag`, `ExternBlock`, `ExternItem`, `ExternParamList`, `ExternParam`, `ExternFnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl`, `TestDecl` | [Declarations](#declarations) |
 | `ComponentDecl`, `StateDecl`, `StoreDecl`, `EffectDecl`, `EnvironmentDecl` | [Declarations](#declarations) |
 | `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `PrimitiveType`, `LiteralType`, `TypeArgs`, `TypeList`, `TupleType`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
 | `Expression`, `AssignmentExpression`, `TernaryExpression`, `LogicalOrExpression`, `LogicalAndExpression`, `NullishExpression`, `EqualityExpression`, `IsExpression`, `RelationalExpression`, `RangeExpression`, `BitOrExpression`, `BitXorExpression`, `BitAndExpression`, `ShiftExpression`, `AdditiveExpression`, `MultiplicativeExpression`, `PowerExpression`, `UnaryExpression`, `PostfixExpression`, `PostfixOperand`, `CallTypeArgs` | [Expressions](#expressions) |

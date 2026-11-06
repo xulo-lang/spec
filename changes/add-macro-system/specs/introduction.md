@@ -8,10 +8,10 @@ The non-goal bullet becomes:
 
 > - **No declarative macro language.** Xulo has no `macro_rules!`-style
 >   pattern/template language and no token-substitution syntax. It has
->   **procedural macros** instead: a `#Macro` function is ordinary checked
+>   **procedural macros** instead: a `#[macro]` function is ordinary checked
 >   Xulo code that runs at compile time in a sandbox and returns a structured
 >   AST fragment ([`builtins/execution.md`](builtins/execution.md)). The macro surface is
->   `#Derive(Name)`, `#name(…)`, and `name!(…)`; the declaration-attribute
+>   `#[derive(Name)]`, `#[name(…)]`, and `name!(…)`; the declaration-attribute
 >   registry is the built-in set plus the attribute macros in scope, never an
 >   untyped extension point
 >   ([`types/traits.md`](types/traits.md)).

@@ -113,12 +113,12 @@ the source line, a caret line, and optional notes.
 | `E0104` | a collision between bindings header forms create: two `use` entries, a `use` or `mod` name against a declaration, a glob overlap, a manifest path name against a local `mod` or alias | `use math::add;` then `use util::add` | `` `add` is bound twice `` | [import-export.md](../modules/import-export.md) |
 | `E0105` | a type alias that expands to itself | `type A = A` | ``type alias `A` has a cyclic definition`` | [composite-types.md](../types/composite-types.md) |
 | `E0106` | a module-scope declaration bears a reserved name | `fn print(…)` at file scope | ``the name `print` is reserved by the prelude`` | [prelude.md](../builtins/prelude.md) |
-| `E0107` | a reference to the name of a `#Test` function — a call, a value use, a path, or any other mention | `helper_check()` where `#Test fn helper_check` exists | `` `helper_check` is a test function and cannot be referenced `` | [testing.md](../testing.md) |
-| `E0108` | an attribute name that is in no registry | `#Inline` | `` attribute `Inline` is not defined `` | [traits.md](../types/traits.md) |
-| `E0109` | a registered attribute on a declaration the registry does not allow it on | `#Derive(Debug) fn main()` | `` attribute `Derive` is not valid on a function `` | [traits.md](../types/traits.md) |
-| `E0110` | a registered attribute whose arguments do not fit the registered shape | `#Derive` | `` attribute `Derive` takes a parenthesized list of trait names `` | [traits.md](../types/traits.md) |
-| `E0111` | a well-shaped argument that names a reserved, unregistered derive target | `#Derive(Display)` | `` `Display` is not a registered derive target `` | [traits.md](../types/traits.md) |
-| `E0112` | `#Derive` on a type that declares generic parameters | `#Derive(Debug) struct Box<const N: int> { v: int }` | `` cannot derive `Debug` for a generic type `` | [traits.md](../types/traits.md) |
+| `E0107` | a reference to the name of a `#[test]` function — a call, a value use, a path, or any other mention | `helper_check()` where `#[test] fn helper_check` exists | `` `helper_check` is a test function and cannot be referenced `` | [testing.md](../testing.md) |
+| `E0108` | an attribute name that is in no registry | `#[inline]` | `` attribute `inline` is not defined `` | [traits.md](../types/traits.md) |
+| `E0109` | a registered attribute on a declaration the registry does not allow it on | `#[derive(Debug)] fn main()` | `` attribute `derive` is not valid on a function `` | [traits.md](../types/traits.md) |
+| `E0110` | a registered attribute whose arguments do not fit the registered shape | `#[derive]` | `` attribute `derive` takes a parenthesized list of trait names `` | [traits.md](../types/traits.md) |
+| `E0111` | a well-shaped argument that names a reserved, unregistered derive target | `#[derive(Display)]` | `` `Display` is not a registered derive target `` | [traits.md](../types/traits.md) |
+| `E0112` | `#[derive]` on a type that declares generic parameters | `#[derive(Debug)] struct Box<const N: int> { v: int }` | `` cannot derive `Debug` for a generic type `` | [traits.md](../types/traits.md) |
 | `E0113` | a struct whose field types reach the declaring struct through fields, tuple elements, array element positions, and alias expansion with no intervening indirection | `struct Node { node: Node }` | ``type `Node` has a cyclic field definition`` | [composite-types.md](../types/composite-types.md) |
 
 `E0111` carries the note `` = note: registered targets: `Debug` ``.
@@ -130,9 +130,9 @@ a further target specifies what it means. (`Display` is a language protocol
 regardless — see [traits.md](../types/traits.md) — but its form is the
 author's to write and it is never derived.)
 
-The expansion of `#Derive` is an ordinary impl, so it reuses the codes the
+The expansion of `#[derive]` is an ordinary impl, so it reuses the codes the
 impl rules own: a collision with a hand-written `impl Debug` — or a second
-`#Derive(Debug)` — is `E0805`, and a field or payload that is a `struct`
+`#[derive(Debug)]` — is `E0805`, and a field or payload that is a `struct`
 with no `Debug` impl is `E0801`, whose message shape
 (`` `X` does not implement `Y` ``) it shares. Template interpolation, `str`,
 and a rendering position that meets `unknown` — printed, expanded by a
@@ -153,7 +153,7 @@ derive, or interpolated — own `E0212` and give it the same message.
 | `E0209` | a literal does not fit the type it is given — its default type or a type it is coerced into | `let b: u8 = 300` | ``literal `300` does not fit in `u8` `` | [literals.md](../expressions/literals.md) |
 | `E0210` | constant arithmetic divides by zero, takes a remainder by zero, overflows its type, or shifts by a negative or out-of-range amount | `const H = 1 / 0` | ``division by zero in constant expression`` | [operators.md](../expressions/operators.md) |
 | `E0211` | operands, branches, or arms have no common type | `flag ? 1 : "x"` | `` `int` and `string` have no common type `` | [checking-rules.md](checking-rules.md) |
-| `E0212` | a value has no string form, in `${…}`, in `str`, at `print`, or in a `#Derive` expansion | `` `${user}` `` without `Display` | `` `User` has no string form; implement `Display` `` | [traits.md](../types/traits.md) |
+| `E0212` | a value has no string form, in `${…}`, in `str`, at `print`, or in a `#[derive]` expansion | `` `${user}` `` without `Display` | `` `User` has no string form; implement `Display` `` | [traits.md](../types/traits.md) |
 | `E0213` | the iterable of a `for` loop is not a supported type | `for x in 42` | `` `int` is not iterable `` | [control-flow.md](../expressions/control-flow.md) |
 | `E0214` | `break`, `continue`, or `return` is written outside its context | `return` at file scope | `` `return` outside of a function `` | [return-and-block.md](../statements/return-and-block.md) |
 | `E0215` | a subscript is applied to a type that is not a `List` or an `Array` | `"abc"[0]`, `m[k]` | `` `string` and `Map` cannot be indexed `` | [checking-rules.md](checking-rules.md) |
@@ -218,7 +218,7 @@ so the first note implies the type has neither implementation.
 
 | Code | Trigger | Example | Message shape | Specified in |
 |------|---------|---------|---------------|--------------|
-| `E0501` | `await` is written outside an `async` context: in a non-`async` function or closure body, in a component body, in an `@Effect` body, at module top level, or in a `#Test` function that is not marked `async` | `await t` in a plain `fn` | `` `await` outside of an `async` context `` | [async-expressions.md](../expressions/async-expressions.md) |
+| `E0501` | `await` is written outside an `async` context: in a non-`async` function or closure body, in a component body, in an `@Effect` body, at module top level, or in a `#[test]` function that is not marked `async` | `await t` in a plain `fn` | `` `await` outside of an `async` context `` | [async-expressions.md](../expressions/async-expressions.md) |
 | `E0502` | the operand of `await` is not a `Task<T>` | `await 3` | ``cannot await `int`; expected `Task<T>` `` | [async-expressions.md](../expressions/async-expressions.md) |
 | `E0503` | an `async` body returns a value that differs from its declared type | returning `Task<int>` from `async fn f(): int` | ``expected `int`, found `Task<int>` `` | [async-expressions.md](../expressions/async-expressions.md) |
 

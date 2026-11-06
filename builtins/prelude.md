@@ -47,7 +47,7 @@ a program declares them itself; they are not part of the prelude (see
 | Protocol | Method | Required by |
 |----------|--------|-------------|
 | `Display` | `fn display(self, format: Format): string` | interpolation in a template literal, the intrinsic `str`, the `str` domain of `List.join`, and `print` |
-| `Debug` | `fn debug(self, format: Format): string` | the field rule of `#Derive(Debug)`, and `print` |
+| `Debug` | `fn debug(self, format: Format): string` | the field rule of `#[derive(Debug)]`, and `print` |
 
 - A type implements `Display` with `impl Display for T`, whose `display`
   returns the string form of the receiver at the `Format` it is given
@@ -62,7 +62,7 @@ a program declares them itself; they are not part of the prelude (see
   implements `Display` has `value.to_string()`, defined as `display` at the
   default `Format` — `Format(precision: null, alternate: false)` — and no
   `impl` declares the method.
-- A type implements `Debug` with `impl Debug for T`, or by `#Derive(Debug)`:
+- A type implements `Debug` with `impl Debug for T`, or by `#[derive(Debug)]`:
   `debug` returns the value's structural form, the counterpart of
   `Display`'s user-facing one. Nothing requires `Debug` for string form;
   the derive's field rule and `print` are its consumers.

@@ -2,7 +2,7 @@
 
 > **Delta** — replaces `AttributeNode`, adds `MacroCallExpr`, `QuoteExpr`, and
 > their supporting nodes to the Declarations and Expressions sections of
-> `ast.md`, and notes that a `#Macro` declaration is an ordinary
+> `ast.md`, and notes that a `#[macro]` declaration is an ordinary
 > `FnDeclaration`. The rest of the AST is unchanged.
 
 ## Declarations
@@ -12,7 +12,7 @@ Replace `AttributeNode` with:
 ```typescript
 interface AttributeNode extends BaseNode {
   type: 'Attribute';
-  name: IdentifierNode;
+  name: AttributeNameNode;
   args: AttributeArgNode[] | null;
 }
 
@@ -29,16 +29,19 @@ type AttributeValueNode =
   | BooleanLiteral;
 ```
 
-`args` is `null` for a bare attribute (`#Test`) and an array when a
-parenthesized group is written; the array is empty for `#Test()`. An
-`AttributeArgNode` with a non-null `name` is the `name = value` form, which
-`#Macro` uses (`#Macro(kind = "derive", target = Serialize)`); a positional
-argument has `name: null` (`#Derive(Debug)`, `#route("/v1/users")`). The registry
-entry decides which shape is valid.
+`AttributeNameNode` is the node introduced by `change-attribute-spelling`;
+`name.name` is the lowercase spelling. `args` is `null` for a bare attribute
+(`#[route]`) and an array when a parenthesized group is written; the array is
+empty for `#[route()]`. An `AttributeArgNode` with a non-null `name` is the
+`name = value` form, which `#[macro]` uses
+(`#[macro(kind = "derive", target = Serialize)]`); a positional argument has
+`name: null` (`#[derive(Debug)]`, `#[route("/v1/users")]`). The registry entry
+decides which shape is valid.
 
-A `#Macro` definition adds no declaration node: it is an ordinary
+A `#[macro]` definition adds no declaration node: it is an ordinary
 `FnDeclaration` whose `attributes` contains the `AttributeNode` named
-`Macro`. The same is true of `#Derive` and `#Test` on their existing nodes.
+`macro`. The same is true of `#[derive]` and `#[test]` on their existing
+nodes.
 
 ## Expressions
 

@@ -49,7 +49,7 @@ runtime panic in ordinary code remains a panic without an `E` code.
 | `E1007` | the forbidden operation in the macro definition | the macro author |
 | `E1008` | `ast::MacroFailure.span` if present; otherwise the attribute argument, derive target, or function macro argument | the user |
 | `E1009` | the unresolved name in the macro argument | the user |
-| `E1010` | the `#Macro` attribute or the offending key | the macro author |
+| `E1010` | the `#[macro]` attribute or the offending key | the macro author |
 | `E1011` | the quote hole or the substituted fragment | the macro author |
 | `E1012` | the trapping source operation in the macro definition | the macro author |
 
@@ -91,7 +91,7 @@ error[E1001] semantic: macro `derive_model` exceeded its step quota
    = note: used 1000003 of 1000000 steps
    = note: quota source: global default
    = note: raise the limit in the package configuration or in
-           #Macro(kind = "derive", target = Model, max_steps = …)
+           #[macro(kind = "derive", target = Model, max_steps = …)]
 ```
 
 ### `E1002` conversion
@@ -142,7 +142,7 @@ error[E1004] semantic: macro expansion exceeded maximum rounds (100)
 error[E1005] semantic: cannot find macro `Serialize`
   --> main.xulo:3:9
    |
- 3 | #Derive(Serialize)
+ 3 | #[derive(Serialize)]
    |         ^^^^^^^^^
    |
    = note: no derive macro `Serialize` is in scope
@@ -155,7 +155,7 @@ error[E1005] semantic: cannot find macro `Serialize`
 error[E1006] semantic: `route` is a function macro, not an attribute macro
   --> main.xulo:3:2
    |
- 3 | #route("/v1/users")
+ 3 | #[route("/v1/users")]
    |  ^^^^^
    |
    = note: function macros are invoked as `route!(…)`
@@ -183,7 +183,7 @@ error[E1007] semantic: macro `sql` cannot access the filesystem
 error[E1008] semantic: macro `route` reported an error
   --> main.xulo:3:8
    |
- 3 | #route("/v2/users")
+ 3 | #[route("/v2/users")]
    |         ^^^^^^^^^^^
    |
    = note: route path must start with "/v1"
@@ -214,10 +214,10 @@ error[E1009] semantic: cannot resolve `user_name` in macro arguments
 error[E1010] semantic: invalid macro definition: derive macro requires `target`
   --> macros/model.xulo:1:1
    |
- 1 | #Macro(kind = "derive")
+ 1 | #[macro(kind = "derive")]
    | ^^^^^^^^^^^^^^^^^^^^^^^
    |
-   = note: write `#Macro(kind = "derive", target = Model)`
+   = note: write `#[macro(kind = "derive", target = Model)]`
 ```
 
 ### `E1011` malformed quote

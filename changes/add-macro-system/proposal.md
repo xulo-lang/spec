@@ -16,18 +16,18 @@ Xulo gains **procedural macros**: compile-time Xulo functions that receive a
 structured description of source and return a structured AST fragment. There
 are three kinds:
 
-- **derive macros**, invoked by `#Derive(Name)`, which produce additional
+- **derive macros**, invoked by `#[derive(Name)]`, which produce additional
   items — typically an `impl`;
-- **attribute macros**, invoked as an attribute — `#route("/v1/users")` — which
+- **attribute macros**, invoked as an attribute — `#[route("/v1/users")]` — which
   replace the declaration they decorate and may add items beside it;
 - **function macros**, invoked as `name!(…)` — `sql!("SELECT …")` — which
   produce an expression.
 
-A macro is defined by putting `#Macro(…)` on an ordinary module-level
+A macro is defined by putting `#[macro(…)]` on an ordinary module-level
 function:
 
 ```xulo
-#Macro(kind = "derive", target = Serialize)
+#[macro(kind = "derive", target = Serialize)]
 fn derive_serialize(
   input: ast::DeriveInput
 ): Result<ast::DeriveOutput, ast::MacroFailure> {
@@ -43,7 +43,7 @@ fn derive_serialize(
 ```
 
 ```xulo
-#Macro(kind = "attribute", name = "route")
+#[macro(kind = "attribute", name = "route")]
 fn route_attribute(
   input: ast::AttributeInput
 ): Result<ast::AttributeOutput, ast::MacroFailure> {
@@ -68,7 +68,7 @@ fn route_attribute(
 ```
 
 ```xulo
-#Macro(kind = "function", name = "sql")
+#[macro(kind = "function", name = "sql")]
 fn sql_macro(
   input: ast::FunctionInput
 ): Result<ast::FunctionOutput, ast::MacroFailure> {
@@ -106,7 +106,7 @@ The current specification has no macro mechanism
 ([`introduction.md`](../../introduction.md), *No macro system*), and declaration
 attributes are a closed checker-interpreted registry
 ([`types/traits.md`](../../types/traits.md)). A library author who needs
-serialization, routing, schema generation, test markers beyond `#Test`, or a
+serialization, routing, schema generation, test markers beyond `#[test]`, or a
 small embedded DSL must either ask for a compiler change or write the
 boilerplate by hand at every use site. Both options stop the library, not the
 language, from growing.
@@ -115,9 +115,9 @@ language, from growing.
 
 The motivating cases all inspect a declaration and produce code from it:
 
-- `#Derive(Serialize)` on `struct User { … }` should generate the
+- `#[derive(Serialize)]` on `struct User { … }` should generate the
   `impl Serialize for User`;
-- `#route("/v1/users", "GET")` on a function should generate the registration
+- `#[route("/v1/users", "GET")]` on a function should generate the registration
   beside the function;
 - `sql!("SELECT …")` should validate a literal and produce the query value.
 
@@ -129,7 +129,7 @@ participate in ordinary name resolution and type checking.
 ### Procedural macros are already Xulo
 
 The macro author writes `struct`, `if`, `Result`, and `?` — the language the
-specification already defines. The only new surface is the `#Macro`
+specification already defines. The only new surface is the `#[macro]`
 declaration, the `ast::` namespace of input/output records, `ast::quote!`, and
 the macro invocation forms. Xulo deliberately does **not** add a second
 pattern/template language (a `macro_rules!`-style declarative macro); see
@@ -139,9 +139,9 @@ pattern/template language (a `macro_rules!`-style declarative macro); see
 
 ### In scope
 
-- **Definitions.** `#Macro(kind = …, …)` on a module-level `fn`, with the
+- **Definitions.** `#[macro(kind = …, …)]` on a module-level `fn`, with the
   three kinds, the fixed input and output types, and the definition checks.
-- **Invocations.** `#Derive(Name)`, user attributes `#name(…)`, and
+- **Invocations.** `#[derive(Name)]`, user attributes `#[name(…)]`, and
   `name!(…)`; lookup in the macro namespace; import and export with `use`,
   `pub use`, and `pub`.
 - **Structured inputs and outputs.** `ast::DeriveInput`,
@@ -176,16 +176,16 @@ pattern/template language (a `macro_rules!`-style declarative macro); see
 - **A general attribute DSL.** Attribute arguments are values, not arbitrary
   expressions; named and positional arguments are bounded by
   `AttributeArg`.
-- **Changing the built-in `Debug` derive.** `#Derive(Debug)` keeps its
+- **Changing the built-in `Debug` derive.** `#[derive(Debug)]` keeps its
   current structural expansion and its `E0112` generic restriction. User
   derive macros may handle generics because they receive the generic
   parameters and decide themselves.
 
 ## Compatibility
 
-- **Purely additive at the invocation surface.** `name!(…)` and `#name(…)`
+- **Purely additive at the invocation surface.** `name!(…)` and `#[name(…)]`
   are new syntax; a program that does not write a macro is read exactly as
-  before. `#Derive(Debug)` and `#Test` keep their existing meanings.
+  before. `#[derive(Debug)]` and `#[test]` keep their existing meanings.
 - **The attribute registry becomes extensible.** Before this change an
   unknown attribute is `E0108` and there is no way to register one. After it,
   a user attribute macro in scope registers its name; an unknown name is
@@ -198,7 +198,7 @@ pattern/template language (a `macro_rules!`-style declarative macro); see
 - **`Error` is not overloaded.** The prelude's `Error` is a one-field runtime
   payload ([`error-handling.md`](../../error-handling.md)). Macro failures are
   `ast::MacroFailure`, which additionally carries an optional `ast::Span`.
-- **Existing macro-free code is unaffected.** A `#Macro` function is also an
+- **Existing macro-free code is unaffected.** A `#[macro]` function is also an
   ordinary function; marking it does not change any other declaration.
 - **Implementation cost.** A conforming compiler needs a sandboxed execution
   engine, an expansion cache, and a merged AST pass before global name
@@ -217,8 +217,8 @@ pattern/template language (a `macro_rules!`-style declarative macro); see
 - **Hygiene by renaming.** Generated names are written by the macro author.
   The language does not rename identifiers; `ast::quote!` splices names
   exactly as written. A macro author who wants a fresh name writes one.
-- **Replacing the closed built-in attributes.** `#Test`, `#Derive(Debug)`,
-  and `#Macro` stay built in; user macros extend the namespace beside them.
+- **Replacing the closed built-in attributes.** `#[test]`, `#[derive(Debug)]`,
+  and `#[macro]` stay built in; user macros extend the namespace beside them.
 - **Changing the error-handling model.** A macro author reports a user error
   with `Result::Err(ast::MacroFailure { message: …, span: … })`; the checker reports it as
   `E1008`. Runtime panics during compile-time execution are `E1012`.
@@ -230,8 +230,8 @@ normative specification:
 
 | Draft | This change | Why |
 |-------|-------------|-----|
-| `[derive(Serialize)]`, `#[macro(…)]` | `#Derive(Serialize)`, `#Macro(…)` | Xulo's attribute marker is `#`, and `#Derive` already exists |
-| `[macro(derive, trait = Serialize)]` | `#Macro(kind = "derive", target = Serialize)` | `derive`, `trait`, and `function` are keywords or reserved words; string kind values avoid them |
+| `[derive(Serialize)]`, `#[macro(…)]` | `#[derive(Serialize)]`, `#[macro(…)]` | Xulo's attribute marker is `#[…]`, and `#[derive]` already exists |
+| `[macro(derive, trait = Serialize)]` | `#[macro(kind = "derive", target = Serialize)]` | `derive`, `trait`, and `function` are keywords or reserved words; string kind values avoid them |
 | `Error` in macro signatures | `ast::MacroFailure` | `Error` is already the prelude's runtime error payload with only `message` |
 | `DeriveInput`, `AstNode`, … bare | `ast::DeriveInput`, `ast::AstNode`, … | keeps the macro surface in one namespace and adds one prelude name |
 | `E0801`–`E0809` | `E1001`–`E1012` | `E0801`–`E0818` are already assigned to traits, impls, and generics |

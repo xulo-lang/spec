@@ -39,7 +39,7 @@
 - [ ] Parse the widened `AttributeArg` and the `MacroCall`/`QuoteCall`
       productions; extend `AttributeNode` with `AttributeArgNode`; add
       `MacroCallExpr` and `QuoteExpr` to the AST.
-- [ ] Register `#Macro` definitions before expansion; build the macro
+- [ ] Register `#[macro]` definitions before expansion; build the macro
       namespace; implement `use`/`pub use`/`pub` for macros; implement
       `E1010` definition checks.
 - [ ] Implement the expansion loop: derive before attribute, same-kind source
@@ -58,12 +58,12 @@
 - [ ] Keep the built-in `Debug` derive and its `E0112` generic restriction;
       add user derive targets without changing `Display`/`ToString`
       reservation (`E0111`).
-- [ ] Extend the attribute hosts to `type`, `let`, and `const`; keep `#Test`
+- [ ] Extend the attribute hosts to `type`, `let`, and `const`; keep `#[test]`
       on `fn` only.
 
 ## Tests
 
-- [ ] Implementation tests: call a macro function directly from `#Test` with
+- [ ] Implementation tests: call a macro function directly from `#[test]` with
       constructed `ast::` input records; assert on the output records.
 - [ ] Expansion tests: a fixture that invokes each kind and inspects the
       expanded AST, plus a compile-fail fixture for each diagnostic.
@@ -71,7 +71,7 @@
       function, a function macro used in an expression, and a macro that
       calls another macro through an `ast::call_*` entry point.
 - [ ] Error tests: `E1001`–`E1012`, including the span chain for a nested
-      `ast::call_*`, a malformed `#Macro`, a malformed quote, a sandbox
+      `ast::call_*`, a malformed `#[macro]`, a malformed quote, a sandbox
       violation, and a quota source note.
 - [ ] Namespace tests: two modules defining the same short macro name;
       `use m1::w` vs `use m2::w`; `use m2::w as w2`; a macro and a function

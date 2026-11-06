@@ -348,18 +348,19 @@ trait Debug {
 
 ## Attributes
 
-A declaration MAY carry attributes written directly before it: the name
-`#Name`, optionally followed by a parenthesized argument list; what the
-arguments may contain is fixed per entry by the registry — `#Derive` takes a
-comma-separated list of trait names with an optional trailing comma.
+A declaration MAY carry attributes written directly before it: the form
+`#[name]`, optionally with a parenthesized argument list inside the brackets;
+what the arguments may contain is fixed per entry by the registry —
+`#[derive]` takes a comma-separated list of trait names with an optional
+trailing comma.
 
 ```xulo
-#Derive(Debug)
+#[derive(Debug)]
 struct User { name: string, age: int }
 ```
 
 An attribute on its own line, directly above the declaration it marks, is
-**RECOMMENDED**; a shared line — `#Derive(Debug) struct User { … }` — is
+**RECOMMENDED**; a shared line — `#[derive(Debug)] struct User { … }` — is
 equally well-formed, the grammar being newline-insensitive
 ([lexical-structure.md](../lexical-structure.md)).
 
@@ -367,13 +368,13 @@ equally well-formed, the grammar being newline-insensitive
   **closed registry**. An attribute whose name is not in the registry is
   `E0108`. There are no inert attributes: every attribute written in source
   is interpreted by the checker.
-- Attribute names occupy their own namespace. `#Derive` binds nothing and
+- Attribute names occupy their own namespace. `#[derive]` binds nothing and
   takes no name away from values, types, or modules.
 - A registered attribute is valid only on the declarations its registry entry
   allows (`E0109`), and its arguments must fit the shape that entry states
   (`E0110`). Attributes are written on the five item declarations — `fn`,
-  `struct`, `enum`, `trait`, and `impl` — and on the test form (`#Test`), and
-  on nothing else
+  `struct`, `enum`, `trait`, and `impl` — and on the test form (`#[test]`),
+  and on nothing else
   ([`../grammar.md`](../grammar.md)).
 - The registry of derive targets is closed in the same way. The only
   registered target is `Debug`. `Display` and `ToString` are reserved names
@@ -384,7 +385,7 @@ equally well-formed, the grammar being newline-insensitive
 
 ### Derive
 
-`#Derive(Debug)` on a `struct` or an `enum` generates exactly the impl an
+`#[derive(Debug)]` on a `struct` or an `enum` generates exactly the impl an
 author would write by hand for the structural case. The body is fixed by the
 target:
 
@@ -407,10 +408,10 @@ target:
   [`../type-system/errors.md`](../type-system/errors.md)).
 
 ```xulo
-#Derive(Debug)
+#[derive(Debug)]
 struct User { name: string, age: int }
 
-#Derive(Debug)
+#[derive(Debug)]
 enum Shape { Circle(float), Rect(float, float) }
 
 let s = User(name: "Alice", age: 30)
@@ -446,40 +447,42 @@ Rules:
   its field renders directly, and a `W` used as another derive's field
   needs `W`'s own `Debug`.
 - The expansion is an ordinary impl, so a hand-written `impl Debug` for
-  the same type, or a second `#Derive(Debug)`, is the conflicting-impl
+  the same type, or a second `#[derive(Debug)]`, is the conflicting-impl
   error `E0805`.
-- `#Derive` on a type that declares generic parameters is `E0112`: the
+- `#[derive]` on a type that declares generic parameters is `E0112`: the
   language has no bound that means "is not a `struct`, or implements
   `Debug`", so the expansion cannot be written for an open
   parameter. A generic type keeps its hand-written impl.
 - A derived impl participates in dispatch exactly as a written one; derive
   introduces no satisfaction that an `impl` would not.
-- `#Derive(Display)` is `E0111`: user-visible text is written by hand, and
+- `#[derive(Display)]` is `E0111`: user-visible text is written by hand, and
   the structural form a derive could default to is `Debug`'s.
 
 ### Test
 
-`#Test` marks a function as a test. It is spelled only by the test form —
-`#Test ("title")? [async] fn name() { … }` — whose shape is fixed
+`#[test]` marks a function as a test. It is spelled only by the test form —
+`#[test]`, followed by `[async] fn name() { … }` — whose shape is fixed
 ([`../testing.md`](../testing.md)):
 
 - the declaration has no parameters, no return type, no generic parameters,
   no `where` clause, and no `pub`;
-- the optional group holds one `StringLiteral` — the test's **title**,
-  metadata for a tool's reporting, not a name; an empty group `()` and an
-  absent group both mean no title, and the bare form is **RECOMMENDED** when
-  no title is wanted;
+- the attribute takes no arguments: `#[test()]`, `#[test("…")]`, and
+  `#[test(name, …)]` do not form a `TestDecl`;
 - the identifier binds no value, and any reference to it is `E0107`.
 
-Written on a `struct`, `enum`, `trait`, or `impl`, `#Test` is `E0109`
-(`` attribute `Test` is not valid on a struct ``). A group that holds an
-identifier, or a `fn` whose shape does not match the test form — parameters,
-a return type, generics, a `where` clause, or `pub` — is `E0110`
-(`` attribute `Test` takes the form `#Test ("…")? [async] fn name() { … }` ``);
-a group holding anything else is a syntax error. When the sequence
-`#Test` `("(" StringLiteral? ")")?` `async`? `fn` Identifier `(` `)` Block
-appears at file scope, the declaration is a `TestDecl` and no registry
-lookup runs ([`../grammar.md`](../grammar.md)).
+Written on a `struct`, `enum`, `trait`, or `impl`, `#[test]` is `E0109`
+(`` attribute `test` is not valid on a struct ``). When the full test form
+does not match, a `#[test]`, `#[test()]`, or `#[test(name, …)]` on the
+non-matching `fn` — including a `fn` with parameters, a return type,
+generics, a `where` clause, or `pub` — is `E0110`
+(`` attribute `test` takes no arguments and is written `#[test]`, followed
+by `[async] fn name() { … }` ``). A `#[test(...)]` group that the current
+`AttributeArg` grammar cannot parse — notably a `StringLiteral` or a numeral
+— is a syntax error when the full test form does not match; when
+`add-macro-system` widens `AttributeArg`, such a group parses and falls under
+the same `E0110` rule. When the sequence `#[test]` followed by `async`? `fn`
+Identifier `(` `)` Block appears at file scope, the declaration is a
+`TestDecl` and no registry lookup runs ([`../grammar.md`](../grammar.md)).
 
 ## Example
 

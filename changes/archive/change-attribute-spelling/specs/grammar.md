@@ -78,6 +78,7 @@ parses and falls under the same `E0110` rule. The registry rules of
 [traits.md](types/traits.md) give the message for the `E0110` case
 (`` attribute `test` takes no arguments and is written `#[test]`, followed by
 `[async] fn name() { … }` ``).
+
 Written on a `struct`, `enum`, `trait`, or `impl`, `#[test]` is `E0109`.
 
 The old forms `#Test`, `#Test("…")`, and `#Test()` no longer parse as an

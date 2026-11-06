@@ -27,10 +27,10 @@ struct GlobalQuota {
    build configuration (the manifest). The manifest format is outside this
    specification ([README.md](../README.md), § 1.1); the compiler consumes the
    three values and records the source as `package`.
-3. **Macro override.** A `#Macro` declaration MAY set any field:
+3. **Macro override.** A `#[macro]` declaration MAY set any field:
 
    ```xulo
-   #Macro(kind = "derive", target = Model, max_steps = 5000000)
+   #[macro(kind = "derive", target = Model, max_steps = 5000000)]
    fn derive_model(input: ast::DeriveInput): Result<…> { … }
    ```
 
@@ -39,7 +39,7 @@ macro, package, global default.
 
 ## Scope of a budget
 
-A **top-level expansion** is one invocation site (`#Derive(T)`, `#name(…)`, or
+A **top-level expansion** is one invocation site (`#[derive(T)]`, `#[name(…)]`, or
 `name!(…)`) and everything it causes through an `ast::call_*` entry point.
 The top-level macro's effective quota initializes the budget for that entire
 tree. Nested macros draw from the same counters and the same call depth; a
@@ -81,7 +81,7 @@ error[E1001]: macro `derive_model` exceeded its step quota
    = note: used 1000003 of 1000000 steps
    = note: quota source: global default
    = note: raise the limit in the package configuration or in
-           #Macro(kind = "derive", target = Model, max_steps = …)
+           #[macro(kind = "derive", target = Model, max_steps = …)]
 ```
 
 The primary span is the source operation being executed when the limit was

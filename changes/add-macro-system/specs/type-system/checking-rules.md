@@ -11,7 +11,7 @@ Macro expansion runs before global name resolution and before the ordinary
 checking rules of this chapter:
 
 1. Parse the file into an AST with spans.
-2. Register every `#Macro` definition in the module's macro namespace; import
+2. Register every `#[macro]` definition in the module's macro namespace; import
    macro names from compiled modules through `use`.
 3. Repeat, up to 100 rounds:
    a. resolve names in function macro arguments against the current
@@ -35,12 +35,12 @@ declaration have run; the first attribute macro in source order sees the
 written declaration. Context lookups still read the pre-expansion environment
 ([builtins/context.md](../builtins/context.md)).
 
-## `#Macro` definitions
+## `#[macro]` definitions
 
-`#Macro` is a built-in attribute registered on `fn` only; on any other host it
+`#[macro]` is a built-in attribute registered on `fn` only; on any other host it
 is the ordinary attribute-host error `E0109`. On a `fn` it is valid only when
 all of the following hold. A violation of this list is `E1010`. Macro
-definitions are collected from the written AST before expansion; a `#Macro`
+definitions are collected from the written AST before expansion; a `#[macro]`
 produced by an expansion is not registered and is `E1010`.
 
 - It is not `async` and not `extern`, declares no generic parameters, and has
@@ -64,7 +64,7 @@ produced by an expansion is not registered and is `E1010`.
   `Debug`, `Display`, or `ToString` for `"derive"`.
 - The declaration is not inside a function body.
 
-A `#Macro` function MUST NOT also carry a user attribute macro. Registration
+A `#[macro]` function MUST NOT also carry a user attribute macro. Registration
 happens before expansion, so such an attribute would replace the function
 after the macro's implementation was registered; the registered implementation
 and the checked function would diverge. The declaration is `E1010`. Other
@@ -72,7 +72,7 @@ attributes follow their own host rules.
 
 ## Invocation resolution
 
-- **Derive.** For each target in `#Derive(T₁, …, Tₙ)`, left to right:
+- **Derive.** For each target in `#[derive(T₁, …, Tₙ)]`, left to right:
   `Debug` uses the built-in structural derive; `Display` and `ToString` are
   `E0111`; any other name resolves in the macro namespace as a `"derive"`
   macro. A missing name is `E1005`; a macro of another kind is `E1006`.
@@ -140,7 +140,7 @@ expanded AST without special cases:
 
 ## Duplicate and order rules
 
-- Two `#Macro` definitions with one macro name in one module are `E1010`.
+- Two `#[macro]` definitions with one macro name in one module are `E1010`.
 - Two macros of different kinds with one name are also `E1010`: the macro
   namespace is one namespace.
 - A macro may share a spelling with a value or type in the same module; those

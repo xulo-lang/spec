@@ -188,13 +188,21 @@ identifiers, and precedence is defined in
 | Logical and conditional | `!` `?` `??` `and` `or` | Negation, ternary `? :` and postfix propagation, nullish coalescing, connectives |
 | Arrow | `=>` | Match arm body; closure body |
 | UI and state | `@` `$` | State declarations; two-way binding prefix |
-| Attributes | `#` | Declaration attribute marker |
+| Attributes | `#` | Declaration attribute opener; used only in `#[…]` |
 
-`test` is **not** added to the reserved words: it becomes an ordinary
-identifier — usable as a variable name, a function name, a field, anywhere an
-identifier is allowed — exactly as `from` and `import` did when the import
-syntax was retired. The old spelling `test fn …` no longer parses as a
-declaration; it is a syntax error, never a reinterpretation.
+`#` is still one token, but it is an attribute opener only as part of
+`#[…]`. A `#` that is not followed by `[` is a syntax error in the parser,
+not a lexical error: the lexer keeps recognizing `#`, and the attribute
+productions simply do not match. The old `#Name` spelling is not an
+attribute; `#Derive`, `#Test`, and `#Macro` all fail to parse. `[` and `]`
+remain ordinary delimiters, so an attribute's brackets introduce no new token
+class.
+
+The built-in attribute names are lowercase (`derive`, `test`, `macro`); a
+user attribute is an ordinary identifier. `derive` and `macro` remain
+reserved words; they are accepted only in the attribute-name position and
+are not identifiers there. `test` is an ordinary identifier, so nothing
+special is needed for `#[test]`.
 
 `::` names every qualified name — a path (`ui::hstack::HStack`), a variant
 (`Theme::Dark`), an associated or namespace name (`Math::PI`) — and nothing

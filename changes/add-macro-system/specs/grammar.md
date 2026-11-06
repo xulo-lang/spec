@@ -11,7 +11,8 @@
 Replace the attribute productions with:
 
 ```text
-Attribute      = "#" Identifier [ "(" [ AttributeArgs ] ")" ] ;
+Attribute      = "#" "[" AttributeName [ "(" [ AttributeArgs ] ")" ] "]" ;
+AttributeName  = Identifier | "derive" | "macro" ;
 AttributeArgs  = AttributeArg { "," AttributeArg } [ "," ] ;
 AttributeArg   = [ Identifier "=" ] AttributeValue ;
 AttributeValue = Identifier | StringLiteral | IntegerLiteral
@@ -19,10 +20,10 @@ AttributeValue = Identifier | StringLiteral | IntegerLiteral
 AttributeList  = { Attribute } ;
 ```
 
-A bare identifier is the common form — `#Derive(Debug)` — and `name = value`
-is the form a macro definition uses — `#Macro(kind = "derive", target =
-Serialize)`. The registry entry decides the shape: an attribute that requires
-identifiers rejects a value (`E0110`), and a macro whose `#Macro` metadata has
+A bare identifier is the common form — `#[derive(Debug)]` — and `name = value`
+is the form a macro definition uses — `#[macro(kind = "derive", target =
+Serialize)]`. The registry entry decides the shape: an attribute that requires
+identifiers rejects a value (`E0110`), and a macro whose `#[macro]` metadata has
 the wrong keys or kinds is `E1010`.
 
 Replace the three declaration productions that gain an attribute list:
@@ -41,7 +42,7 @@ ConstDecl = [ AttributeList ] [ "pub" ] "const" Identifier [ ":" Type ]
 `LetDecl`, and `ConstDecl`. A local `let` uses the same `LetDecl` production,
 so it may carry an attribute list syntactically; whether the attribute macro
 accepts a `let` host is the macro's `ast::AttributeInput.target.kind` decision.
-A `#Macro` definition is an ordinary `FnDecl` carrying the `#Macro` attribute;
+A `#[macro]` definition is an ordinary `FnDecl` carrying the `#[macro]` attribute;
 it adds no declaration production.
 
 ## Expressions

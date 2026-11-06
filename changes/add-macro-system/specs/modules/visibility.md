@@ -1,22 +1,22 @@
 # Visibility — Delta: Macro Visibility
 
-> **Delta** — adds the `#Macro` case to “`pub` on declarations” and to the
+> **Delta** — adds the `#[macro]` case to “`pub` on declarations” and to the
 > package-boundary rule of `modules/visibility.md`. The remaining visibility
 > rules are unchanged.
 
 ## `pub` on declarations
 
-A `#Macro` function follows the ordinary rule, with one addition: `pub`
+A `#[macro]` function follows the ordinary rule, with one addition: `pub`
 exports **two** names — the implementation function's identifier in the value
 namespace and the macro name in the macro namespace. Without `pub`, both are
 module-private.
 
 ```xulo
-#Macro(kind = "derive", target = Serialize)
+#[macro(kind = "derive", target = Serialize)]
 pub fn derive_serialize(input: ast::DeriveInput): Result<…> { … }
 // exports `derive_serialize` and the macro `Serialize`
 
-#Macro(kind = "attribute", name = "route")
+#[macro(kind = "attribute", name = "route")]
 fn route_attribute(input: ast::AttributeInput): Result<…> { … }
 // private: neither `route_attribute` nor `route` leaves this module
 ```
@@ -34,8 +34,8 @@ Add to the cross-module rule:
   A private macro is not exported: a `use` of it is `E0602`, exactly as a
   `use` of a private function is, and so is a qualified function-macro path
   `m::route!(…)` that reaches it. A private derive or attribute macro is not
-  in the importing module's macro namespace, so `#Derive(Serialize)` or
-  `#route(…)` that names it is `E1005` or `E0108`; the name was never
+  in the importing module's macro namespace, so `#[derive(Serialize)]` or
+  `#[route(…)]` that names it is `E1005` or `E0108`; the name was never
   exported.
 - A `pub use` of a macro re-exports the macro name under the ordinary
   re-export rule; the macro's implementation function is not re-exported by

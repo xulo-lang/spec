@@ -139,7 +139,7 @@ Two rules keep Markdown and the tag layer from colliding:
   the summary.
 - **Inert code.** Code in a documentation block is text. Unlike some
   ecosystems, it is **not** executed or type-checked as a test. Tests are
-  `#Test` functions ([`testing.md`](testing.md)).
+  `#[test]` functions ([`testing.md`](testing.md)).
 
 ### Summary and body
 
@@ -209,9 +209,9 @@ A documentation comment attaches to a declaration by adjacency:
 
 - A run of documentation lines, or one documentation block, attaches to the
   next declaration.
-- Only whitespace and **attribute lines** (such as `#Test`) may appear between
-  the documentation comment and the declaration. Attributes decorate the same
-  declaration and do not break attachment.
+- Only whitespace and **attribute lines** (such as `#[test]`) may appear
+  between the documentation comment and the declaration. Attributes decorate
+  the same declaration and do not break attachment.
 - A blank line, an ordinary comment, or any token that is not part of the next
   declaration breaks attachment. A documentation comment that attaches to
   nothing is *orphaned*; a tool MAY ignore it or warn.

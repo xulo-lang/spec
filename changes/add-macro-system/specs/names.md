@@ -9,7 +9,7 @@
 
 Add this row to the entity table:
 
-| Macros | `#Macro(…)` on a module-level `fn`; `use` bindings | The macro name is the derive `target` or the attribute/function `name`, not the implementation function's identifier; macro names form their own namespace |
+| Macros | `#[macro(…)]` on a module-level `fn`; `use` bindings | The macro name is the derive `target` or the attribute/function `name`, not the implementation function's identifier; macro names form their own namespace |
 
 The namespaces row becomes:
 
@@ -22,7 +22,7 @@ Add this row to the convention table:
 | Macro names | Derive targets UpperCamelCase; attribute and function macros snake_case | `Serialize`, `route`, `sql` |
 
 The row is RECOMMENDED, not enforced: a macro name comes from a string in
-`#Macro` or from a derive target identifier, and the implementation function
+`#[macro]` or from a derive target identifier, and the implementation function
 follows the ordinary function convention. The one enforced rule is lexical: a
 macro name MUST be a legal identifier and MUST NOT be a keyword or reserved
 word.
@@ -33,19 +33,19 @@ Add this row to the scope table:
 
 | Scope | Introduced by | Names visible |
 |-------|---------------|---------------|
-| Macro scope | A module-level `#Macro` declaration; a macro `use` or `pub use` binding | The macro's fully qualified name throughout its module; a short macro name throughout the importing module |
+| Macro scope | A module-level `#[macro]` declaration; a macro `use` or `pub use` binding | The macro's fully qualified name throughout its module; a short macro name throughout the importing module |
 
 Add this bullet to the declaration-order list:
 
-> - **At module level**, a `#Macro` declaration is registered before any
+> - **At module level**, a `#[macro]` declaration is registered before any
 >   expansion, so its macro name is visible throughout the whole file,
 >   whichever order it appears in. Macro names are a separate namespace: they
 >   do not collide with value or type names, and two declarations with one
 >   macro name in one module are `E1010` rather than shadowing.
 
-A macro name resolves in the macro namespace — the module's own `#Macro`
+A macro name resolves in the macro namespace — the module's own `#[macro]`
 declarations, then macro `use` bindings — and only at a macro position
-(`#Derive(T)`, `#name(…)`, `name!(…)`). There are no local macro bindings. In
+(`#[derive(T)]`, `#[name(…)]`, `name!(…)`). There are no local macro bindings. In
 a value position the macro name is not a value and is `E0101`; the
 implementation function's own identifier is the value.
 

@@ -10,11 +10,11 @@ third; the second is a tooling contract and has no source syntax.
 
 ### 1. Implementation tests
 
-A `#Macro` function is an ordinary function, so a `#Test` may call its
+A `#[macro]` function is an ordinary function, so a `#[test]` may call its
 implementation identifier with constructed inputs:
 
 ```xulo
-#Test
+#[test]
 fn serialize_derives_one_field() {
   let span = ast::Span { file: "test", start: 0, end: 0, line: 1, column: 1 }
   let input = ast::DeriveInput {
@@ -58,13 +58,13 @@ expanded AST and the same diagnostics.
 
 ### 3. Integration tests
 
-An ordinary `#Test` exercises the code the macro generated:
+An ordinary `#[test]` exercises the code the macro generated:
 
 ```xulo
-#Derive(Serialize)
+#[derive(Serialize)]
 struct User { name: string, age: int }
 
-#Test
+#[test]
 fn user_serializes() {
   let user = User(name: "Ada", age: 36)
   let json = user.serialize()
@@ -75,4 +75,4 @@ fn user_serializes() {
 The generated `impl` participates in checking and dispatch exactly as a
 written impl, so the integration test is an ordinary test. A file whose macro
 invocation produces a compile-time diagnostic does not compile, so a
-compile-fail test belongs to the tooling layer, not to `#Test`.
+compile-fail test belongs to the tooling layer, not to `#[test]`.

@@ -15,7 +15,7 @@ Replace the section heading and table with:
 | **Compile-time macros** | the macro input/output values (`ast::`), compile-time execution, the context and sandbox rules, the quota, the macro diagnostics, and the expansion cache | [`execution.md`](execution.md), [`context.md`](context.md), [`sandbox.md`](sandbox.md), [`quota.md`](quota.md), [`errors.md`](errors.md), [`cache.md`](cache.md) |
 
 The compile-time layer is not a runtime library. Its values are ordinary
-values when user code or a `#Test` touches them, but macro execution happens
+values when user code or a `#[test]` touches them, but macro execution happens
 during compilation, under the sandbox and quota rules of its chapters.
 
 ## Index
