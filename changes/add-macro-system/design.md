@@ -103,10 +103,9 @@ wrong shape is the existing `E0110`; a macro whose `#[macro]` metadata is
 malformed is `E1010`. A user attribute macro receives its arguments as
 `ast::Value`s and validates them itself; it is invocation-valid on all eight
 hosts and rejects an unsupported host with `ast::MacroFailure` (`E1008`).
-Extending the
-attribute-value production is preferable to a macro-only second argument
-syntax: it keeps “one attribute form” true and leaves a future built-in
-attribute free to take a string or integer.
+Extending the attribute-value production is preferable to a macro-only second
+argument syntax: it keeps “one attribute form” true and leaves a future
+built-in attribute free to take a string or integer.
 
 **Rejected:** a separate `#[macro]` mini-language with its own brackets. It
 would be a second attribute grammar, and the existing registry already has a

@@ -61,18 +61,28 @@ expanded AST and the same diagnostics.
 An ordinary `#[test]` exercises the code the macro generated:
 
 ```xulo
+trait Serialize {
+  fn serialize(self): Json
+}
+
+fn serialize_through_trait<T: Serialize>(value: T): Json {
+  return value.serialize()
+}
+
 #[derive(Serialize)]
 struct User { name: string, age: int }
 
 #[test]
 fn user_serializes() {
   let user = User(name: "Ada", age: 36)
-  let json = user.serialize()
-  assert(json.entries.len == 0, "the generated serialize impl returns an empty entry list")
+  let json = serialize_through_trait(user)
+  assert(json.entries.len == 0, "the derived impl is dispatched through the Serialize bound")
 }
 ```
 
 The generated `impl` participates in checking and dispatch exactly as a
-written impl, so the integration test is an ordinary test. A file whose macro
-invocation produces a compile-time diagnostic does not compile, so a
-compile-fail test belongs to the tooling layer, not to `#[test]`.
+written impl: `serialize_through_trait` resolves `value.serialize()` through
+the `Serialize` bound to the generated method, so the integration test is an
+ordinary test. A file whose macro invocation produces a compile-time
+diagnostic does not compile, so a compile-fail test belongs to the tooling
+layer, not to `#[test]`.

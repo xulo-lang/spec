@@ -85,6 +85,14 @@ with:
 > (`` attribute `test` takes no arguments and is written `#[test]`, followed by
 > `[async] fn name() { … }` ``).
 
+**Merge dependency.** The `#[test(...)]` paragraph above is the base text,
+where `#[test]` takes no arguments. `add-test-options` replaces the
+`TestDecl`/`TestOptions` productions and makes valid option groups legal.
+After the merge, `E0110` applies only to a `#[test(...)]` group that is not a
+valid `TestOptions` group; a positional value is still `E0110`, not a syntax
+error, and a valid option group is accepted. Do not fold this paragraph
+without that adjustment.
+
 ## Expressions
 
 Replace `PrimaryExpression` and add the two macro forms:
