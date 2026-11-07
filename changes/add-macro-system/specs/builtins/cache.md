@@ -68,8 +68,10 @@ An entry is invalid when any key component changes. In addition:
 - a compiler version change invalidates the whole cache;
 - a failed expansion is not cached; the next compilation runs the macro again.
 
-The cache is per package/tree compilation. Cross-package reuse is allowed only
-when the full key matches; a stale entry is never served.
+The cache is scoped to one compilation of a package tree. Within that
+compilation, an entry may be reused across package boundaries — a macro defined
+in a dependency and invoked in the current package — only when the full key
+matches; a stale entry is never served.
 
 ## Transparency
 

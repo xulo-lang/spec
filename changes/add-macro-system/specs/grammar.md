@@ -2,9 +2,10 @@
 
 > **Delta** — replaces the attribute productions in the Declarations
 > section, adds `AttributeList` to `TypeAlias`, `LetDecl`, and `ConstDecl`,
-> adds `MacroCall` and `QuoteCall` to `PrimaryExpression`, and adds the new
-> nonterminals to the production index of `grammar.md`. The rest of the
-> grammar is unchanged.
+> replaces the declaration-list, attribute-argument, and `#[test(...)]`
+> paragraphs, adds `MacroCall` and `QuoteCall` to `PrimaryExpression`, and
+> adds the new nonterminals to the production index of `grammar.md`. The rest
+> of the grammar is unchanged.
 
 ## Declarations
 
@@ -22,9 +23,10 @@ AttributeList  = { Attribute } ;
 
 A bare identifier is the common form — `#[derive(Debug)]` — and `name = value`
 is the form a macro definition uses — `#[macro(kind = "derive", target =
-Serialize)]`. The registry entry decides the shape: an attribute that requires
-identifiers rejects a value (`E0110`), and a macro whose `#[macro]` metadata has
-the wrong keys or kinds is `E1010`.
+Serialize)]`. For a built-in attribute, the registry entry decides the shape:
+an attribute that requires identifiers rejects a value (`E0110`), and a macro
+whose `#[macro]` metadata has the wrong keys or kinds is `E1010`. A user
+attribute macro receives the values and validates them itself.
 
 Replace the three declaration productions that gain an attribute list:
 
@@ -44,6 +46,44 @@ so it may carry an attribute list syntactically; whether the attribute macro
 accepts a `let` host is the macro's `ast::AttributeInput.target.kind` decision.
 A `#[macro]` definition is an ordinary `FnDecl` carrying the `#[macro]` attribute;
 it adds no declaration production.
+
+### Replaced prose
+
+Replace the paragraph that begins “The five item declarations” with:
+
+> The eight item declarations — `FnDecl`, `StructDecl`, `EnumDecl`,
+> `TraitDecl`, `ImplDecl`, `TypeAlias`, `LetDecl`, and `ConstDecl` — MAY carry
+> an attribute list, written outermost, before `pub` and `async`; which
+> attributes are defined, and on which of them, is a checking rule and not a
+> grammatical one ([traits.md](types/traits.md)); the two extern forms carry
+> no attribute list.
+
+Replace the paragraph that begins “An attribute is written” with:
+
+> An attribute is written `#[name]` or `#[name(args)]`. The built-in attribute
+> names are lowercase. `derive` and `macro` are reserved words accepted only in
+> the attribute-name position; `test` is an ordinary identifier. Attribute
+> names occupy their own namespace and bind nothing. An argument is a
+> positional value or a `name = value` entry; the registry entry decides which
+> shape a built-in attribute accepts (`E0110`), and a user attribute macro
+> receives the values and validates them itself. The declarations that carry
+> an `AttributeList` are `FnDecl`, `StructDecl`, `EnumDecl`, `TraitDecl`,
+> `ImplDecl`, `TypeAlias`, `LetDecl`, and `ConstDecl`.
+
+Replace the paragraph that begins “When the full test form does not match”
+with:
+
+> When the full test form does not match, `#[test]` and `#[test(...)]` are
+> ordinary attributes on the `FnDecl`. A bare `#[test]` before a `fn` with
+> parameters, a return type, generic parameters, a `where` clause, or `pub` is
+> `E0110`; so are `#[test()]`, `#[test(name, …)]`, `#[test("…")]`, and
+> `#[test(1)]`, because the test attribute takes no arguments. Every
+> `#[test(...)]` group admitted by the widened `AttributeArg` grammar parses as
+> an ordinary attribute and is `E0110`; there is no syntax-error fallback for a
+> well-formed argument. The registry rules of [traits.md](types/traits.md) give
+> the message for the `E0110` case
+> (`` attribute `test` takes no arguments and is written `#[test]`, followed by
+> `[async] fn name() { … }` ``).
 
 ## Expressions
 

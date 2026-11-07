@@ -1,7 +1,8 @@
 # AST — Delta: Macro Nodes
 
-> **Delta** — replaces `AttributeNode`, adds `MacroCallExpr`, `QuoteExpr`, and
-> their supporting nodes to the Declarations and Expressions sections of
+> **Delta** — replaces `AttributeNode`, adds `attributes` to `TypeAlias`,
+> `LetDeclaration`, and `ConstDeclaration`, adds `MacroCallExpr`, `QuoteExpr`,
+> and their supporting nodes to the Declarations and Expressions sections of
 > `ast.md`, and notes that a `#[macro]` declaration is an ordinary
 > `FnDeclaration`. The rest of the AST is unchanged.
 
@@ -35,8 +36,51 @@ type AttributeValueNode =
 empty for `#[route()]`. An `AttributeArgNode` with a non-null `name` is the
 `name = value` form, which `#[macro]` uses
 (`#[macro(kind = "derive", target = Serialize)]`); a positional argument has
-`name: null` (`#[derive(Debug)]`, `#[route("/v1/users")]`). The registry entry
-decides which shape is valid.
+`name: null` (`#[derive(Debug)]`, `#[route("/v1/users")]`). For a built-in
+attribute, the registry entry decides which shape is valid; a user attribute
+macro receives the values and validates them itself.
+
+Replace `TypeAlias`, `LetDeclaration`, and `ConstDeclaration` with the
+attribute-carrying forms:
+
+```typescript
+interface TypeAlias extends BaseNode {
+  type: 'TypeAlias';
+  attributes: AttributeNode[];
+  isPub: boolean;
+  name: IdentifierNode;
+  genericParams: GenericParamNode[];
+  initType: TypeNode;
+}
+
+interface LetDeclaration extends BaseNode {
+  type: 'LetDeclaration';
+  attributes: AttributeNode[];
+  isPub: boolean;
+  isMutable: boolean;
+  isShared: boolean;
+  target: BindingTargetNode;
+  varType: TypeNode | null;
+  init: ExpressionNode;
+}
+
+interface ConstDeclaration extends BaseNode {
+  type: 'ConstDeclaration';
+  attributes: AttributeNode[];
+  isPub: boolean;
+  name: IdentifierNode;
+  varType: TypeNode | null;
+  value: ExpressionNode;
+}
+```
+
+Replace the note that lists these nodes as having no `attributes` field with:
+
+> `TestDeclaration`, `PubUseDeclaration`, `ExternBlockDeclaration`, and
+> `ExternFunctionDeclaration` carry no `attributes` field. The eight attribute
+> hosts — `FnDeclaration`, `StructDeclaration`, `EnumDeclaration`,
+> `TraitDeclaration`, `ImplDeclaration`, `TypeAlias`, `LetDeclaration`, and
+> `ConstDeclaration` — each carry `attributes`.
 
 A `#[macro]` definition adds no declaration node: it is an ordinary
 `FnDeclaration` whose `attributes` contains the `AttributeNode` named

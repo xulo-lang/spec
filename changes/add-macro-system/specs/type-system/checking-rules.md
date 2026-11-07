@@ -1,8 +1,9 @@
 # Checking Rules — Delta: Macro Rules
 
-> **Delta** — adds a “Macros” section to `type-system/checking-rules.md` and
-> states the expansion pass that precedes the ordinary checking rules. The
-> existing literal, expression, statement, and declaration rules are
+> **Delta** — adds a “Macros” section to `type-system/checking-rules.md`,
+> states the definition pre-pass that checks every macro implementation before
+> it can run, and states the expansion pass that precedes the ordinary checking
+> rules. The existing literal, expression, statement, and declaration rules are
 > unchanged; they apply to the expanded AST.
 
 ## Expansion pass
@@ -13,13 +14,25 @@ checking rules of this chapter:
 1. Parse the file into an AST with spans.
 2. Register every `#[macro]` definition in the module's macro namespace; import
    macro names from compiled modules through `use`.
-3. Repeat, up to 100 rounds:
+3. Check every `#[macro]` definition written in the module in a definition
+   pre-pass against the written AST. The signature and body are name-resolved
+   and type-checked, and every ordinary function body the implementation can
+   reach is checked the same way before the macro runs. The definition and
+   every function body it reaches may refer only to names present in the
+   written AST or imported from an already-compiled module; they MUST NOT
+   depend on an item produced by a macro in the same compilation. An
+   implementation MUST NOT contain a user macro invocation; use an
+   `ast::call_*` entry point instead. `ast::quote!` is not a user macro and is
+   allowed.
+4. Repeat, up to 100 rounds:
    a. resolve names in function macro arguments against the current
       (pre-expansion) AST;
    b. expand derive macros, then attribute macros, in source order;
    c. expand function macro calls in expression order;
    d. insert generated nodes and collect any new macro calls.
-4. Run global name resolution and the checking rules on the complete AST.
+5. Run global name resolution and the checking rules on the complete AST. The
+   implementation functions were checked in step 3 and are not re-checked;
+   generated nodes are checked normally.
 
 A new macro call produced by an expansion is expanded in the next round; a
 macro call written inside another function macro's argument is expanded
@@ -27,6 +40,17 @@ before the outer call (it is part of the argument expression, not a product
 of the outer expansion). Reaching the round limit is `E1004`; the primary
 span is the invocation whose generated subtree was being expanded when the
 limit was reached.
+
+The pre-pass makes “ordinary checked Xulo code” true before the first
+invocation. An ordinary signature or body type error is reported by the
+ordinary rules (for example `E0201`), not by `E1010`; `E1010` covers only the
+`#[macro]` metadata and the shape rules in the list below. Because the
+implementation is checked before expansion, a name that exists only after a
+macro expands is the ordinary unresolved-name error `E0101`; the repair is to
+use `ast::call_*` or to move the dependency to an already-compiled module. A
+macro MAY be invoked in the module that defines it: step 2 registers every
+definition in the module and step 3 checks them before the expansion loop
+begins, so the name is visible throughout the file ([names.md](../names.md)).
 
 Within one declaration, a derive macro always receives the original
 declaration, because derive expansion completes first. An attribute macro
@@ -60,9 +84,11 @@ produced by an expansion is not registered and is `E1010`.
 - `max_steps`, `max_memory`, and `max_depth`, when written, are
   non-negative integer literals.
 - The macro name is not already registered in the module's macro namespace,
-  is not a built-in attribute name (`Derive`, `Test`, `Macro`), and is not
+  is not a built-in attribute name (`derive`, `test`, `macro`), and is not
   `Debug`, `Display`, or `ToString` for `"derive"`.
 - The declaration is not inside a function body.
+- Its body contains no user macro invocation (`name!(…)`); a macro-to-macro
+  call uses an `ast::call_*` entry point.
 
 A `#[macro]` function MUST NOT also carry a user attribute macro. Registration
 happens before expansion, so such an attribute would replace the function
@@ -76,10 +102,12 @@ attributes follow their own host rules.
   `Debug` uses the built-in structural derive; `Display` and `ToString` are
   `E0111`; any other name resolves in the macro namespace as a `"derive"`
   macro. A missing name is `E1005`; a macro of another kind is `E1006`.
-- **Attribute.** A built-in attribute name (`Derive`, `Test`, `Macro`) uses
+- **Attribute.** A built-in attribute name (`derive`, `test`, `macro`) uses
   its built-in rule. Any other name resolves in the macro namespace as an
   `"attribute"` macro; a missing name is the ordinary `E0108`, and a macro of
-  another kind is `E1006`.
+  another kind is `E1006`. A user attribute macro is invocation-valid on all
+  eight hosts; an unsupported host is an author-returned `ast::MacroFailure`
+  (`E1008`), and an output item of another host kind is `E1006`.
 - **Function.** The path of `name!(…)` or `m::name!(…)` resolves in the macro
   namespace as a `"function"` macro. A missing name is `E1005`; a macro of
   another kind is `E1006`.
@@ -113,8 +141,9 @@ the implementation function's own identifier is the only value name.
 - **Attribute output.** `ast::AttributeOutput.item` MUST be a declaration of the
   same host kind as the input (`fn`, `struct`, `enum`, `trait`, `impl`,
   `type`, `let`, or `const`); it replaces the original. `extras` are inserted
-  immediately after it. A missing item, or an item of another host kind, is
-  `E1006`. An attribute macro cannot delete its declaration.
+  immediately after it. An item of another host kind is `E1006`. (`item` is a
+  required field, so omitting it is the ordinary missing-field error `E0205`
+  in the macro body.) An attribute macro cannot delete its declaration.
 - **Function output.** `ast::FunctionOutput.expr` replaces the `MacroCallExpr` in
   expression position. Its type is the type the ordinary rules give the
   expanded expression. An expansion that is not an expression is `E1006`.

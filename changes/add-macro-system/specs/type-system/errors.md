@@ -79,7 +79,7 @@ panic with no `E` code.
 | `E1007` | a macro uses a resource the sandbox forbids | reading a file, opening a socket, reading the clock | ``macro `sql` cannot access the filesystem`` | [builtins/sandbox.md](../builtins/sandbox.md) |
 | `E1008` | the macro returns `Result::Err(ast::MacroFailure { … })` | `#[route("/v2/users")]` | ``macro `route` reported an error`` | [builtins/errors.md](../builtins/errors.md) |
 | `E1009` | a name in a function macro argument is not in the pre-expansion scope | `sql!(user_name)` with no `user_name` declared | ``cannot resolve `user_name` in macro arguments`` | [expressions/calls.md](../expressions/calls.md) |
-| `E1010` | a `#[macro]` declaration is malformed, duplicate, or collides with a built-in | `#[macro(kind = "derive")]` with no `target` | ``invalid macro definition: derive macro requires `target` `` | [type-system/checking-rules.md](checking-rules.md) |
+| `E1010` | a `#[macro]` declaration is malformed (including inside a function body) or duplicate, its body contains a user macro invocation, or its name collides with a built-in | `#[macro(kind = "derive")]` with no `target` | ``invalid macro definition: derive macro requires `target` `` | [type-system/checking-rules.md](checking-rules.md) |
 | `E1011` | a quote body does not parse after substitution, or a hole value cannot be inserted there | `${name}` where `name` is a list in an identifier position | ``quote body is not well-formed`` | [expressions/calls.md](../expressions/calls.md) |
 | `E1012` | macro execution traps: index out of range, division by zero, or `panic` | `fields[99]` in a macro | ``macro `Serialize` trapped: index 99 out of range`` | [builtins/execution.md](../builtins/execution.md) |
 

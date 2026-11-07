@@ -96,10 +96,14 @@ AttributeValue = Identifier | StringLiteral | IntegerLiteral
                | FloatLiteral | BooleanLiteral ;
 ```
 
-The registry entry decides the shape: `#[derive]` still accepts only names,
-`#[test]` keeps its no-argument form, and `#[macro]` accepts the fixed keys
-above. A well-formed attribute with the wrong shape is the existing `E0110`;
-a macro whose `#[macro]` metadata is malformed is `E1010`. Extending the
+For a built-in attribute, the registry entry decides the shape:
+`#[derive]` still accepts only names, `#[test]` keeps its no-argument form,
+and `#[macro]` accepts the fixed keys above. A well-formed attribute with the
+wrong shape is the existing `E0110`; a macro whose `#[macro]` metadata is
+malformed is `E1010`. A user attribute macro receives its arguments as
+`ast::Value`s and validates them itself; it is invocation-valid on all eight
+hosts and rejects an unsupported host with `ast::MacroFailure` (`E1008`).
+Extending the
 attribute-value production is preferable to a macro-only second argument
 syntax: it keeps “one attribute form” true and leaves a future built-in
 attribute free to take a string or integer.
@@ -115,6 +119,12 @@ shape check.
 - The function remains an ordinary function. It is type-checked normally and
   can be called and tested at runtime. At expansion time the compiler executes
   it in the sandbox.
+- Before any invocation, the implementation is checked in a definition
+  pre-pass against the written AST. It may refer only to names present in the
+  written AST or imported from an already-compiled module; it may not depend
+  on an item produced by a macro in the same compilation, and it uses
+  `ast::call_*` rather than a direct user macro call for a macro-to-macro
+  call. This makes “ordinary checked Xulo code” true at execution time.
 - The macro is registered under the name in `#[macro]`; the function's own
   identifier is independent. A derive macro's name is its target trait; an
   attribute or function macro's name is the `name` string.
@@ -180,8 +190,8 @@ built-in.
   namespaces are independent. Two macros with one name in one module are
   `E1010`.
 - A macro name MUST be a legal identifier and MUST NOT be a keyword or a
-  reserved word. It MUST NOT be a built-in attribute name (`Derive`, `Test`,
-  `Macro`), and a derive macro MUST NOT also use a reserved derive target
+  reserved word. It MUST NOT be a built-in attribute name (`derive`, `test`,
+  `macro`), and a derive macro MUST NOT also use a reserved derive target
   (`Debug`, `Display`, `ToString`).
 
 **Alternative considered: one namespace for macros, values, and types.**
@@ -205,7 +215,9 @@ On one declaration:
 2. every attribute macro in written order, top to bottom.
 
 Across the file, declarations are visited in source order. Function macro
-calls are expanded when the containing expression is visited.
+calls are expanded when the containing expression is visited. Before any
+expansion, every `#[macro]` definition is checked in the definition pre-pass
+described in [Definition: implementation functions](#definition-implementation-functions).
 
 The reason for fixing source order is predictability: `#[auth]` followed by
 `#[route]` is a way for the author to say that the authentication wrapper must
@@ -369,7 +381,9 @@ output record. A target of another kind is `E1006`; an `ast::Value` that cannot
 be converted to the input record is `E1002`. A typed input record is used as is.
 This keeps every field of the input and output available on both sides of the
 call; there is no untyped output bridge. A macro that needs another kind
-constructs that kind's input record from its public fields.
+constructs that kind's input record from its public fields. A direct user macro
+invocation written in a `#[macro]` body is `E1010`; the body uses these entry
+points instead.
 
 ### Quota
 
@@ -481,17 +495,19 @@ not have to guess whether a span came from the macro author or from the user.
 
 - The grammar gains one attribute-value shape, one `#[macro]` usage, one
   `name!(…)` call form, and one quote form. It gains no new token.
-- The AST gains `MacroCallExpr`, `QuoteExpr`, `QuoteHole`, and a widened
-  `AttributeArg`; `#[macro]` is an ordinary `FnDeclaration` with an attribute.
+- The AST gains `MacroCallExpr`, `QuoteExpr`, `QuoteHole`, a widened
+  `AttributeArg`, and `attributes` on `TypeAlias`, `LetDeclaration`, and
+  `ConstDeclaration`; `#[macro]` is an ordinary `FnDeclaration` with an
+  attribute.
 - The attribute registry changes from “closed set” to “built-in set plus user
   attribute macros”. The built-in entries keep their positions and codes.
 - The macro namespace is separate; `use`/`pub use` and `pub` include it. The
   module chapters gain the export and collision rules.
 - The prelude gains one namespace, `ast`. The macro input/output records are
   members of it, not new reserved words.
-- The checker gains a pre-resolution expansion pass and a set of macro
-  invocation typing rules. Global name resolution and type checking run on the
-  expanded AST exactly as before.
+- The checker gains a definition pre-pass, a pre-resolution expansion pass,
+  and a set of macro invocation typing rules. Global name resolution and type
+  checking run on the expanded AST exactly as before.
 - The built-in chapter gains six compile-time chapters and a third layer in
   its index.
 
@@ -521,11 +537,11 @@ implementation, because they do not affect the surface this change defines:
 
 | File | Gain |
 |------|------|
-| [`grammar.md`](../../grammar.md) | widened `AttributeArg`, attributes on `type`/`let`/`const`, `MacroCall`, `QuoteCall`, production index |
-| [`ast.md`](../../ast.md) | `MacroCallExpr`, `QuoteExpr`, `AttributeArgNode`, note on `#[macro]` as `FnDeclaration` |
+| [`grammar.md`](../../grammar.md) | widened `AttributeArg`, attributes on `type`/`let`/`const`, `MacroCall`, `QuoteCall`, production index, and the replaced declaration-list, argument, and `#[test(...)]` paragraphs |
+| [`ast.md`](../../ast.md) | `MacroCallExpr`, `QuoteExpr`, `AttributeArgNode`, `attributes` on `TypeAlias`/`LetDeclaration`/`ConstDeclaration`, note on `#[macro]` as `FnDeclaration` |
 | [`introduction.md`](../../introduction.md) | the macro non-goal becomes “no declarative macros; procedural macros are compile-time functions” |
 | [`type-system/errors.md`](../../type-system/errors.md) | `E1001`–`E1012`, the family row, the three error-source enums |
-| [`type-system/checking-rules.md`](../../type-system/checking-rules.md) | macro definition, invocation, expansion-order, and duplicate rules |
+| [`type-system/checking-rules.md`](../../type-system/checking-rules.md) | definition pre-pass, macro definition, invocation, expansion-order, and duplicate rules |
 | [`expressions/calls.md`](../../expressions/calls.md) | macro call syntax, argument passing, `ast::quote!`, expansion typing |
 | [`testing.md`](../../testing.md) | the three test layers for macros |
 | [`memory-and-runtime.md`](../../memory-and-runtime.md) | `ast::` macro values and their fields |

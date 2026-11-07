@@ -11,7 +11,7 @@
 A declaration MAY carry attributes written directly before it: the bracket
 form `#[name]`, optionally followed by a parenthesized argument list. The attribute
 form is generic; the names the checker interprets are the **built-in
-registry** plus the **attribute macros** registered in the current module.
+registry** plus the **attribute macros** in scope.
 
 ```xulo
 #[derive(Debug)]
@@ -33,12 +33,13 @@ equally well-formed, the grammar being newline-insensitive
 - Attribute names occupy their own namespace. `#[derive]` binds nothing and
   takes no name away from values, types, or modules. A macro name may equal a
   value or type name in the same module.
-- A registered attribute is valid on the declarations its entry allows
-  (`E0109`), and its arguments must fit the shape that entry states (`E0110`).
-  Built-in attributes keep their existing positions. An attribute macro is
-  valid on all eight attribute hosts — `fn`, `struct`, `enum`, `trait`,
-  `impl`, `type`, `let`, and `const` — unless its implementation returns an
-  `ast::MacroFailure` for a host it does not support.
+- A built-in attribute is valid only on the hosts its rule allows (`E0109`),
+  and its arguments must fit its stated shape (`E0110`). A user attribute macro
+  is invocation-valid on all eight attribute hosts — `fn`, `struct`, `enum`,
+  `trait`, `impl`, `type`, `let`, and `const`. A host it does not support is an
+  author-returned `ast::MacroFailure` (`E1008`), and an output `item` of
+  another host kind is `E1006`; `E0109` does not apply to user attribute
+  macros.
 - The built-in hosts are:
 
   | Attribute | `fn` | `struct` | `enum` | `trait` | `impl` | `type` | `let` | `const` |
@@ -97,8 +98,11 @@ fn sql_macro(
 - An attribute macro replaces the decorated declaration (its
   `ast::AttributeOutput.item` is required and must be a declaration of the same
   host kind) and may add items beside it. It cannot delete the declaration.
-- Macros expand before global name resolution and type checking; the expanded
-  AST is checked exactly like written code
+- Macros expand before global name resolution and type checking. Every
+  `#[macro]` implementation is checked in a definition pre-pass before it can
+  run; it may not depend on an item produced by a macro in the same
+  compilation and uses `ast::call_*` rather than a direct user macro call. The
+  expanded AST is checked exactly like written code
   ([`../type-system/checking-rules.md`](../type-system/checking-rules.md)).
 
 ## Derive

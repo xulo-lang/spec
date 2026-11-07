@@ -85,7 +85,11 @@ fn sql_macro(
 }
 ```
 
-The macro implementation is ordinary checked Xulo code. At expansion time the
+The macro implementation is ordinary checked Xulo code. It is checked in a
+definition pre-pass before any invocation: the signature and body are resolved
+and type-checked against the written AST, the body may not depend on an item
+produced by a macro in the same compilation, and it uses `ast::call_*` rather
+than a direct user macro call for a macro-to-macro call. At expansion time the
 compiler executes it in a sandbox with an execution-step, memory, and
 call-depth quota. The generated AST joins the program before global name
 resolution and type checking, so generated code is checked exactly like
@@ -149,8 +153,9 @@ pattern/template language (a `macro_rules!`-style declarative macro); see
   `ast::AstNode`, `ast::Span`, `ast::Value`, `ast::MacroFailure`.
 - **Quasi-quote.** `ast::quote! { … }` with `${…}` holes; hole values are
   strings, numbers, booleans, AST nodes, or lists of AST nodes.
-- **Expansion.** The expansion loop before global name resolution; derive
-  before attribute; same-kind source order; the 100-round limit; generated AST
+- **Expansion.** A definition pre-pass that checks every `#[macro]` body before
+  it can run; the expansion loop before global name resolution; derive before
+  attribute; same-kind source order; the 100-round limit; generated AST
   checked normally.
 - **Compile-time execution.** The observable value model, context operations,
   sandbox, three-layer quota, expansion cache, and macro diagnostic format.
@@ -188,9 +193,9 @@ pattern/template language (a `macro_rules!`-style declarative macro); see
   before. `#[derive(Debug)]` and `#[test]` keep their existing meanings.
 - **The attribute registry becomes extensible.** Before this change an
   unknown attribute is `E0108` and there is no way to register one. After it,
-  a user attribute macro in scope registers its name; an unknown name is
-  still `E0108`. Built-in attribute names (`Derive`, `Test`, `Macro`) cannot
-  be redefined (`E1010`).
+  a user attribute macro in scope makes its name a valid attribute name; an
+  unknown name is still `E0108`. Built-in attribute names (`derive`, `test`,
+  `macro`) cannot be redefined (`E1010`).
 - **Error codes do not collide.** `E0801`–`E0818` already belong to traits,
   impls, and generic bounds ([`type-system/errors.md`](../../type-system/errors.md)).
   The macro family is `E1001`–`E1012`. The proposal's draft numbers

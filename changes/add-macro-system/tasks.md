@@ -33,6 +33,20 @@
       macro and the implementation function.
 - [ ] Check every `specs/` file's first heading and `> **Delta** — …`
       blockquote against the `changes/README.md` convention.
+- [ ] Replace the `grammar.md` declaration-list, attribute-argument, and
+      `#[test(...)]` paragraphs listed in [specs/grammar.md](specs/grammar.md);
+      the widened `AttributeArg` removes the old syntax-error fallback.
+- [ ] Replace the `ast.md` note that `TypeAlias`, `LetDeclaration`, and
+      `ConstDeclaration` carry no `attributes` field.
+- [ ] Merge with `add-test-options`: its named string and named integer
+      arguments join this change's `AttributeValue`/`AttributeValueNode`;
+      do not treat the two `AttributeArg` deltas as alternatives. Its
+      `TestDecl`/`TestOptions` replace this change's “the test attribute takes
+      no arguments” paragraph, and a `#[test(...)]` group is an ordinary
+      attribute with `E0110` only when it is not a valid `TestOptions` group;
+      a positional value is therefore `E0110`, not a syntax error, and a valid
+      option group is accepted. Record the requirement in both change
+      indexes.
 
 ## Implementation
 
@@ -42,6 +56,9 @@
 - [ ] Register `#[macro]` definitions before expansion; build the macro
       namespace; implement `use`/`pub use`/`pub` for macros; implement
       `E1010` definition checks.
+- [ ] Implement the definition pre-pass: check every `#[macro]` signature and
+      body before expansion, reject a direct user macro call in a macro body,
+      and diagnose a dependency on same-compilation generated code.
 - [ ] Implement the expansion loop: derive before attribute, same-kind source
       order, function macros in expression order, new calls in the next round,
       100-round limit (`E1004`), local-name resolution before expansion

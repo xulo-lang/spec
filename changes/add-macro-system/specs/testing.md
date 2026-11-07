@@ -68,7 +68,7 @@ struct User { name: string, age: int }
 fn user_serializes() {
   let user = User(name: "Ada", age: 36)
   let json = user.serialize()
-  assert(json.entries.len > 0, "serialization is non-empty")
+  assert(json.entries.len == 0, "the generated serialize impl returns an empty entry list")
 }
 ```
 

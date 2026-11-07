@@ -79,6 +79,10 @@ The `> **Delta** — …` blockquote is required and MUST name the target file.
 The body then gives the post-acceptance text in full, so that folding the
 change in is a matter of copying the body into the chapter it names.
 
+For a chapter that does not exist yet, the heading is the new chapter's own
+title followed by `— Delta: New Chapter`, and the blockquote says that the
+delta adds the chapter and names the target file.
+
 ## Change ID conventions
 
 A change ID begins with a verb phrase that states the direction of the edit:
@@ -96,7 +100,7 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
-| [add-macro-system/](add-macro-system/proposal.md) | draft | Attribute and derive macros over sandboxed compile-time execution — `#[macro]` declares a module-level `fn` taking `ast::DeriveInput`/`ast::AttributeInput` and returning generated AST; `name!(…)` function macros; `ast::quote!` with `${…}` holes; sandboxed, quota-bounded, 100-round expansion with a structured-input cache; `E1001`–`E1012` registered. |
+| [add-macro-system/](add-macro-system/proposal.md) | draft | Attribute and derive macros over sandboxed compile-time execution — `#[macro]` declares a module-level `fn` taking `ast::DeriveInput`/`ast::AttributeInput` and returning generated AST; `name!(…)` function macros; `ast::quote!` with `${…}` holes; a definition pre-pass, sandboxed, quota-bounded, 100-round expansion with a structured-input cache; `E1001`–`E1012` registered. Its widened `AttributeArg`/`AttributeValue` must merge with `add-test-options`'s named string and integer arguments. |
 | [add-test-options/](add-test-options/proposal.md) | draft | `#[test]` gains a comma-separated option group — `should_fail` for any failure, `should_panic` for a panic or runtime failure only, `should_panic = "…"` for a case-sensitive substring match, `skip`/`skip = "reason"`, and `timeout = N` in milliseconds; timeout is a distinct non-panic failure; `skip` suppresses execution; malformed options reuse `E0110`; `category`, `focus`, `retry`, and `threads` are deferred; `AttributeArg` gains named string and integer values, with an `add-macro-system` merge requirement. |
 
 ## Archived
