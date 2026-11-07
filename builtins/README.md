@@ -1,24 +1,29 @@
 # Built-ins
 
 Some names belong to the language rather than to any file: the built-in types
-and their members, the conversion and output functions, and the members of the
-mathematical, time, and task namespaces. None of them is declared, none of
-them is imported, and together they form the constant background against
-which every module is read. The standard library is a different thing
+and their members, the conversion and output functions, the members of the
+mathematical, time, and task namespaces, and the compile-time macro surface.
+None of them is declared, none of them is imported, and together they form the
+constant background against which every module is read. The standard library is a different thing
 entirely: library modules and their APIs are out of scope for this
 specification (see [`../README.md`](../README.md), §1.1).
 
-## Two layers
+## Three layers
 
 | Layer | Contains | Chapter |
 |-------|----------|---------|
-| **Prelude** | the built-in types, the built-in protocols `Display` and `Debug` with `Format`, and the built-in namespaces — in scope in every module | [`prelude.md`](prelude.md) |
+| **Prelude** | the built-in types, the built-in protocols `Display` and `Debug` with `Format`, the namespaces (including `ast`), and the built-in names — in scope in every module | [`prelude.md`](prelude.md) |
 | **Intrinsics** | the compiler-provided functions `print`, `println`, and `str`, together with the members of `Math`, `Time`, and `Task`, each with a defined signature | [`intrinsic-functions.md`](intrinsic-functions.md) |
+| **Compile-time macros** | the macro input/output values (`ast::`), compile-time execution, the context and sandbox rules, the quota, the macro diagnostics, and the expansion cache | [`execution.md`](execution.md), [`context.md`](context.md), [`sandbox.md`](sandbox.md), [`quota.md`](quota.md), [`errors.md`](errors.md), [`cache.md`](cache.md) |
+
+The compile-time layer is not a runtime library. Its values are ordinary
+values when user code or a `#[test]` touches them, but macro execution happens
+during compilation, under the sandbox and quota rules of its chapters.
 
 The prelude decides *which names* every module has; the intrinsic chapter
 gives the signature and the meaning of each function among them. A name may
-belong to both layers: `print` is a name that is in scope because of the
-prelude and whose signature is that of an intrinsic.
+belong to both the prelude and the intrinsic layer: `print` is a name that is
+in scope because of the prelude and whose signature is that of an intrinsic.
 
 The members of `List`, `Array`, `Map`, `Set`, and `string` are part of their
 types ([`../types/composite-types.md`](../types/composite-types.md),
@@ -30,7 +35,7 @@ names nor collide with local bindings.
 ## Availability
 
 - **No `use` is required.** A module that `use`s nothing still has every
-  name of both layers, from its first line to its last.
+  name of all three layers, from its first line to its last.
 - **A module-level declaration MUST NOT bear a prelude or intrinsic name.**
   Declaring `fn print(...)`, `struct Task { … }`, `type Map<K, V> = …`, or
   `let str = …` at file scope is a compile-time error (`E0106`). The complete list of
@@ -55,7 +60,7 @@ scopes in order, and the first scope that provides the name wins:
    declarations;
 4. names brought into the module by `mod`, `use`, and `pub use`;
 5. the prelude — the built-in type names and the intrinsics (`print`,
-   `println`, `str`, `Math`, `Time`, `Task`).
+   `println`, `str`, `Math`, `Time`, `Task`, `ast`).
 
 A namespace is resolved as an ordinary name *before* member access: in
 `Math::max(a, b)` the leading `Math` is found by the search above, and only
@@ -80,3 +85,9 @@ fn remaining(): string {
 |------|----------|
 | [`prelude.md`](prelude.md) | what the prelude contains — built-in types, `Display`, `Debug`, and `Format`, the built-in namespaces — the reserved-name list, the built-in members, prelude visibility, and shadowing |
 | [`intrinsic-functions.md`](intrinsic-functions.md) | signature conventions, `print`/`println`, `str`, the `Math`, `Time`, and `Task` namespaces, and the complete signature index |
+| [`execution.md`](execution.md) | the observable execution contract: values, macro calls, traps, quota interaction, determinism |
+| [`context.md`](context.md) | the six read-only context operations and the `ast` source API |
+| [`sandbox.md`](sandbox.md) | forbidden resources, `ast::compile_date`, and `E1007` |
+| [`quota.md`](quota.md) | the three quota layers, what is counted, and `E1001` |
+| [`errors.md`](errors.md) | the macro diagnostic formats, primary-span targets, and span chains |
+| [`cache.md`](cache.md) | structured-input and context hashing, invalidation, and cache transparency |

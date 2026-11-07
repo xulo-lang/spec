@@ -2,41 +2,41 @@
 
 ## Acceptance
 
-- [ ] Fold the 14 modified-chapter deltas into the chapters their blockquotes
+- [x] Fold the 14 modified-chapter deltas into the chapters their blockquotes
       name: `grammar.md`, `ast.md`, `introduction.md`,
       `type-system/errors.md`, `type-system/checking-rules.md`,
       `expressions/calls.md`, `testing.md`, `memory-and-runtime.md`,
       `types/traits.md`, `names.md`, `modules/import-export.md`,
       `modules/visibility.md`, `builtins/prelude.md`, and
       `builtins/README.md`.
-- [ ] Add the six new chapters: `builtins/execution.md`, `builtins/context.md`,
+- [x] Add the six new chapters: `builtins/execution.md`, `builtins/context.md`,
       `builtins/sandbox.md`, `builtins/quota.md`, `builtins/errors.md`, and
       `builtins/cache.md`.
 - [ ] After `grammar.md` changes, regenerate the external grammar snapshots
       (`xulo.ebnf`, `xulo.pest`, tree-sitter files) in the implementation
       repository; `machine-readable.md` is informative and lists those files
       rather than productions.
-- [ ] Remove the draft row from `changes/README.md`, add an `accepted` archive
+- [x] Remove the draft row from `changes/README.md`, add an `accepted` archive
       row, and move the directory to `archive/`.
 
 ## Cross-references
 
-- [ ] Check `builtins/README.md`, `builtins/prelude.md`, and the top-level
+- [x] Check `builtins/README.md`, `builtins/prelude.md`, and the top-level
       `README.md` for stale “two layers” or “no macro system” wording.
-- [ ] Check `types/traits.md` for remaining “closed registry” wording; the
+- [x] Check `types/traits.md` for remaining “closed registry” wording; the
       built-in registry is closed, the attribute namespace is not.
-- [ ] Check `type-system/errors.md` for the `E1001`–`E1012` rows, the
+- [x] Check `type-system/errors.md` for the `E1001`–`E1012` rows, the
       `E1001`–`E1099` range row, and any accidental reuse of `E0801`–`E0818`.
-- [ ] Check `names.md`, `modules/import-export.md`, and
+- [x] Check `names.md`, `modules/import-export.md`, and
       `modules/visibility.md` for a consistent macro namespace: one key per
       fully qualified macro, `use` imports macro names, `pub` exports both the
       macro and the implementation function.
-- [ ] Check every `specs/` file's first heading and `> **Delta** — …`
+- [x] Check every `specs/` file's first heading and `> **Delta** — …`
       blockquote against the `changes/README.md` convention.
-- [ ] Replace the `grammar.md` declaration-list, attribute-argument, and
+- [x] Replace the `grammar.md` declaration-list, attribute-argument, and
       `#[test(...)]` paragraphs listed in [specs/grammar.md](specs/grammar.md);
       the widened `AttributeArg` removes the old syntax-error fallback.
-- [ ] Replace the `ast.md` note that `TypeAlias`, `LetDeclaration`, and
+- [x] Replace the `ast.md` note that `TypeAlias`, `LetDeclaration`, and
       `ConstDeclaration` carry no `attributes` field.
 - [ ] Merge with `add-test-options`: its named string and named integer
       arguments join this change's `AttributeValue`/`AttributeValueNode`;

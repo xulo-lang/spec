@@ -40,8 +40,10 @@ does not match, a `#[test]`, `#[test()]`, `#[test(should_fail)]`,
 return type, generics, a `where` clause, or `pub` — is `E0110`
 (`` attribute `test` takes `should_fail`, `should_panic`,
 `should_panic = "…"`, `skip`, `skip = "…"`, or `timeout = N` ``). A
-`#[test(...)]` group that the attribute grammar cannot parse — a positional
-string or numeral, a float, or a boolean, for example — is a syntax error.
-When the sequence `#[test]` or `#[test(options)]` followed by `async`? `fn`
+`#[test(...)]` group that is not a valid `TestOptions` group parses as an
+ordinary attribute and is `E0110`; a positional string, numeral, float, or
+boolean therefore is `E0110`, not a syntax error. A negative number is not
+grammatical and remains a syntax error. When the sequence `#[test]` or
+`#[test(options)]` followed by `async`? `fn`
 Identifier `(` `)` Block appears at file scope, the declaration is a
 `TestDecl` and no registry lookup runs ([`../grammar.md`](../grammar.md)).

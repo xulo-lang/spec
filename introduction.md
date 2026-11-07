@@ -133,10 +133,15 @@ language as it grows.
   `u64`, `f32`, `f64`) exist for ABI and FFI precision, not for competing with
   C on its own ground: memory layout, inline assembly, and bare-metal control
   are outside the language's ambitions.
-- **No macro system in v1.** The language as specified has no macro
-  mechanism, no syntax extension, and no compile-time code generation;
-  declaration attributes ([`types/traits.md`](types/traits.md)) are a closed
-  registry the checker interprets, never an extension point.
+- **No declarative macro language.** Xulo has no `macro_rules!`-style
+  pattern/template language and no token-substitution syntax. It has
+  **procedural macros** instead: a `#[macro]` function is ordinary checked
+  Xulo code that runs at compile time in a sandbox and returns a structured
+  AST fragment ([`builtins/execution.md`](builtins/execution.md)). The macro surface is
+  `#[derive(Name)]`, `#[name(…)]`, and `name!(…)`; the declaration-attribute
+  registry is the built-in set plus the attribute macros in scope, never an
+  untyped extension point
+  ([`types/traits.md`](types/traits.md)).
 - **No test framework.** The language contributes exactly two things to
   testing — the `#[test]` form and the `assert` intrinsic
   ([`testing.md`](testing.md)) — so that tests are checked and discoverable
@@ -263,8 +268,8 @@ What Xulo takes from Swift and Rust is the vocabulary of intent: `let` and
 `mut`, `where` clauses for generic constraints, `move` and `copy` for
 ownership, optional types written `T?`, and `if` and `match` usable as
 expressions. What it leaves behind is the symbol-heavy spelling of those ideas:
-borrows and modes are written with words (`p: mut T`), there is no macro
-system, and there are no classes to subclass.
+borrows and modes are written with words (`p: mut T`), there are no
+declarative macros, and there are no classes to subclass.
 
 ## Reading Order
 

@@ -42,8 +42,9 @@ TestExpectation = "should_fail" | "should_panic" [ "=" StringLiteral ] ;
   name is not a valid `TestDecl` and is `E0110` when it parses as an ordinary
   attribute. This includes the deferred names `category`, `focus`, `retry`,
   and `threads`.
-- A positional string or numeral, a float, a boolean, or a negative number is not grammatical
-  under `AttributeArg` and remains a syntax error.
+- A positional string, numeral, float, or boolean parses as an ordinary
+  attribute and is `E0110`; a negative number is not grammatical under
+  `AttributeValue` and remains a syntax error.
 - The optional `async` marker says the body suspends; it is spelled exactly
   as `async` is spelled on a function, and it follows the attribute
   (`#[test] async fn` or `#[test(should_fail)] async fn`, never

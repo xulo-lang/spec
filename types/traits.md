@@ -348,15 +348,17 @@ trait Debug {
 
 ## Attributes
 
-A declaration MAY carry attributes written directly before it: the form
-`#[name]`, optionally with a parenthesized argument list inside the brackets;
-what the arguments may contain is fixed per entry by the registry —
-`#[derive]` takes a comma-separated list of trait names with an optional
-trailing comma.
+A declaration MAY carry attributes written directly before it: the bracket
+form `#[name]`, optionally followed by a parenthesized argument list. The attribute
+form is generic; the names the checker interprets are the **built-in
+registry** plus the **attribute macros** in scope.
 
 ```xulo
 #[derive(Debug)]
 struct User { name: string, age: int }
+
+#[route("/v1/users", "GET")]
+fn get_users() { … }
 ```
 
 An attribute on its own line, directly above the declaration it marks, is
@@ -364,30 +366,95 @@ An attribute on its own line, directly above the declaration it marks, is
 equally well-formed, the grammar being newline-insensitive
 ([lexical-structure.md](../lexical-structure.md)).
 
-- The attribute form is generic; the names the checker interprets form a
-  **closed registry**. An attribute whose name is not in the registry is
-  `E0108`. There are no inert attributes: every attribute written in source
-  is interpreted by the checker.
+- The built-in attributes are `derive`, `test`, and `macro`. They keep the
+  positions and argument shapes stated below and in
+  [`../grammar.md`](../grammar.md). An attribute whose name is not built in
+  and not registered by an attribute macro in scope is `E0108`.
 - Attribute names occupy their own namespace. `#[derive]` binds nothing and
-  takes no name away from values, types, or modules.
-- A registered attribute is valid only on the declarations its registry entry
-  allows (`E0109`), and its arguments must fit the shape that entry states
-  (`E0110`). Attributes are written on the five item declarations — `fn`,
-  `struct`, `enum`, `trait`, and `impl` — and on the test form (`#[test]`),
-  and on nothing else
-  ([`../grammar.md`](../grammar.md)).
-- The registry of derive targets is closed in the same way. The only
-  registered target is `Debug`. `Display` and `ToString` are reserved names
-  in this registry and are not registered; written as targets they are
-  `E0111`. `Display` is never a derive target: the user-visible string form
-  is an author's decision
-  ([Built-in formatting traits](#built-in-formatting-traits)).
+  takes no name away from values, types, or modules. A macro name may equal a
+  value or type name in the same module.
+- A built-in attribute is valid only on the hosts its rule allows (`E0109`),
+  and its arguments must fit its stated shape (`E0110`). A user attribute macro
+  is invocation-valid on all eight attribute hosts — `fn`, `struct`, `enum`,
+  `trait`, `impl`, `type`, `let`, and `const`. A host it does not support is an
+  author-returned `ast::MacroFailure` (`E1008`), and an output `item` of
+  another host kind is `E1006`; `E0109` does not apply to user attribute
+  macros.
+- The built-in hosts are:
+
+  | Attribute | `fn` | `struct` | `enum` | `trait` | `impl` | `type` | `let` | `const` |
+  |-----------|------|----------|--------|---------|--------|--------|-------|---------|
+  | `#[derive]` | — | yes | yes | — | — | — | — | — |
+  | `#[test]` | yes | — | — | — | — | — | — | — |
+  | `#[macro]` | yes | — | — | — | — | — | — | — |
+  | user attribute macro | yes | yes | yes | yes | yes | yes | yes | yes |
+
+  `type` is a declaration only; `let` and `const` may be module-level or
+  statements. The `#[test]` and `#[macro]` rows are further restricted by their
+  own shape and scope rules.
+- There are no inert attributes: every attribute written in source is
+  interpreted by a built-in rule or by a macro.
+- Attribute arguments are values: an identifier, a string, an integer, a
+  float, or a boolean, optionally written `name = value`. A bare identifier in
+  a built-in attribute is a name (`#[derive(Debug)]`); in an attribute macro it
+  is the identifier's spelling, not a value lookup.
+
+### Macro definitions
+
+`#[macro(kind = …, …)]` on a module-level `fn` registers a macro; the function
+is the implementation and is ordinary checked Xulo code. The shape is fixed by
+[`../type-system/checking-rules.md`](../type-system/checking-rules.md):
+
+```xulo
+#[macro(kind = "derive", target = Serialize)]
+fn derive_serialize(
+  input: ast::DeriveInput
+): Result<ast::DeriveOutput, ast::MacroFailure> { … }
+
+#[macro(kind = "attribute", name = "route")]
+fn route_attribute(
+  input: ast::AttributeInput
+): Result<ast::AttributeOutput, ast::MacroFailure> { … }
+
+#[macro(kind = "function", name = "sql")]
+fn sql_macro(
+  input: ast::FunctionInput
+): Result<ast::FunctionOutput, ast::MacroFailure> { … }
+```
+
+- The macro name is the `target` identifier for a derive macro and the `name`
+  string for an attribute or function macro. The implementation function's
+  identifier is independent.
+- Important: the macro's name is fully qualified by its module. `m1::w` and
+  `m2::w` are different macros; a short name requires `use`.
+- `pub` on the implementation function exports the macro together with the
+  function value; without `pub`, both are module-private
+  ([`../modules/visibility.md`](../modules/visibility.md)).
+- A macro name MUST be a legal identifier and MUST NOT be a keyword or a
+  reserved word. It MUST NOT be a built-in attribute name (`derive`, `test`,
+  `macro`); a derive macro MUST NOT also use a reserved derive target
+  (`Debug`, `Display`, `ToString`). Two macros with one name in one module are
+  `E1010`; a malformed `#[macro]` is `E1010`.
+- An attribute macro replaces the decorated declaration (its
+  `ast::AttributeOutput.item` is required and must be a declaration of the same
+  host kind) and may add items beside it. It cannot delete the declaration.
+- Macros expand before global name resolution and type checking. Every
+  `#[macro]` implementation is checked in a definition pre-pass before it can
+  run; it may not depend on an item produced by a macro in the same
+  compilation and uses `ast::call_*` rather than a direct user macro call. The
+  expanded AST is checked exactly like written code
+  ([`../type-system/checking-rules.md`](../type-system/checking-rules.md)).
 
 ### Derive
 
 `#[derive(Debug)]` on a `struct` or an `enum` generates exactly the impl an
 author would write by hand for the structural case. The body is fixed by the
 target:
+
+The registry of derive targets contains the built-in target `Debug` plus every
+user derive macro in scope. `Display` and `ToString` remain reserved and are
+not registered; written as targets they are `E0111`. A target that is neither
+built in nor a derive macro in scope is `E1005`.
 
 - On a struct `S` with fields `f₁ … fₙ`, the generated `impl Debug for S`
   renders the value as `S(f1: …, f2: …)` — the fields in declaration order,
@@ -449,14 +516,25 @@ Rules:
 - The expansion is an ordinary impl, so a hand-written `impl Debug` for
   the same type, or a second `#[derive(Debug)]`, is the conflicting-impl
   error `E0805`.
-- `#[derive]` on a type that declares generic parameters is `E0112`: the
-  language has no bound that means "is not a `struct`, or implements
-  `Debug`", so the expansion cannot be written for an open
-  parameter. A generic type keeps its hand-written impl.
+- `#[derive(Debug)]` on a type that declares generic parameters is `E0112`: the
+  language has no bound that means “is not a `struct`, or implements
+  `Debug`”, so the built-in expansion cannot be written for an open parameter.
+  A user derive macro is not subject to this restriction: it receives the
+  generic parameters in `ast::DeriveInput.target.generics` and chooses what to
+  generate. A generic type keeps its hand-written impl when no macro handles
+  it.
 - A derived impl participates in dispatch exactly as a written one; derive
   introduces no satisfaction that an `impl` would not.
 - `#[derive(Display)]` is `E0111`: user-visible text is written by hand, and
   the structural form a derive could default to is `Debug`'s.
+- A user derive macro receives one `ast::DeriveInput` and returns
+  `ast::DeriveOutput`; its `items` are inserted after the decorated
+  declaration. The generated items are checked as ordinary items.
+- Derive targets expand from left to right before any attribute macro on the
+  same declaration expands.
+- A generated impl that collides with a written impl, or with another
+  generated impl, is the ordinary conflicting-impl error `E0805` when the
+  expanded AST is checked.
 
 ### Test
 
@@ -476,11 +554,10 @@ does not match, a `#[test]`, `#[test()]`, or `#[test(name, …)]` on the
 non-matching `fn` — including a `fn` with parameters, a return type,
 generics, a `where` clause, or `pub` — is `E0110`
 (`` attribute `test` takes no arguments and is written `#[test]`, followed
-by `[async] fn name() { … }` ``). A `#[test(...)]` group that the current
-`AttributeArg` grammar cannot parse — notably a `StringLiteral` or a numeral
-— is a syntax error when the full test form does not match; when
-`add-macro-system` widens `AttributeArg`, such a group parses and falls under
-the same `E0110` rule. When the sequence `#[test]` followed by `async`? `fn`
+by `[async] fn name() { … }` ``). Every `#[test(...)]` group admitted by the
+`AttributeArg` grammar parses as an ordinary attribute and is `E0110` when the
+full test form does not match; there is no syntax-error fallback for a
+well-formed argument. When the sequence `#[test]` followed by `async`? `fn`
 Identifier `(` `)` Block appears at file scope, the declaration is a
 `TestDecl` and no registry lookup runs ([`../grammar.md`](../grammar.md)).
 

@@ -25,9 +25,9 @@
   outcome of an isolated run, not a language-level handler.
 - Fixing runtime-failure message text. That remains implementation-defined and
   documented.
-- General attribute values. This change adds only the named string and named
-  integer forms the options need; `add-macro-system` later generalizes the
-  value grammar further.
+- General attribute values. The accepted `add-macro-system` change already
+  supplies the widened value grammar; this change adds only the test-option
+  grammar.
 
 ## Grammar
 
@@ -63,22 +63,15 @@ with only `timeout` is a normal test with a deadline. A group with
 and one expectation is valid in either order. An empty group is not a `TestOptions`
 list and does not match `TestDecl`.
 
-### Attribute arguments
+### Attribute-argument dependency
 
-The named forms cannot be parsed by the current `AttributeArg = Identifier`.
-The narrowest addition is named string and named integer:
-
-```text
-AttributeArg  = Identifier | Identifier "=" AttributeValue ;
-AttributeValue = StringLiteral | IntegerLiteral ;
-```
-
-No positional string, integer, float, or boolean is added. The registry still
-decides which attributes may use which argument shape (`E0110`), so this is a
-syntactic widening, not a new meaning for every attribute. It also lets the
-fallback path parse `#[test(skip = "…")]`, `#[test(timeout = 100)]`, and the
-other option groups when the complete test form does not match, so the user
-gets `E0109` or `E0110` instead of a parse error.
+The accepted `add-macro-system` change supplies the widened attribute
+grammar, `AttributeArg = [ Identifier "=" ] AttributeValue` with identifier,
+string, integer, float, and boolean values. This change does not alter it. The
+widened grammar lets the fallback path parse `#[test(skip = "…")]`,
+`#[test(timeout = 100)]`, and the other option groups when the complete test
+form does not match, so the user gets `E0109` or `E0110` instead of a parse
+error.
 
 ### Why a dedicated option grammar
 
@@ -87,8 +80,8 @@ already a special declaration form, not a generic attribute on an ordinary
 `fn`: its host shape is fixed and its name binds no value. Keeping its
 argument grammar fixed makes unknown options and wrong value types diagnosable
 as `E0110` rather than making the checker police a general argument list. The
-generic `AttributeArg` widening is only for the fallback and, later, the macro
-system.
+generic `AttributeArg` widening is only for the fallback and the accepted
+macro system.
 
 **Rejected: `TestDecl = ... [ "(" AttributeArgs ")" ] ...`.** It would parse
 `#[test(should_fail, should_panic, "x")]` as a test declaration and then
@@ -235,11 +228,12 @@ as an ordinary attribute:
 - `#[test(category = "slow")]`, `#[test(focus)]`, `#[test(retry = 3)]`,
   `#[test(threads = 1)]` — deferred option names
 
-A positional string or numeral — `#[test("x")]`, `#[test(1)]` — does not parse
-under the narrowed `AttributeArg` and remains a syntax error. A value outside
-`AttributeValue`, such as a float or a negative number, is likewise a syntax
-error. Written on a `struct`, `enum`, `trait`, or `impl`, the marker keeps its
-existing `E0109` host error regardless of the group.
+A positional string, numeral, float, or boolean — `#[test("x")]`,
+`#[test(1)]`, `#[test(1.5)]`, `#[test(true)]` — parses as an ordinary
+attribute under the accepted widened `AttributeArg` and is `E0110`. A
+negative number is not grammatical and remains a syntax error. Written on a
+`struct`, `enum`, `trait`, or `impl`, the marker keeps its existing `E0109`
+host error regardless of the group.
 
 ## AST
 
@@ -288,7 +282,8 @@ Fields are smaller than a node whose only child is a string literal.
 
 ### Attribute argument nodes
 
-The grammar widening needs an AST shape for the fallback `AttributeNode`:
+The accepted `add-macro-system` change already defines the fallback nodes;
+they are repeated here only to show the shape this change relies on:
 
 ```typescript
 interface AttributeNode extends BaseNode {
@@ -310,9 +305,9 @@ type AttributeValueNode = IdentifierNode | StringLiteral | NumberLiteral;
 written; the array is empty for `#[test()]`. An `AttributeArgNode` with a
 non-null `name` is the `name = value` form; a bare identifier argument has
 `name: null` and an `IdentifierNode` value. `NumberLiteral` values are
-integers in this change. `add-macro-system` broadens `AttributeValueNode` with
-positional values, floats, and booleans; the merge keeps this node shape and
-extends the value union.
+integers in the test options. The accepted `add-macro-system` change broadens
+`AttributeValueNode` with positional values, floats, and booleans; this change
+keeps the node shape unchanged.
 
 **Rejected: `skipReason` alone without `isSkipped`.** `skip` without a reason
 and no skip at all would both have a null reason. The boolean makes the
@@ -327,8 +322,8 @@ No new code is introduced.
   trigger fits unchanged.
 - `E0109` still covers the marker written on a host that has no test form.
 - `E0107` still covers references to the test name.
-- A positional string or numeral, or a value outside `AttributeValue`, remains
-  a syntax error because this change does not add general value forms.
+- A negative number remains a syntax error because this change does not add
+  unary-minus value forms.
 
 The test form is recognized before attribute lookup. A complete
 `#[test(should_panic = "…", timeout = 100)] async fn name() { … }` is a
@@ -345,14 +340,13 @@ integer arguments must exist in the generic argument grammar too.
   form. `#[test(should_panic = "…")]` and `#[test(timeout = 100)]` were
   previously syntax errors or `E0110`; they are now complete test forms when
   the declaration shape matches, and `E0110` when it does not.
-- `add-macro-system` already proposes a wider `AttributeArg` and the same
-  `AttributeArgNode` shape. This change's `Identifier "=" AttributeValue`
-  region overlaps that widening. When either is accepted first, the other's
-  grammar and AST deltas must be merged so the named string and named integer
-  alternatives are not lost. Because the macro grammar also admits positional
-  values, a merged grammar may make `#[test("x")]` parse as an ordinary
-  attribute; on a test-shaped `fn` that is the existing `E0110` fallback, not
-  a new accepted test form.
+- The accepted `add-macro-system` change supplies the wider `AttributeArg` and
+  the same `AttributeArgNode` shape, including the named string and named
+  integer alternatives this change needs. This change leaves those
+  productions and nodes unchanged. Because the accepted grammar also admits
+  positional values, `#[test("x")]` parses as an ordinary attribute; on a
+  test-shaped `fn` that is the existing `E0110` fallback, not a new accepted
+  test form.
 
 ## Alternatives considered
 

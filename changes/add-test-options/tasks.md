@@ -2,24 +2,23 @@
 
 ## Preflight
 
-- [ ] No unaccepted dependency — the deltas are written against the current,
-      folded chapters. `add-macro-system` overlaps on `AttributeArg` and
-      `AttributeArgNode`; when either change is accepted, merge this change's
-      named string and named integer alternatives with the macro value grammar
-      and AST union instead of replacing them.
+- [x] The `add-macro-system` change is accepted: its widened `AttributeArg`,
+      `AttributeValue`, `AttributeArgNode`, and `AttributeValueNode` are in the
+      chapters. The deltas below are rebased onto that grammar and AST and
+      must not redefine or narrow them.
 
 ## Fold
 
-- [ ] Replace `AttributeArg`, add `AttributeValue`, replace `TestDecl`, add
-      `TestOptions`, `TestOption`, and `TestExpectation`, replace the
-      attribute-argument paragraph, and replace the `TestDecl` prose in
+- [ ] Replace `TestDecl`, add `TestOptions`, `TestOption`, and
+      `TestExpectation`, and replace the `TestDecl` prose in
       [`specs/grammar.md`](specs/grammar.md); add the new productions to the
-      declarations production index.
-- [ ] Replace `AttributeNode`, add `AttributeArgNode` and
-      `AttributeValueNode`, add `TestMode`, `mode`, `expectedMessage`,
-      `isSkipped`, `skipReason`, and `timeoutMs` to `TestDeclaration`, and
-      replace the `AttributeNode` and `TestDeclaration` notes in
-      [`specs/ast.md`](specs/ast.md).
+      declarations production index. `AttributeArg`, `AttributeValue`, and the
+      attribute-argument paragraph are already in the accepted chapters.
+- [ ] Add `TestMode`, `mode`, `expectedMessage`, `isSkipped`, `skipReason`,
+      and `timeoutMs` to `TestDeclaration`, and replace the `TestDeclaration`
+      note in [`specs/ast.md`](specs/ast.md). `AttributeNode`,
+      `AttributeArgNode`, and `AttributeValueNode` are already in the accepted
+      chapters.
 - [ ] Replace the declaration grammar and bullet, replace **Expected failure**
       with **Options**, and replace the **Running** criterion in
       [`specs/testing.md`](specs/testing.md).
@@ -28,14 +27,14 @@
 
 ## Cross-references
 
-- [ ] `grammar.md` — the argument paragraph no longer says the only argument
-      is an identifier; `AttributeValue`, `TestOptions`, `TestOption`, and
-      `TestExpectation` are indexed; the fallback paragraph names the new
-      accepted forms.
-- [ ] `ast.md` — `AttributeNode.args` carries `AttributeArgNode`s with
-      optional names and string/integer values; `TestDeclaration` has no
-      `attributes` or `title`; the mode, expectation, skip, and timeout fields
-      are documented; `TestMode` is exported like the other AST type aliases.
+- [ ] `grammar.md` — `TestOptions`, `TestOption`, and `TestExpectation` are
+      indexed; the fallback paragraph names the new accepted forms and treats
+      a positional value as `E0110` rather than a syntax error.
+- [ ] `ast.md` — confirm the accepted `AttributeNode.args` carries
+      `AttributeArgNode`s with optional names and value shapes;
+      `TestDeclaration` has no `attributes` or `title`; the mode, expectation,
+      skip, and timeout fields are documented; `TestMode` is exported like the
+      other AST type aliases.
 - [ ] `testing.md` — normal, `should_fail`, and `should_panic` are defined by
       distinct outcomes; cancellation passes `should_fail` and fails
       `should_panic`; timeout is a non-panic failure; skip prevents the run and
@@ -47,9 +46,8 @@
       trigger still covers a malformed option group.
 - [ ] `changes/README.md` — keep the draft row with the expectation, skip, and
       timeout forms and the deferred-option note.
-- [ ] `changes/add-macro-system` — record the `AttributeArg` and
-      `AttributeArgNode` merge requirement in its tasks or design when this
-      change is accepted.
+- [x] `changes/add-macro-system` — the merge requirement is recorded and that
+      change is accepted; keep this change rebased onto its grammar and AST.
 - [ ] `testing.md` — the “everything else” paragraph no longer claims that
       selection and execution are entirely a tool concern, because `skip` is
       specified here.
@@ -65,7 +63,8 @@
       `#[test(timeout = 0)]`, `#[test(timeout = "100")]`,
       `#[test(category = "slow")]`, and `#[test(focus)]` are `E0110` when
       they parse as attributes; `#[test("msg")]`, `#[test(1)]`, and
-      `#[test(timeout = 1.5)]` remain syntax errors.
+      `#[test(timeout = 1.5)]` also parse as attributes and are `E0110`;
+      `#[test(-1)]` remains a syntax error.
 - [ ] AST tests: a bare identifier argument and a named string/integer
       argument are distinguishable through `AttributeArgNode.name` and
       `value`; `mode` is `normal`, `shouldFail`, or `shouldPanic`;
@@ -84,6 +83,7 @@
 - [ ] Timeout tests: a test that settles before the deadline keeps its normal
       outcome; one that does not is `timedOut`; an `async` timeout cancels the
       task but reports `timedOut`, not `cancelled`.
-- [ ] Rebase test: merge this change's `Identifier "=" AttributeValue` and
-      `AttributeArgNode` with `add-macro-system`'s widened `AttributeArg` and
-      `AttributeValueNode` without dropping either alternative.
+- [ ] Rebase test: confirm the accepted `add-macro-system` widened
+      `AttributeArg`/`AttributeValue` and `AttributeArgNode`/
+      `AttributeValueNode` are not narrowed by this change, and that test
+      options are a separate `TestOptions` production.

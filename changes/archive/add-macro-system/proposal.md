@@ -1,6 +1,6 @@
 # Add Macro System
 
-**Status:** draft · **Date:** 2026-11-05 · **Change ID:** add-macro-system
+**Status:** accepted · **Date:** 2026-11-05 · **Change ID:** add-macro-system
 **Affects:** `grammar.md`, `ast.md`, `introduction.md`,
 `type-system/errors.md`, `type-system/checking-rules.md`,
 `expressions/calls.md`, `testing.md`, `memory-and-runtime.md`,

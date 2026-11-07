@@ -74,10 +74,20 @@ a program declares them itself; they are not part of the prelude (see
 | `Math` | mathematical constants and functions | [`Math` namespace](intrinsic-functions.md#math-namespace) |
 | `Time` | timestamps and async sleep | [`Time` namespace](intrinsic-functions.md#time-namespace) |
 | `Task` | task combinators `all`, `race`, `resolve`, `timeout` | [`Task` namespace](intrinsic-functions.md#task-namespace) |
+| `ast` | the macro input/output records, `ast::AstNode`, `ast::Span`, `ast::Value`, `ast::MacroFailure`, the context functions, and `ast::quote!` | [`context.md`](context.md), [`execution.md`](execution.md) |
 
 Members are selected with `.`, exactly like fields and methods:
 `Math::PI`, `Time::now()`, `Task::all(tasks)`
 ([`../expressions/path-and-access.md`](../expressions/path-and-access.md)).
+
+`ast` is the macro surface
+([memory-and-runtime.md](../memory-and-runtime.md)). `ast::quote!` is the one
+macro form in the namespace; `ast::call_derive`, `ast::call_attribute`, and
+`ast::call_function` are the compile-time macro invocation helpers. Like
+`Math`, `Time`, and `Task`, `ast` is a namespace name, not a value: it is
+written only as the head of a `::` path. It enters resolution through the
+prelude and MAY be shadowed in an inner scope exactly as any other
+prelude name ([names.md](../names.md)).
 
 ### Reserved names
 
@@ -90,7 +100,7 @@ in [`../type-system/errors.md`](../type-system/errors.md).
 |----------|-------|
 | Value and marker types | `List`, `Array`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error`, `Format` |
 | Protocols | `Display`, `Debug`, `ToString` |
-| Namespaces | `Math`, `Time`, `Task` |
+| Namespaces | `Math`, `Time`, `Task`, `ast` |
 | Intrinsic functions | `print`, `println`, `str`, `assert` |
 
 `Task` appears twice because it is both a type and a namespace. Every
@@ -103,6 +113,10 @@ is reserved under the same rule.
 ToString` would take the name while no rule uses it. Written where a trait
 name is expected — `impl ToString for …` — it is an unresolved name
 (`E0101`).
+
+A module-level declaration named `ast` is `E0106`; an inner binding may shadow
+it, after which the `ast::` types, the `ast::call_*` functions, and
+`ast::quote!` are unreachable in that scope until the shadow ends.
 
 ## Built-in members
 

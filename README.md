@@ -148,7 +148,7 @@ and the xulo-website documents named in § 6.
 | [`components/`](components/README.md) | Components: `View`, state, effects, environment, binding, layout |
 | [`modules/`](modules/README.md) | Source files, import/export, visibility |
 | [`type-system/`](type-system/README.md) | Checking rules, coercions, compile-time diagnostics (`E`/`W` codes) |
-| [`builtins/`](builtins/README.md) | Prelude and compiler intrinsics |
+| [`builtins/`](builtins/README.md) | Prelude, compiler intrinsics, and compile-time macros |
 | [`memory-and-runtime.md`](memory-and-runtime.md) | Value/reference semantics, ownership, borrowing, runtime model |
 | [`ffi.md`](ffi.md) | The foreign boundary: `extern` imports and exports, the ABI registry, ABI-safe signature types, `Ptr`, and the boundary guarantee |
 | [`concurrency.md`](concurrency.md) | Tasks, `spawn` and its executors, cancellation, structured concurrency |

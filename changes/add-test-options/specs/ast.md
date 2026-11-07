@@ -1,39 +1,10 @@
 # AST Schema — Delta: Test Options
 
-> **Delta** — replaces `AttributeNode`, adds `AttributeArgNode` and
-> `AttributeValueNode`, adds `TestMode`, adds `mode`, `expectedMessage`,
-> `isSkipped`, `skipReason`, and `timeoutMs` to `TestDeclaration`, and
-> replaces the `AttributeNode` and `TestDeclaration` notes in `ast.md`. No
-> other node changes.
-
-## Attribute arguments
-
-Replace `AttributeNode` with:
-
-```typescript
-interface AttributeNode extends BaseNode {
-  type: 'Attribute';
-  name: AttributeNameNode;
-  args: AttributeArgNode[] | null;
-}
-
-interface AttributeArgNode extends BaseNode {
-  type: 'AttributeArg';
-  name: IdentifierNode | null;
-  value: AttributeValueNode;
-}
-
-type AttributeValueNode = IdentifierNode | StringLiteral | NumberLiteral;
-```
-
-Replace the sentence about `AttributeNode.args` in the attribute note with:
-
-`AttributeNode.args` is `null` for a bare attribute and an array when a
-parenthesized group is written; the array is empty for `#[test()]`. An
-`AttributeArgNode` with a non-null `name` is the `name = value` form; a bare
-identifier argument has `name: null` and an `IdentifierNode` value. In this
-change `AttributeValueNode` is an identifier, string, or integer literal;
-`add-macro-system` extends it with positional values, floats, and booleans.
+> **Delta** — adds `TestMode`, adds `mode`, `expectedMessage`, `isSkipped`,
+> `skipReason`, and `timeoutMs` to `TestDeclaration`, and replaces the
+> `TestDeclaration` note in `ast.md`. `AttributeNode`, `AttributeArgNode`, and
+> `AttributeValueNode` are unchanged: the accepted `add-macro-system` change
+> already supplies them. No other node changes.
 
 ## Test declaration
 

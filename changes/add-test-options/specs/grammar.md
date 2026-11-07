@@ -1,20 +1,14 @@
 # Grammar — Delta: Test Options
 
-> **Delta** — replaces the `AttributeArg` and `TestDecl` productions, adds
-> `AttributeValue`, `TestOptions`, `TestOption`, and `TestExpectation`,
-> replaces the attribute-argument paragraph and the `TestDecl` prose, and adds
-> the new productions to the declarations production index row of
-> `grammar.md`. `Attribute`, `AttributeArgs`, and `AttributeList` are
-> unchanged.
+> **Delta** — replaces the `TestDecl` production, adds `TestOptions`,
+> `TestOption`, and `TestExpectation`, replaces the `TestDecl` prose and the
+> `#[test(...)]` fallback paragraph, and adds the new productions to the
+> declarations production index row of `grammar.md`. `Attribute`,
+> `AttributeArgs`, `AttributeArg`, `AttributeValue`, and `AttributeList` are
+> unchanged: the accepted `add-macro-system` change already supplies the
+> widened attribute-value shape.
 
-## Attribute and test productions
-
-Replace `AttributeArg` with:
-
-```text
-AttributeArg   = Identifier | Identifier "=" AttributeValue ;
-AttributeValue = StringLiteral | IntegerLiteral ;
-```
+## Test production
 
 Replace `TestDecl` with:
 
@@ -32,18 +26,6 @@ The declarations row of the production index becomes:
 | Nonterminal | Section |
 |-------------|---------|
 | `AttributeName`, `Attribute`, `AttributeArgs`, `AttributeArg`, `AttributeValue`, `AttributeList`, `FnDecl`, `AbiTag`, `ExternBlock`, `ExternItem`, `ExternParamList`, `ExternParam`, `ExternFnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl`, `TestDecl`, `TestOptions`, `TestOption`, `TestExpectation` | [Declarations](#declarations) |
-
-Replace the attribute-argument paragraph with:
-
-An attribute is written `#[name]` or `#[name(args)]`. The built-in attribute
-names are lowercase. `derive` and `macro` are reserved words accepted only in
-the attribute-name position; `test` is an ordinary identifier. Attribute names
-occupy their own namespace and bind nothing. An attribute argument is either
-an identifier, a named string literal (`Identifier "=" StringLiteral`), or a
-named integer literal (`Identifier "=" IntegerLiteral`); no positional or
-other named value is grammatical. The registry entry decides which shape an
-entry accepts (`E0110`). The declarations that carry an `AttributeList` are
-unchanged.
 
 ## Test declaration
 
@@ -85,9 +67,9 @@ ordinary attributes on the `FnDecl`. A marker before a `fn` with parameters, a
 return type, generic parameters, a `where` clause, or `pub` is `E0110`; so is
 a group that parses as an ordinary attribute but violates the option rules —
 a duplicate or mixed option, `skip` combined with another option, an invalid
-`timeout`, or an unknown option name. A `#[test(...)]` group that the
-attribute grammar cannot parse — a positional string or a numeral, for
-example — is a syntax error. The registry
+`timeout`, or an unknown option name. A `#[test(...)]` group that is not a
+valid `TestOptions` group parses as an ordinary attribute and is `E0110`; a
+positional value is therefore `E0110`, not a syntax error. The registry
 rules of [traits.md](types/traits.md) give the message for the `E0110` case
 (`` attribute `test` takes `should_fail`, `should_panic`,
 `should_panic = "…"`, `skip`, `skip = "…"`, or `timeout = N` ``).

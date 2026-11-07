@@ -268,6 +268,7 @@ The complete mapping from declaration to exported name:
 | Declaration | Exported name | What clients receive |
 |-------------|---------------|------------------------|
 | `pub fn f(…)` | `f` | a function of the declared signature |
+| `pub fn f(…)` with `#[macro(…)]` | the macro name (`target` or `name`), in addition to `f` | the macro, invocable as `#[derive(name)]`, `#[name(…)]`, or `name!(…)` |
 | `pub struct S { … }` | `S` | the type, its constructor form, and its `pub` members |
 | `pub enum E { … }` | `E` | the type, its variants `E::V`, and its `pub` members |
 | `pub trait T { … }` | `T` | the trait, to be implemented locally |
@@ -326,6 +327,19 @@ only as a type (a trait, a type alias) arrives as a type: using it as a
 value is the ordinary `E0101` ("names a type where a value is required"),
 because the binding was never declared type-only.
 
+`use type` restricts value/type bindings and imports no macro. A plain `use`
+imports a macro when the path names one:
+
+```xulo
+use serde::Serialize;          // imports the trait and, if exported, the derive macro
+use routing::route;            // imports the attribute macro
+use sql::query as q;           // aliases the function macro `query` to `q`
+```
+
+A path that resolves only to a macro is a valid `use`; it is not `E0601`. A
+macro imported by `use` is used when it appears in any macro position
+(`#[derive]`, `#[name]`, `name!`) or is re-exported.
+
 ## Name collisions
 
 Every collision is decided where the names meet in the header:
@@ -357,6 +371,19 @@ Every collision is decided where the names meet in the header:
 - `_` MAY NOT be used as a use entry or an alias: it is not an identifier
   ([`../names.md`](../names.md)).
 
+Macro names form a separate namespace:
+
+- Two `use` bindings of one macro name are `E0104`, even if one also imports a
+  value or type of that spelling.
+- A `use` binding and a module-level `#[macro]` declaration with one macro name
+  are `E0104`.
+- A glob that contributes a macro name overlapping an existing macro binding
+  is `E0104`.
+- A macro name MAY equal a value or type name in the same module; the two
+  namespaces do not collide.
+- Two `#[macro]` declarations with one macro name in one module are `E1010`, not
+  shadowing.
+
 ## Visibility of used names
 
 Using does not re-export. A name a module binds is part of that module's
@@ -380,6 +407,10 @@ statement that binds it. A warning never rejects a program
 - A binding re-exported by `pub use` is used: the re-export puts the name in
   the interface, for the same reason a `pub` declaration is never reported
   as unused.
+- A macro binding is used when it is named in `#[derive(...)]`, in an attribute
+  position (`#[name(...)]`), or as a function macro (`name!(...)`), or when it
+  is re-exported by `pub use`. An unused macro import warns once, exactly as
+  an unused value import does (`W0102`).
 - A glob with no contributed name in use warns once at the glob.
 - Shadowing a binding in an inner scope does not use it: if only the
   shadowing declaration is read, the `use` entry is the one that goes
@@ -409,6 +440,8 @@ fn norm(x: float, y: float): float {
 | `pub use { x }` where `x` is not bound in this module | `E0101` | `pub use { x }` with no declaration or use of `x` |
 | A path that spells a manifest key an `alias` replaced | `E0607` | `clap::args()` with `alias = "clap_lib"` |
 | A `use` entry never used in this module | `W0102` | `use math::add` with `add` never referenced |
+| Two bindings for one macro name — `use` × `use`, `use` × declaration, glob overlap | `E0104` | `use m1::w;` then `use m2::w` |
+| Two `#[macro]` declarations with one macro name in one module | `E1010` | two `#[macro(kind = "function", name = "sql")]` |
 
 Codes are stable identifiers; the full scheme is in
 [`../type-system/errors.md`](../type-system/errors.md).

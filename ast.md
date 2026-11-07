@@ -81,8 +81,20 @@ interface AttributeNameNode extends BaseNode {
 interface AttributeNode extends BaseNode {
   type: 'Attribute';
   name: AttributeNameNode;
-  args: IdentifierNode[] | null;
+  args: AttributeArgNode[] | null;
 }
+
+interface AttributeArgNode extends BaseNode {
+  type: 'AttributeArg';
+  name: IdentifierNode | null;   // null: positional; otherwise `name = value`
+  value: AttributeValueNode;
+}
+
+type AttributeValueNode =
+  | IdentifierNode
+  | StringLiteral
+  | NumberLiteral
+  | BooleanLiteral;
 
 interface FnDeclaration extends BaseNode {
   type: 'FnDeclaration';
@@ -182,6 +194,7 @@ interface ImplDeclaration extends BaseNode {
 
 interface TypeAlias extends BaseNode {
   type: 'TypeAlias';
+  attributes: AttributeNode[];
   isPub: boolean;
   name: IdentifierNode;
   genericParams: GenericParamNode[];
@@ -190,6 +203,7 @@ interface TypeAlias extends BaseNode {
 
 interface LetDeclaration extends BaseNode {
   type: 'LetDeclaration';
+  attributes: AttributeNode[];
   isPub: boolean;
   isMutable: boolean;
   isShared: boolean;
@@ -200,6 +214,7 @@ interface LetDeclaration extends BaseNode {
 
 interface ConstDeclaration extends BaseNode {
   type: 'ConstDeclaration';
+  attributes: AttributeNode[];
   isPub: boolean;
   name: IdentifierNode;
   varType: TypeNode | null;
@@ -218,16 +233,24 @@ An attribute's `span` covers the leading `#` through the closing `]`.
 `AttributeNameNode.name` is the spelling written between the brackets:
 `derive`, `test`, `macro`, or a user attribute. It is a string, not an
 `IdentifierNode`, because `derive` and `macro` are reserved words accepted
-only in the attribute-name position. `AttributeNode.args` are the arguments
-inside the parentheses, if any; the brackets add no AST node.
+only in the attribute-name position. `args` is `null` for a bare attribute
+(`#[route]`) and an array when a parenthesized group is written; the array is
+empty for `#[route()]`. An `AttributeArgNode` with a non-null `name` is the
+`name = value` form, which `#[macro]` uses
+(`#[macro(kind = "derive", target = Serialize)]`); a positional argument has
+`name: null` (`#[derive(Debug)]`, `#[route("/v1/users")]`). For a built-in
+attribute, the registry entry decides which shape is valid; a user attribute
+macro receives the values and validates them itself.
 
 `TestDeclaration` carries no `title` field. The `#[test]` marker takes no
 arguments; `name` is the test's identity for tools, and the note that
 `TestDeclaration` carries no `attributes` field is unchanged.
 
-`TypeAlias`, `LetDeclaration`, `ConstDeclaration`, `TestDeclaration`, and
-`PubUseDeclaration` carry no `attributes` field: the grammar attaches the
-list to the five item forms only ([`grammar.md`](grammar.md)).
+`TestDeclaration`, `PubUseDeclaration`, `ExternBlockDeclaration`, and
+`ExternFunctionDeclaration` carry no `attributes` field. The eight attribute
+hosts — `FnDeclaration`, `StructDeclaration`, `EnumDeclaration`,
+`TraitDeclaration`, `ImplDeclaration`, `TypeAlias`, `LetDeclaration`, and
+`ConstDeclaration` — each carry `attributes`.
 
 - Visibility is written `pub` on every declaration that has it. There is no `export` keyword, so there is no `isExport` field and no export node ([`grammar.md`](grammar.md), [`modules/visibility.md`](modules/visibility.md)).
 - `impl` is never `pub` — it is never part of an interface — so `ImplDeclaration` carries no visibility flag at all.
@@ -542,6 +565,8 @@ type ExpressionNode =
   | UnaryExpr
   | AwaitExpr
   | CallExpr
+  | MacroCallExpr          // new
+  | QuoteExpr              // new
   | MemberExpr
   | IndexExpr
   | PropagateExpr
@@ -557,6 +582,29 @@ type ExpressionNode =
   | SpawnExpr
   | LockExpr
   | ComponentExpr;
+
+interface MacroCallExpr extends BaseNode {
+  type: 'MacroCallExpr';
+  path: PathNode;
+  args: ExpressionNode[];
+}
+
+interface QuoteExpr extends BaseNode {
+  type: 'QuoteExpr';
+  pieces: QuotePieceNode[];
+}
+
+type QuotePieceNode = QuoteTokenNode | QuoteHoleNode;
+
+interface QuoteTokenNode extends BaseNode {
+  type: 'QuoteToken';
+  text: string;
+}
+
+interface QuoteHoleNode extends BaseNode {
+  type: 'QuoteHole';
+  expression: ExpressionNode;
+}
 
 interface NumberLiteral extends BaseNode {
   type: 'NumberLiteral';
@@ -717,6 +765,19 @@ interface PathExpr extends BaseNode {
   args: ArgNode[] | null;  // null: no parentheses; array: parenthesized call
 }
 ```
+
+`MacroCallExpr.args` is always an array — empty for `sql!()` — because the
+grammar has no bare `Path "!"` form without parentheses. The path is a
+`PathNode`, so `sql!` and `m::sql!` are the same node shape. `QuoteExpr` keeps
+the quote body unparsed: `QuoteTokenNode.text` is the raw balanced token text
+between holes, and `QuoteHoleNode.expression` is the `${…}` operand. The
+compiler parses the substituted body at expansion time, so the AST does not
+need a hole-bearing variant of every declaration and expression node.
+
+`QuoteExpr` is the only `QuoteCall` shape; there is no user macro with a
+brace-delimited body. `MacroCallExpr` is a primary expression, not a
+`CallExpr`: its callee names a macro, not a value, and it has no type
+arguments or named arguments.
 
 `PathExpr` replaces `VariantPathExpr` in the `ExpressionNode` union and in
 the grammar's `PrimaryExpression`: the same node now carries enum variants

@@ -225,11 +225,12 @@ other direction: it MUST carry `pub`, since linkage with no export is not
 expressible, and an `ExternBlock`'s `pub` exports every item of the block.
 `async` follows `pub` and precedes `fn`; neither extern form carries it, and
 neither appears in `Statement` — both are declarations of a module body only.
-The five item declarations — `FnDecl`, `StructDecl`, `EnumDecl`, `TraitDecl`,
-and `ImplDecl` — MAY carry an attribute list, written outermost, before `pub`
-and `async`; which attributes are defined, and on which of them, is a
-checking rule and not a grammatical one
-([traits.md](types/traits.md)); the two extern forms carry no attribute list.
+The eight item declarations — `FnDecl`, `StructDecl`, `EnumDecl`,
+`TraitDecl`, `ImplDecl`, `TypeAlias`, `LetDecl`, and `ConstDecl` — MAY carry
+an attribute list, written outermost, before `pub` and `async`; which
+attributes are defined, and on which of them, is a checking rule and not a
+grammatical one ([traits.md](types/traits.md)); the two extern forms carry
+no attribute list.
 Generic parameters are declared once,
 directly after the name, by functions,
 `struct`s, `enum`s, type aliases, and `impl` blocks — never by a `trait`,
@@ -238,11 +239,13 @@ whose `GenericParams?` exists only so that an attempt can be diagnosed
 ([generics.md](types/generics.md), [traits.md](types/traits.md)).
 
 ```text
-Attribute     = "#" "[" AttributeName [ "(" [ AttributeArgs ] ")" ] "]" ;
-AttributeName = Identifier | "derive" | "macro" ;
-AttributeArgs = AttributeArg { "," AttributeArg } [ "," ] ;
-AttributeArg  = Identifier ;
-AttributeList = { Attribute } ;
+Attribute      = "#" "[" AttributeName [ "(" [ AttributeArgs ] ")" ] "]" ;
+AttributeName  = Identifier | "derive" | "macro" ;
+AttributeArgs  = AttributeArg { "," AttributeArg } [ "," ] ;
+AttributeArg   = [ Identifier "=" ] AttributeValue ;
+AttributeValue = Identifier | StringLiteral | IntegerLiteral
+               | FloatLiteral | BooleanLiteral ;
+AttributeList  = { Attribute } ;
 
 FnDecl = [ AttributeList ] [ "pub" ] [ "async" ] "fn" Identifier
          GenericParams? "(" [ ParameterList ] ")" [ ":" Type ]
@@ -289,7 +292,8 @@ TraitMethod  = [ "async" ] "fn" Identifier "(" [ ParameterList ] ")" ":" Type ;
 
 ImplDecl  = [ AttributeList ] "impl" GenericParams? [ Identifier "for" ]
             Type "{" { FnDecl } "}" ;
-TypeAlias = [ "pub" ] "type" Identifier GenericParams? "=" Type ;
+TypeAlias = [ AttributeList ] [ "pub" ] "type" Identifier GenericParams?
+            "=" Type ;
 ```
 
 A parameter MUST be annotated; `mut T` and `shared T` are parameter modes, not
@@ -304,8 +308,8 @@ an attribute list on a `trait` method is not grammatical — the list belongs
 to declarations, and `TraitMethod` is a signature, not a declaration.
 
 ```text
-LetDecl = [ "pub" ] "let" ( MutableBinding | SimpleBinding
-                           | DestructuringBinding ) ;
+LetDecl = [ AttributeList ] [ "pub" ] "let" ( MutableBinding | SimpleBinding
+                                             | DestructuringBinding ) ;
 MutableBinding       = "mut" Identifier [ ":" Type ] "=" [ "shared" ] Expression ;
 SimpleBinding        = Identifier [ ":" Type ]
                        ( "=" [ "shared" ] Expression | ":=" Expression ) ;
@@ -313,18 +317,21 @@ DestructuringBinding = ( "{" IdentifierList "}"
                         | "(" IdentifierList ")" ) "=" Expression ;
 IdentifierList       = Identifier { "," Identifier } [ "," ] ;
 
-ConstDecl = [ "pub" ] "const" Identifier [ ":" Type ] "=" Expression ;
+ConstDecl = [ AttributeList ] [ "pub" ] "const" Identifier [ ":" Type ]
+            "=" Expression ;
 
 TestDecl = "#" "[" "test" "]" [ "async" ] "fn" Identifier "(" ")" Block ;
 ```
 
 An attribute is written `#[name]` or `#[name(args)]`. The built-in attribute
 names are lowercase. `derive` and `macro` are reserved words accepted only in
-the attribute-name position; `test` is an ordinary identifier. Attribute names
-occupy their own namespace and bind nothing. The argument list keeps its
-existing shape; a change that widens `AttributeArg` for macro metadata is a
-separate change. The declarations that carry an `AttributeList` are
-unchanged.
+the attribute-name position; `test` is an ordinary identifier. Attribute
+names occupy their own namespace and bind nothing. An argument is a
+positional value or a `name = value` entry; the registry entry decides which
+shape a built-in attribute accepts (`E0110`), and a user attribute macro
+receives the values and validates them itself. The declarations that carry
+an `AttributeList` are `FnDecl`, `StructDecl`, `EnumDecl`, `TraitDecl`,
+`ImplDecl`, `TypeAlias`, `LetDecl`, and `ConstDecl`.
 
 `:=` appears only directly after `let`, never after `let mut` or `const`, and
 `let x := e` means exactly `let mut x = e`
@@ -353,12 +360,12 @@ Identifier `(` `)` Block appears at file scope, the declaration is a
 When the full test form does not match, `#[test]` and `#[test(...)]` are
 ordinary attributes on the `FnDecl`. A bare `#[test]` before a `fn` with
 parameters, a return type, generic parameters, a `where` clause, or `pub` is
-`E0110`; so are `#[test()]` and `#[test(name, …)]`, because the test attribute
-takes no arguments. A `#[test(...)]` group that the current `AttributeArg`
-grammar cannot parse — notably a `StringLiteral` or a numeral — is a syntax
-error. When the `add-macro-system` change widens `AttributeArg`, such a group
-parses and falls under the same `E0110` rule. The registry rules of
-[traits.md](types/traits.md) give the message for the `E0110` case
+`E0110`; so are `#[test()]`, `#[test(name, …)]`, `#[test("…")]`, and
+`#[test(1)]`, because the test attribute takes no arguments. Every
+`#[test(...)]` group admitted by the widened `AttributeArg` grammar parses as
+an ordinary attribute and is `E0110`; there is no syntax-error fallback for a
+well-formed argument. The registry rules of [traits.md](types/traits.md) give
+the message for the `E0110` case
 (`` attribute `test` takes no arguments and is written `#[test]`, followed by
 `[async] fn name() { … }` ``).
 
@@ -547,12 +554,24 @@ parse with a note to insert the space. Typing and diagnostics are in
 [expressions/calls.md](expressions/calls.md).
 
 ```text
-PrimaryExpression = Literal | TemplateLiteral | Identifier | PathExpr
+PrimaryExpression = Literal | TemplateLiteral | Identifier
+                  | MacroCall | QuoteCall | PathExpr
                   | "(" Expression ")" | TupleLiteral
                   | ListLiteral | MapLiteral
                   | IfExpression | MatchExpression | PanicExpression
                   | ClosureExpression | ComponentCall
                   | SpawnExpression | LockExpression ;
+
+MacroCall         = Path "!" "(" [ MacroArgumentList ] ")" ;
+MacroArgumentList = Expression { "," Expression } [ "," ] ;
+
+QuoteCall         = "ast" "::" "quote" "!" "{" { QuotePiece } "}" ;
+QuotePiece        = QuoteHole
+                  | ? any balanced token sequence that does not begin with
+                      the two characters "${" and does not contain an
+                      unmatched "}" ? ;
+QuoteHole         = "${" Expression "}" ;
+
 PathExpr         = Path [ "(" [ ArgumentList ] ")" ] ;
 PanicExpression   = "panic" "(" Expression ")" ;
 Place             = Identifier | Place "." Identifier | Place "." IntegerLiteral
@@ -580,6 +599,38 @@ ArrowParams        = "(" [ ClosureParamList ] ")" | Identifier ;
 ClosureParamList   = ClosureParam { "," ClosureParam } [ "," ] ;
 ClosureParam       = Identifier [ ":" Type ] ;
 ```
+
+`MacroCall` takes expressions only: no labels, no `$` bindings, and no
+trailing-argument rules beyond the comma list. A function macro receives each
+argument as an `ast::Value`: a literal becomes a scalar value and every other
+expression becomes an `ast::AstNode`.
+
+`QuoteCall` is the one brace-delimited macro form and is spelled exactly
+`ast::quote! { … }`. Its body is not an ordinary `Block`: it may contain
+declarations, statements, and partial fragments — the pieces are balanced
+tokens — and `${ Expression }` marks a hole. Nested braces, parentheses, and
+brackets inside a `QuotePiece` are balanced and belong to the piece; a `}`
+that closes the quote ends the body. The compiler substitutes the holes and
+parses the result as a sequence of declarations and statements.
+
+**Ambiguity notes.** No macro form existed before this change, so every
+position that now begins one was previously a syntax error: `!` is only a
+prefix operator, so `Path "!"` cannot be confused with a binary operator, and
+`ast::quote!` is a path followed by `!` and `{`, not a path followed by a
+call.
+
+The parser decides a `Path` followed by `!` by one token of lookahead:
+
+- `Path` `!` `(` is a `MacroCall`;
+- the path `ast::quote` followed by `!` `{` is a `QuoteCall`;
+- any other `Path` `!` is a syntax error.
+
+`QuoteCall` has priority over `MacroCall`: its head is the literal path
+`ast::quote` and its delimiter is `{`, while `MacroCall` requires `(`. The two
+therefore never overlap. Whitespace between the path, `!`, and the delimiter
+does not change the choice; `a !(b)` is a `MacroCall` exactly as `a!(b)` is.
+Because `!=` is one token, `a != b` never begins a macro form. The prefix
+`!x` is likewise unaffected, since it has no `Path` before the `!`.
 
 `$` prefixes a place in an argument position and binds a state variable of the
 enclosing component; it is an argument form and nothing else. The place is
@@ -779,11 +830,11 @@ production itself appears exactly once, in its own section.
 | `StringLiteral`, `StringChar`, `EscapeSeq`, `TemplateLiteral`, `TemplateText`, `TemplateEscape`, `Interpolation` | [Lexical structure](#lexical-structure) |
 | `DQuote`, `SQuote`, `Backslash`, `Backtick`, `Operator`, `WordOperator`, `SymbolOperator`, `Delimiter` | [Lexical structure](#lexical-structure) |
 | `Program`, `HeaderItem`, `Declaration`, `Entry`, `EntryPoint`, `ModDecl`, `ModuleBody`, `UseDecl`, `PubUse`, `UseTarget`, `UsePath`, `UseGroup`, `UseGlob`, `UseEntry`, `PubUseLocal`, `PathHead`, `Path`, `PackageName` | [Program and modules](#program-and-modules) |
-| `AttributeName`, `Attribute`, `AttributeArgs`, `AttributeArg`, `AttributeList`, `FnDecl`, `AbiTag`, `ExternBlock`, `ExternItem`, `ExternParamList`, `ExternParam`, `ExternFnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl`, `TestDecl` | [Declarations](#declarations) |
+| `AttributeName`, `Attribute`, `AttributeArgs`, `AttributeArg`, `AttributeValue`, `AttributeList`, `FnDecl`, `AbiTag`, `ExternBlock`, `ExternItem`, `ExternParamList`, `ExternParam`, `ExternFnDecl`, `ParameterList`, `Parameter`, `Receiver`, `StructDecl`, `FieldList`, `Field`, `EnumDecl`, `VariantList`, `Variant`, `VariantPayload`, `NameTypeList`, `NamedPayload`, `TraitDecl`, `TraitMethods`, `TraitMethod`, `ImplDecl`, `TypeAlias`, `LetDecl`, `MutableBinding`, `SimpleBinding`, `DestructuringBinding`, `IdentifierList`, `ConstDecl`, `TestDecl` | [Declarations](#declarations) |
 | `ComponentDecl`, `StateDecl`, `StoreDecl`, `EffectDecl`, `EnvironmentDecl` | [Declarations](#declarations) |
 | `Type`, `UnionType`, `IntersectionType`, `PostfixType`, `PrimaryType`, `NamedType`, `PrimitiveType`, `LiteralType`, `TypeArgs`, `TypeList`, `TupleType`, `FunctionType`, `FnTypeParams`, `FnTypeParam`, `GenericParams`, `GenericParam`, `TraitBound`, `WhereClause`, `WhereItem` | [Types](#types) |
 | `Expression`, `AssignmentExpression`, `TernaryExpression`, `LogicalOrExpression`, `LogicalAndExpression`, `NullishExpression`, `EqualityExpression`, `IsExpression`, `RelationalExpression`, `RangeExpression`, `BitOrExpression`, `BitXorExpression`, `BitAndExpression`, `ShiftExpression`, `AdditiveExpression`, `MultiplicativeExpression`, `PowerExpression`, `UnaryExpression`, `PostfixExpression`, `PostfixOperand`, `CallTypeArgs` | [Expressions](#expressions) |
-| `PrimaryExpression`, `PathExpr`, `PanicExpression`, `Place`, `ArgumentList`, `Argument`, `ListLiteral`, `ListElement`, `Spread`, `MapLiteral`, `TypedMap`, `BraceMap`, `MapEntry`, `MapField`, `TupleLiteral`, `ClosureExpression`, `FunctionExpression`, `ArrowClosure`, `ArrowParams`, `ClosureParamList`, `ClosureParam` | [Expressions](#expressions) |
+| `PrimaryExpression`, `MacroCall`, `MacroArgumentList`, `QuoteCall`, `QuotePiece`, `QuoteHole`, `PathExpr`, `PanicExpression`, `Place`, `ArgumentList`, `Argument`, `ListLiteral`, `ListElement`, `Spread`, `MapLiteral`, `TypedMap`, `BraceMap`, `MapEntry`, `MapField`, `TupleLiteral`, `ClosureExpression`, `FunctionExpression`, `ArrowClosure`, `ArrowParams`, `ClosureParamList`, `ClosureParam` | [Expressions](#expressions) |
 | `Pattern`, `PatternAlt`, `LiteralPattern`, `RangePattern`, `VariantPattern`, `StructPattern`, `TypePattern`, `PatternType`, `PatternDesignator`, `PatternList` | [Patterns](#patterns) |
 | `Statement`, `StatementEnd`, `ReturnStmt`, `BreakStmt`, `ContinueStmt`, `DeferStmt`, `Assignment`, `ExpressionStatement`, `Block` | [Statements](#statements) |
 | `IfExpression`, `MatchExpression`, `MatchArmList`, `MatchArm`, `Guard`, `ForStmt`, `WhileStmt` | [Control flow](#control-flow) |

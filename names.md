@@ -27,7 +27,8 @@ The following entities are named, each by an identifier:
 | Type parameters | `<T>` in a generic parameter list or a `where` clause | Visible in the signature and the body |
 | Const parameters | `<const N: int>` in a generic parameter list | A compile-time `int` value visible in the signature and the body |
 | Pattern bindings | A `match` arm pattern | Scoped to that arm's guard and body only |
-| Namespaces | `mod` declarations, `use … as` aliases; built-ins `Math`, `Time`, `Task` | Members are selected with `::` |
+| Macros | `#[macro(…)]` on a module-level `fn`; `use` bindings | The macro name is the derive `target` or the attribute/function `name`, not the implementation function's identifier; macro names form their own namespace |
+| Namespaces | `mod` declarations, `use … as` aliases; built-ins `Math`, `Time`, `Task`, `ast` | Members are selected with `::` |
 | Argument labels | A named parameter or a component attribute | The label before `:` is the parameter's own name (`step_size`), or a component attribute declared by the component's contract (`onClick`); it is part of a signature, not a separate binding |
 
 A module's name is the identifier of the `mod` declaration that claims it —
@@ -63,6 +64,7 @@ specification ([`README.md`](README.md), § 1.1).
 | Structs, enums, traits, type aliases, components | UpperCamelCase | `User`, `Theme`, `Area`, `VStack` |
 | Enum variants | UpperCamelCase | `Theme::Dark`, `Level::High` |
 | Functions, variables, parameters, fields, methods | snake_case | `sum_to`, `count`, `area`, `label` |
+| Macro names | Derive targets UpperCamelCase; attribute and function macros snake_case | `Serialize`, `route`, `sql` |
 | Constants | UPPER_SNAKE_CASE | `PI`, `APP_NAME` |
 | Type parameters | A single letter, never a descriptive word | `T`, `U`, `E`, `K`, `V` (a lowercase `t` or `e` is also a single letter) |
 | Const parameters | A single uppercase letter, never a descriptive word | `N`, `M` |
@@ -110,10 +112,11 @@ Two groups of names are built in rather than declared:
   keywords: no declaration MAY bear their spelling, and there is nothing to
   shadow.
 - **Built-in (non-primitive) type names** — `List`, `Array`, `Map`, `Set`,
-  `Task`, `Range`, `View`, `Result`, `Error` — and **intrinsic names** —
-  `print`, `println`, `str`, `Math`, `Time` (and the namespace `Task`) — SHOULD
-  NOT be shadowed. Intrinsics are described in the
-  [builtins chapter](builtins/README.md).
+  `Task`, `Range`, `View`, `Result`, `Error` — and **intrinsic and namespace
+  names** — `print`, `println`, `str`, `Math`, `Time`, `Task` (the namespace),
+  and `ast` — SHOULD NOT be shadowed; this is a recommendation, not a
+  restriction, and an inner binding may still shadow any prelude name.
+  Intrinsics are described in the [builtins chapter](builtins/README.md).
 
 Shadowing a built-in type name means precisely this: a declaration
 introduces an ordinary binding whose spelling is one of the non-primitive
@@ -140,6 +143,7 @@ the following scope kinds:
 | Block scope | Every `{ ... }` | Declarations made inside the block |
 | Closure scope | A closure (`fn() { ... }`, `=>`) | Its parameters, plus everything captured at creation |
 | Pattern scope | A `match` arm pattern | Bindings made by the pattern, in that arm's guard and body only |
+| Macro scope | A module-level `#[macro]` declaration; a macro `use` or `pub use` binding | The macro's fully qualified name throughout its module; a short macro name throughout the importing module |
 
 Declaration order decides visibility:
 
@@ -155,8 +159,19 @@ Declaration order decides visibility:
   the end of their declaration to the end of the file. A forward reference to
   a variable or constant MUST be an error (`E0101`): initializers run in declaration
   order, and there is nothing to read yet.
+- **At module level**, a `#[macro]` declaration is registered before any
+  expansion, so its macro name is visible throughout the whole file,
+  whichever order it appears in. Macro names are a separate namespace: they
+  do not collide with value or type names, and two declarations with one
+  macro name in one module are `E1010` rather than shadowing.
 - Parameters are in scope from the start of the function body; a type
   parameter is in scope over the whole signature and body it belongs to.
+
+A macro name resolves in the macro namespace — the module's own `#[macro]`
+declarations, then macro `use` bindings — and only at a macro position
+(`#[derive(T)]`, `#[name(…)]`, `name!(…)`). There are no local macro bindings. In
+a value position the macro name is not a value and is `E0101`; the
+implementation function's own identifier is the value.
 
 ## Shadowing
 
@@ -239,8 +254,8 @@ order; the first scope that provides the name wins:
 4. Names brought into the module by `mod`, `use`, and `pub use` — the
    module's structure and its view of the world as this file sees it.
 5. The prelude: the built-in type names and the intrinsics (`print`,
-   `println`, `str`, `Math`, `Time`, `Task`), which are visible only when
-   nothing above matches.
+   `println`, `str`, `Math`, `Time`, `Task`, `ast`), which are visible only
+   when nothing above matches.
 
 Qualified names are resolved before their members. In `Math::max(a, b)` the
 leading `Math` is resolved as an ordinary name — a `use`-bound namespace or
@@ -253,3 +268,10 @@ segments resolve inside what the previous segment reached. Enum variants are
 resolved with `::`: in `Theme::Dark`, `Theme` resolves as a type name and
 `Dark` as a variant of that type. `.` is never used to name a variant, so a
 field named `Dark` and a variant named `Dark` do not collide.
+
+`ast` is a namespace name like `Math`: it is written only as the head of a
+`::` path, and it is not a value. As the bullet above says, shadowing it is
+permitted but discouraged. Shadowing `ast` hides every `ast::` type and
+`ast::quote!` in that scope; a module-level declaration named `ast` is
+`E0106`
+([builtins/prelude.md](builtins/prelude.md)).

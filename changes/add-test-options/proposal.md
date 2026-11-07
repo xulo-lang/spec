@@ -165,13 +165,13 @@ meaning. The only existing spellings whose classification changes are test
 markers with arguments: those forms were previously rejected with `E0110`
 (except forms the attribute grammar could not parse, which were syntax
 errors). The recognized option forms now make a complete test declaration;
-the remaining malformed groups keep the same `E0110` or syntax-error outcome.
+the remaining malformed groups, including positional values, keep the same
+`E0110` outcome, and only a negative number remains ungrammatical.
 
-`add-macro-system` also widens `AttributeArg` and introduces the same
-attribute-argument AST shape. This change needs named strings for
-`should_panic` and `skip`, and named integers for `timeout`. The grammar and
-AST deltas must be merged when either change is accepted, not treated as
-alternatives.
+The accepted `add-macro-system` change already widens `AttributeArg` and
+introduces the attribute-argument AST shape, including the named string and
+named integer forms this change needs. This change is rebased onto it and does
+not redefine those productions or nodes.
 
 ## Open Questions
 
