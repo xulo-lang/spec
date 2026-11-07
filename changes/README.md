@@ -97,6 +97,7 @@ never a version number or an implementation detail.
 | Change | Status | Summary |
 |--------|--------|---------|
 | [add-macro-system/](add-macro-system/proposal.md) | draft | Attribute and derive macros over sandboxed compile-time execution — `#[macro]` declares a module-level `fn` taking `ast::DeriveInput`/`ast::AttributeInput` and returning generated AST; `name!(…)` function macros; `ast::quote!` with `${…}` holes; sandboxed, quota-bounded, 100-round expansion with a structured-input cache; `E1001`–`E1012` registered. |
+| [add-test-options/](add-test-options/proposal.md) | draft | `#[test]` gains a comma-separated option group — `should_fail` for any failure, `should_panic` for a panic or runtime failure only, `should_panic = "…"` for a case-sensitive substring match, `skip`/`skip = "reason"`, and `timeout = N` in milliseconds; timeout is a distinct non-panic failure; `skip` suppresses execution; malformed options reuse `E0110`; `category`, `focus`, `retry`, and `threads` are deferred; `AttributeArg` gains named string and integer values, with an `add-macro-system` merge requirement. |
 
 ## Archived
 
