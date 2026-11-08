@@ -21,10 +21,11 @@ struct GlobalQuota {
    build configuration (the manifest). The manifest format is outside this
    specification ([README.md](../README.md), § 1.1); the compiler consumes the
    three values and records the source as `package`.
-3. **Macro override.** A `#[macro]` declaration MAY set any field:
+3. **Macro override.** A macro definition attribute MAY set any of
+   `max_steps`, `max_memory`, and `max_depth` as named arguments:
 
    ```xulo
-   #[macro(kind = "derive", target = Model, max_steps = 5000000)]
+   #[macro_derive(Model, max_steps = 5000000)]
    fn derive_model(input: ast::DeriveInput): Result<…> { … }
    ```
 
@@ -75,7 +76,7 @@ error[E1001]: macro `derive_model` exceeded its step quota
    = note: used 1000003 of 1000000 steps
    = note: quota source: global default
    = note: raise the limit in the package configuration or in
-           #[macro(kind = "derive", target = Model, max_steps = …)]
+           #[macro_derive(Model, max_steps = …)]
 ```
 
 The primary span is the source operation being executed when the limit was

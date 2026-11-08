@@ -1,6 +1,6 @@
 # Change Macro Definition Syntax
 
-**Status:** draft · **Date:** 2026-11-07 · **Change ID:** change-macro-definition-syntax
+**Status:** accepted · **Date:** 2026-11-07 · **Change ID:** change-macro-definition-syntax
 **Affects:** `types/traits.md`, `type-system/checking-rules.md`,
 `type-system/errors.md`, `names.md`, `modules/visibility.md`,
 `modules/import-export.md`, `builtins/sandbox.md`, `builtins/quota.md`,

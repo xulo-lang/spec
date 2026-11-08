@@ -281,7 +281,7 @@ function's own name is an ordinary value if it is `pub` and imported.
 `ast::quote! { … }` builds a list of AST nodes from source:
 
 ```xulo
-#[macro(kind = "derive", target = Serialize)]
+#[macro_derive(Serialize)]
 fn derive_serialize(
   input: ast::DeriveInput
 ): Result<ast::DeriveOutput, ast::MacroFailure> {

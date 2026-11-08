@@ -39,8 +39,8 @@ expansions.
 
 ## Runtime versus compile time
 
-The sandbox applies only when the compiler executes a `#[macro]` function during
-expansion. The same function is an ordinary function at runtime: a `#[test]` or
+The sandbox applies only when the compiler executes a macro implementation
+function during expansion. The same function is an ordinary function at runtime: a `#[test]` or
 ordinary call runs it without the sandbox, and filesystem or clock access in
 that call is ordinary program behaviour. A macro that succeeds in a runtime
 test but uses the filesystem still fails as a macro with `E1007`.

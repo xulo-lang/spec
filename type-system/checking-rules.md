@@ -431,18 +431,19 @@ Macro expansion runs before global name resolution and before the ordinary
 checking rules of this chapter:
 
 1. Parse the file into an AST with spans.
-2. Register every `#[macro]` definition in the module's macro namespace; import
-   macro names from compiled modules through `use`.
-3. Check every `#[macro]` definition written in the module in a definition
-   pre-pass against the written AST. The signature and body are name-resolved
-   and type-checked, and every ordinary function body the implementation can
-   reach is checked the same way before the macro runs. The definition and
-   every function body it reaches may refer only to names present in the
-   written AST or imported from an already-compiled module; they MUST NOT
-   depend on an item produced by a macro in the same compilation. An
-   implementation MUST NOT contain a user macro invocation; use an
-   `ast::call_*` entry point instead. `ast::quote!` is not a user macro and is
-   allowed.
+2. Register every function carrying a macro definition attribute in the
+   module's macro namespace; import macro names from compiled modules through
+   `use`.
+3. Check every function carrying a macro definition attribute written in the
+   module in a definition pre-pass against the written AST. The signature and
+   body are name-resolved and type-checked, and every ordinary function body
+   the implementation can reach is checked the same way before the macro runs.
+   The definition and every function body it reaches may refer only to names
+   present in the written AST or imported from an already-compiled module;
+   they MUST NOT depend on an item produced by a macro in the same
+   compilation. An implementation MUST NOT contain a user macro invocation;
+   use an `ast::call_*` entry point instead. `ast::quote!` is not a user macro
+   and is allowed.
 4. Repeat, up to 100 rounds:
    a. resolve names in function macro arguments against the current
       (pre-expansion) AST;
@@ -463,7 +464,7 @@ limit was reached.
 The pre-pass makes “ordinary checked Xulo code” true before the first
 invocation. An ordinary signature or body type error is reported by the
 ordinary rules (for example `E0201`), not by `E1010`; `E1010` covers only the
-`#[macro]` metadata and the shape rules in the list below. Because the
+definition attributes and the shape rules in the list below. Because the
 implementation is checked before expansion, a name that exists only after a
 macro expands is the ordinary unresolved-name error `E0101`; the repair is to
 use `ast::call_*` or to move the dependency to an already-compiled module. A
@@ -478,53 +479,71 @@ declaration have run; the first attribute macro in source order sees the
 written declaration. Context lookups still read the pre-expansion environment
 ([builtins/context.md](../builtins/context.md)).
 
-## `#[macro]` definitions
+## Macro definitions
 
-`#[macro]` is a built-in attribute registered on `fn` only; on any other host it
-is the ordinary attribute-host error `E0109`. On a `fn` it is valid only when
-all of the following hold. A violation of this list is `E1010`. Macro
-definitions are collected from the written AST before expansion; a `#[macro]`
-produced by an expansion is not registered and is `E1010`.
+A function is a macro implementation when it carries exactly one of the
+built-in definition attributes `#[macro]`, `#[macro_attr]`, or
+`#[macro_derive(Target)]`. Those attributes are registered on `fn` only; on
+any other host each is the ordinary attribute-host error `E0109`.
+
+Exactly one definition attribute MAY appear on a function. Multiple definition
+attributes are `E1010`. The definition function MUST NOT also carry a user
+attribute macro; registration happens before expansion, so such an attribute
+would replace the function after the macro's implementation was registered,
+and the registered implementation and the checked function would diverge.
+Other attributes follow their own host rules.
+
+Macro definitions are collected from the written AST before expansion; a macro
+definition attribute produced by an expansion is not registered and is
+`E1010`.
+
+On a `fn` the definition is valid only when all of the following hold. A
+violation of this list is `E1010`:
 
 - It is not `async` and not `extern`, declares no generic parameters, and has
   no `where` clause.
 - It has exactly one parameter, with no mode and no default.
-- Its parameter type and return type match its kind:
+- Its parameter type and return type match the chosen attribute:
 
-| `kind` | Parameter | Return |
-|--------|-----------|--------|
-| `"derive"` | `ast::DeriveInput` | `Result<ast::DeriveOutput, ast::MacroFailure>` |
-| `"attribute"` | `ast::AttributeInput` | `Result<ast::AttributeOutput, ast::MacroFailure>` |
-| `"function"` | `ast::FunctionInput` | `Result<ast::FunctionOutput, ast::MacroFailure>` |
+| Attribute | Parameter | Return |
+|-----------|-----------|--------|
+| `#[macro]` | `ast::FunctionInput` | `Result<ast::FunctionOutput, ast::MacroFailure>` |
+| `#[macro_attr]` | `ast::AttributeInput` | `Result<ast::AttributeOutput, ast::MacroFailure>` |
+| `#[macro_derive(Target)]` | `ast::DeriveInput` | `Result<ast::DeriveOutput, ast::MacroFailure>` |
 
-- For `"derive"`, `target` is required and names an `Identifier`; `name` is
-  not written. For `"attribute"` and `"function"`, `name` is required, is a
-  string holding a legal identifier, and is not a keyword or reserved word.
-- `max_steps`, `max_memory`, and `max_depth`, when written, are
-  non-negative integer literals.
-- The macro name is not already registered in the module's macro namespace,
-  is not a built-in attribute name (`derive`, `test`, `macro`), and is not
-  `Debug`, `Display`, or `ToString` for `"derive"`.
+- `#[macro]` and `#[macro_attr]` take no positional arguments.
+  `#[macro_derive]` takes exactly one positional identifier, its target; that
+  target is a legal identifier and is not a keyword or reserved word.
+- `max_steps`, `max_memory`, and `max_depth`, when written, are non-negative
+  integer literals; no other argument is accepted.
+- The macro name is the function identifier for `#[macro]` and
+  `#[macro_attr]`, and the target identifier for `#[macro_derive]`. It is not
+  already registered in the module's macro namespace, is not a built-in
+  attribute name (`derive`, `test`, `macro`, `macro_attr`, `macro_derive`),
+  and, for `#[macro_derive]`, is not `Debug`, `Display`, or `ToString`.
 - The declaration is not inside a function body.
 - Its body contains no user macro invocation (`name!(…)`); a macro-to-macro
   call uses an `ast::call_*` entry point.
 
-A `#[macro]` function MUST NOT also carry a user attribute macro. Registration
-happens before expansion, so such an attribute would replace the function
-after the macro's implementation was registered; the registered implementation
-and the checked function would diverge. The declaration is `E1010`. Other
-attributes follow their own host rules.
+The old `#[macro(kind = …)]` form is removed: `#[macro]` now takes no
+positional arguments, so a `kind` argument is a malformed `#[macro]`
+definition (`E1010`) whose note names the matching new attribute.
 
 ## Invocation resolution
+
+The kind of a macro is the one selected by its definition attribute
+(`#[macro]`, `#[macro_attr]`, or `#[macro_derive(Target)]`); no `kind` key is
+written.
 
 - **Derive.** For each target in `#[derive(T₁, …, Tₙ)]`, left to right:
   `Debug` uses the built-in structural derive; `Display` and `ToString` are
   `E0111`; any other name resolves in the macro namespace as a `"derive"`
   macro. A missing name is `E1005`; a macro of another kind is `E1006`.
-- **Attribute.** A built-in attribute name (`derive`, `test`, `macro`) uses
-  its built-in rule. Any other name resolves in the macro namespace as an
-  `"attribute"` macro; a missing name is the ordinary `E0108`, and a macro of
-  another kind is `E1006`. A user attribute macro is invocation-valid on all
+- **Attribute.** A built-in attribute name (`derive`, `test`, `macro`,
+  `macro_attr`, `macro_derive`) uses its built-in rule. Any other name
+  resolves in the macro namespace as an `"attribute"` macro; a missing name is
+  the ordinary `E0108`, and a macro of another kind is `E1006`. A user
+  attribute macro is invocation-valid on all
   eight hosts; an unsupported host is an author-returned `ast::MacroFailure`
   (`E1008`), and an output item of another host kind is `E1006`.
 - **Function.** The path of `name!(…)` or `m::name!(…)` resolves in the macro
@@ -588,11 +607,17 @@ expanded AST without special cases:
 
 ## Duplicate and order rules
 
-- Two `#[macro]` definitions with one macro name in one module are `E1010`.
+- Two macro definitions with one macro name in one module are `E1010`. For
+  `#[macro]` and `#[macro_attr]`, the macro name is the function identifier,
+  so a duplicate identifier is reported once by the ordinary
+  duplicate-declaration rule at the function level, not as a second macro-name
+  error. For `#[macro_derive]`, two functions with different identifiers may
+  target the same name, which is `E1010`.
 - Two macros of different kinds with one name are also `E1010`: the macro
   namespace is one namespace.
-- A macro may share a spelling with a value or type in the same module; those
-  are different namespaces.
+- A macro may share a spelling with a value or type in the same module; for
+  `#[macro]` and `#[macro_attr]`, the function value intentionally shares the
+  spelling with the macro.
 - Derive targets expand left to right; attribute macros expand top to bottom;
   derive expansion completes before attribute expansion on the same
   declaration. The order is observable and is part of the contract.

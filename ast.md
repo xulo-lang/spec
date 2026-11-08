@@ -231,16 +231,21 @@ interface TestDeclaration extends BaseNode {
 
 An attribute's `span` covers the leading `#` through the closing `]`.
 `AttributeNameNode.name` is the spelling written between the brackets:
-`derive`, `test`, `macro`, or a user attribute. It is a string, not an
-`IdentifierNode`, because `derive` and `macro` are reserved words accepted
-only in the attribute-name position. `args` is `null` for a bare attribute
-(`#[route]`) and an array when a parenthesized group is written; the array is
-empty for `#[route()]`. An `AttributeArgNode` with a non-null `name` is the
-`name = value` form, which `#[macro]` uses
-(`#[macro(kind = "derive", target = Serialize)]`); a positional argument has
+`derive`, `test`, `macro`, `macro_attr`, `macro_derive`, or a user attribute.
+It is a string, not an `IdentifierNode`, because `derive` and `macro` are
+reserved words accepted only in the attribute-name position. `args` is `null`
+for a bare attribute (`#[route]`) and an array when a parenthesized group is
+written; the array is empty for `#[route()]`. An `AttributeArgNode` with a
+non-null `name` is the `name = value` form, which the definition attributes
+use (`#[macro_derive(Serialize)]`); a positional argument has
 `name: null` (`#[derive(Debug)]`, `#[route("/v1/users")]`). For a built-in
 attribute, the registry entry decides which shape is valid; a user attribute
 macro receives the values and validates them itself.
+
+A macro definition attribute (`#[macro]`, `#[macro_attr]`, or
+`#[macro_derive(Target)]`) adds no declaration node: it is an ordinary
+`FnDeclaration` whose `attributes` contains the corresponding `AttributeNode`.
+The same is true of `#[derive]` and `#[test]` on their existing nodes.
 
 `TestDeclaration` carries no `title` field. The `#[test]` marker takes no
 arguments; `name` is the test's identity for tools, and the note that

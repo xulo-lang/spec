@@ -372,7 +372,7 @@ panic with no `E` code.
 | `E1007` | a macro uses a resource the sandbox forbids | reading a file, opening a socket, reading the clock | ``macro `sql` cannot access the filesystem`` | [builtins/sandbox.md](../builtins/sandbox.md) |
 | `E1008` | the macro returns `Result::Err(ast::MacroFailure { … })` | `#[route("/v2/users")]` | ``macro `route` reported an error`` | [builtins/errors.md](../builtins/errors.md) |
 | `E1009` | a name in a function macro argument is not in the pre-expansion scope | `sql!(user_name)` with no `user_name` declared | ``cannot resolve `user_name` in macro arguments`` | [expressions/calls.md](../expressions/calls.md) |
-| `E1010` | a `#[macro]` declaration is malformed (including inside a function body) or duplicate, its body contains a user macro invocation, or its name collides with a built-in | `#[macro(kind = "derive")]` with no `target` | ``invalid macro definition: derive macro requires `target` `` | [type-system/checking-rules.md](checking-rules.md) |
+| `E1010` | a macro definition attribute is malformed (including the removed `#[macro(kind = …)]` form, a missing or extra `#[macro_derive]` target, a wrong signature, multiple definition attributes, or a declaration inside a function body), its body contains a user macro invocation, or its macro name collides with another macro or a built-in | `#[macro_derive]` with no target | ``invalid macro definition: `#[macro_derive]` requires a target`` | [type-system/checking-rules.md](checking-rules.md) |
 | `E1011` | a quote body does not parse after substitution, or a hole value cannot be inserted there | `${name}` where `name` is a list in an identifier position | ``quote body is not well-formed`` | [expressions/calls.md](../expressions/calls.md) |
 | `E1012` | macro execution traps: index out of range, division by zero, or `panic` | `fields[99]` in a macro | ``macro `Serialize` trapped: index 99 out of range`` | [builtins/execution.md](../builtins/execution.md) |
 
@@ -381,8 +381,9 @@ carries the call chain and each macro definition site; `E1005` carries the
 macro namespace searched; `E1006` carries the expected kind or signature;
 `E1007` carries the allowed-resource list; `E1008` carries the macro author's
 message and the span chain; `E1009` carries the note that macro arguments are
-resolved before expansion; `E1010` carries the offending key; `E1011` carries
-the offending fragment; `E1012` carries the execution trap's panic message.
+resolved before expansion; `E1010` carries the offending definition
+attribute or target; `E1011` carries the offending fragment; `E1012` carries
+the execution trap's panic message.
 
 ## Warnings
 

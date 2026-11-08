@@ -135,10 +135,12 @@ language as it grows.
   are outside the language's ambitions.
 - **No declarative macro language.** Xulo has no `macro_rules!`-style
   pattern/template language and no token-substitution syntax. It has
-  **procedural macros** instead: a `#[macro]` function is ordinary checked
-  Xulo code that runs at compile time in a sandbox and returns a structured
-  AST fragment ([`builtins/execution.md`](builtins/execution.md)). The macro surface is
-  `#[derive(Name)]`, `#[name(…)]`, and `name!(…)`; the declaration-attribute
+  **procedural macros** instead: a macro implementation function is ordinary
+  checked Xulo code that runs at compile time in a sandbox and returns a
+  structured AST fragment ([`builtins/execution.md`](builtins/execution.md)).
+  A macro is defined by `#[macro]`, `#[macro_attr]`, or
+  `#[macro_derive(Target)]` on a module-level `fn`. The invocation surface is
+  `#[derive(Target)]`, `#[name(…)]`, and `name!(…)`; the declaration-attribute
   registry is the built-in set plus the attribute macros in scope, never an
   untyped extension point
   ([`types/traits.md`](types/traits.md)).

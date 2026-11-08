@@ -56,8 +56,10 @@ An entry is invalid when any key component changes. In addition:
 
 - a change to a module the macro imports invalidates macros whose
   implementation embeds that module;
-- a change to the macro's `#[macro]` metadata — name, kind, target, quota — is an
-  implementation change;
+- a change to the macro's definition attribute or its arguments — the
+  attribute name (`#[macro]`, `#[macro_attr]`, `#[macro_derive]`), the macro
+  name (the function identifier for `#[macro]`/`#[macro_attr]`, or `Target`
+  for `#[macro_derive]`), or a quota key — is an implementation change;
 - a change to a context answer invalidates every entry that observed it;
 - a compiler version change invalidates the whole cache;
 - a failed expansion is not cached; the next compilation runs the macro again.

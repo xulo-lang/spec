@@ -2,40 +2,40 @@
 
 ## Acceptance
 
-- [ ] Fold the deltas under [`specs/`](specs/) into `types/traits.md`,
+- [x] Fold the deltas under [`specs/`](specs/) into `types/traits.md`,
       `type-system/checking-rules.md`, `type-system/errors.md`, `names.md`,
       `modules/visibility.md`, `modules/import-export.md`,
       `builtins/sandbox.md`, `builtins/quota.md`, `builtins/errors.md`,
       `builtins/cache.md`, `testing.md`, `expressions/calls.md`, `ast.md`, and
       `introduction.md`.
-- [ ] Remove every `#[macro(kind = …)]` example and every generic “`#[macro]`
+- [x] Remove every `#[macro(kind = …)]` example and every generic “`#[macro]`
       function” phrase from the main chapters.
-- [ ] Keep the invocation forms `#[derive(Target)]`, `#[name(…)]`, and
+- [x] Keep the invocation forms `#[derive(Target)]`, `#[name(…)]`, and
       `name!(…)` unchanged.
-- [ ] Move the directory to `archive/` and record the accepted row in
+- [x] Move the directory to `archive/` and record the accepted row in
       `changes/README.md` after the fold.
 
 ## Cross-references
 
-- [ ] `types/traits.md` — the built-in attribute list names `macro_attr` and
+- [x] `types/traits.md` — the built-in attribute list names `macro_attr` and
       `macro_derive`; the host table has three `fn`-only definition rows; the
       macro-definitions subsection uses the new attributes.
-- [ ] `type-system/checking-rules.md` — the definition pre-pass, the signature
+- [x] `type-system/checking-rules.md` — the definition pre-pass, the signature
       table, the quota keys, the name mapping, the old-form migration, and the
       duplicate rules all use the new attributes.
-- [ ] `type-system/errors.md` and `builtins/errors.md` — `E1010` names the
+- [x] `type-system/errors.md` and `builtins/errors.md` — `E1010` names the
       definition attribute and the missing/extra target; the examples use
       `#[macro_derive]`.
-- [ ] `names.md`, `modules/visibility.md`, and `modules/import-export.md` —
+- [x] `names.md`, `modules/visibility.md`, and `modules/import-export.md` —
       the macro name is the function identifier for `#[macro]`/`#[macro_attr]`
       and `Target` for `#[macro_derive]`; the export and collision rules match.
-- [ ] `builtins/quota.md`, `builtins/cache.md`, and `builtins/sandbox.md` —
+- [x] `builtins/quota.md`, `builtins/cache.md`, and `builtins/sandbox.md` —
       quota keys are named arguments on the definition attribute; the cache
       invalidation key names the definition attribute; the sandbox text says
       “macro implementation function.”
-- [ ] `testing.md`, `expressions/calls.md`, `ast.md`, and `introduction.md` —
+- [x] `testing.md`, `expressions/calls.md`, `ast.md`, and `introduction.md` —
       the examples and generic wording use the new definition form.
-- [ ] `changes/add-test-options` — only the built-in attribute list changes
+- [x] `changes/add-test-options` — only the built-in attribute list changes
       in grammar/behavior; its `ast.md` delta edits only the
       `TestDeclaration` note, while this change edits only the attribute note.
       Either fold order is safe.

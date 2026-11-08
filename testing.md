@@ -121,8 +121,8 @@ third; the second is a tooling contract and has no source syntax.
 
 ### 1. Implementation tests
 
-A `#[macro]` function is an ordinary function, so a `#[test]` may call its
-implementation identifier with constructed inputs:
+A macro implementation function is an ordinary function, so a `#[test]` may
+call its implementation identifier with constructed inputs:
 
 ```xulo
 #[test]

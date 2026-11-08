@@ -27,7 +27,7 @@ The following entities are named, each by an identifier:
 | Type parameters | `<T>` in a generic parameter list or a `where` clause | Visible in the signature and the body |
 | Const parameters | `<const N: int>` in a generic parameter list | A compile-time `int` value visible in the signature and the body |
 | Pattern bindings | A `match` arm pattern | Scoped to that arm's guard and body only |
-| Macros | `#[macro(…)]` on a module-level `fn`; `use` bindings | The macro name is the derive `target` or the attribute/function `name`, not the implementation function's identifier; macro names form their own namespace |
+| Macros | `#[macro]`, `#[macro_attr]`, or `#[macro_derive(Target)]` on a module-level `fn`; `use` bindings | The macro name is the function identifier for `#[macro]`/`#[macro_attr]`, and `Target` for `#[macro_derive]`; macro names form their own namespace |
 | Namespaces | `mod` declarations, `use … as` aliases; built-ins `Math`, `Time`, `Task`, `ast` | Members are selected with `::` |
 | Argument labels | A named parameter or a component attribute | The label before `:` is the parameter's own name (`step_size`), or a component attribute declared by the component's contract (`onClick`); it is part of a signature, not a separate binding |
 
@@ -143,7 +143,7 @@ the following scope kinds:
 | Block scope | Every `{ ... }` | Declarations made inside the block |
 | Closure scope | A closure (`fn() { ... }`, `=>`) | Its parameters, plus everything captured at creation |
 | Pattern scope | A `match` arm pattern | Bindings made by the pattern, in that arm's guard and body only |
-| Macro scope | A module-level `#[macro]` declaration; a macro `use` or `pub use` binding | The macro's fully qualified name throughout its module; a short macro name throughout the importing module |
+| Macro scope | A module-level macro definition attribute; a macro `use` or `pub use` binding | The macro's fully qualified name throughout its module; a short macro name throughout the importing module |
 
 Declaration order decides visibility:
 
@@ -159,7 +159,7 @@ Declaration order decides visibility:
   the end of their declaration to the end of the file. A forward reference to
   a variable or constant MUST be an error (`E0101`): initializers run in declaration
   order, and there is nothing to read yet.
-- **At module level**, a `#[macro]` declaration is registered before any
+- **At module level**, a macro definition attribute is registered before any
   expansion, so its macro name is visible throughout the whole file,
   whichever order it appears in. Macro names are a separate namespace: they
   do not collide with value or type names, and two declarations with one
@@ -167,11 +167,14 @@ Declaration order decides visibility:
 - Parameters are in scope from the start of the function body; a type
   parameter is in scope over the whole signature and body it belongs to.
 
-A macro name resolves in the macro namespace — the module's own `#[macro]`
-declarations, then macro `use` bindings — and only at a macro position
+A macro name resolves in the macro namespace — the module's own macro
+definitions, then macro `use` bindings — and only at a macro position
 (`#[derive(T)]`, `#[name(…)]`, `name!(…)`). There are no local macro bindings. In
 a value position the macro name is not a value and is `E0101`; the
-implementation function's own identifier is the value.
+implementation function's own identifier is the value. For `#[macro]` and
+`#[macro_attr]` the function identifier is both the value name and the macro
+name; for `#[macro_derive(Target)]` the implementation function identifier is
+independent of `Target`.
 
 ## Shadowing
 

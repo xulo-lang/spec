@@ -41,7 +41,7 @@ runtime panic in ordinary code remains a panic without an `E` code.
 | `E1007` | the forbidden operation in the macro definition | the macro author |
 | `E1008` | `ast::MacroFailure.span` if present; otherwise the attribute argument, derive target, or function macro argument | the user |
 | `E1009` | the unresolved name in the macro argument | the user |
-| `E1010` | the `#[macro]` attribute or the offending key | the macro author |
+| `E1010` | the macro definition attribute or the offending target/argument | the macro author |
 | `E1011` | the quote hole or the substituted fragment | the macro author |
 | `E1012` | the trapping source operation in the macro definition | the macro author |
 
@@ -83,7 +83,7 @@ error[E1001] semantic: macro `derive_model` exceeded its step quota
    = note: used 1000003 of 1000000 steps
    = note: quota source: global default
    = note: raise the limit in the package configuration or in
-           #[macro(kind = "derive", target = Model, max_steps = …)]
+           #[macro_derive(Model, max_steps = …)]
 ```
 
 ### `E1002` conversion
@@ -203,13 +203,13 @@ error[E1009] semantic: cannot resolve `user_name` in macro arguments
 ### `E1010` invalid definition
 
 ```text
-error[E1010] semantic: invalid macro definition: derive macro requires `target`
+error[E1010] semantic: invalid macro definition: `#[macro_derive]` requires a target
   --> macros/model.xulo:1:1
    |
- 1 | #[macro(kind = "derive")]
-   | ^^^^^^^^^^^^^^^^^^^^^^^
+ 1 | #[macro_derive]
+   | ^^^^^^^^^^^^^^^
    |
-   = note: write `#[macro(kind = "derive", target = Model)]`
+   = note: write `#[macro_derive(Model)]`
 ```
 
 ### `E1011` malformed quote

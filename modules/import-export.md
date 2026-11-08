@@ -268,7 +268,7 @@ The complete mapping from declaration to exported name:
 | Declaration | Exported name | What clients receive |
 |-------------|---------------|------------------------|
 | `pub fn f(…)` | `f` | a function of the declared signature |
-| `pub fn f(…)` with `#[macro(…)]` | the macro name (`target` or `name`), in addition to `f` | the macro, invocable as `#[derive(name)]`, `#[name(…)]`, or `name!(…)` |
+| `pub fn f(…)` with `#[macro]`, `#[macro_attr]`, or `#[macro_derive(Target)]` | the macro name (the function identifier, or `Target`), in addition to `f` | the macro, invocable as `#[derive(Target)]`, `#[name(…)]`, or `name!(…)` |
 | `pub struct S { … }` | `S` | the type, its constructor form, and its `pub` members |
 | `pub enum E { … }` | `E` | the type, its variants `E::V`, and its `pub` members |
 | `pub trait T { … }` | `T` | the trait, to be implemented locally |
@@ -375,14 +375,17 @@ Macro names form a separate namespace:
 
 - Two `use` bindings of one macro name are `E0104`, even if one also imports a
   value or type of that spelling.
-- A `use` binding and a module-level `#[macro]` declaration with one macro name
-  are `E0104`.
+- A `use` binding and a module-level macro definition with one macro name are
+  `E0104`.
 - A glob that contributes a macro name overlapping an existing macro binding
   is `E0104`.
 - A macro name MAY equal a value or type name in the same module; the two
   namespaces do not collide.
-- Two `#[macro]` declarations with one macro name in one module are `E1010`, not
-  shadowing.
+- Two macro definitions with one macro name in one module are `E1010`, not
+  shadowing. For `#[macro]` and `#[macro_attr]`, a duplicate function
+  identifier is the ordinary duplicate-declaration error; for
+  `#[macro_derive]`, two functions with different identifiers may target the
+  same name, which is `E1010`.
 
 ## Visibility of used names
 
@@ -440,8 +443,8 @@ fn norm(x: float, y: float): float {
 | `pub use { x }` where `x` is not bound in this module | `E0101` | `pub use { x }` with no declaration or use of `x` |
 | A path that spells a manifest key an `alias` replaced | `E0607` | `clap::args()` with `alias = "clap_lib"` |
 | A `use` entry never used in this module | `W0102` | `use math::add` with `add` never referenced |
-| Two bindings for one macro name — `use` × `use`, `use` × declaration, glob overlap | `E0104` | `use m1::w;` then `use m2::w` |
-| Two `#[macro]` declarations with one macro name in one module | `E1010` | two `#[macro(kind = "function", name = "sql")]` |
+| Two bindings for one macro name — `use` × `use`, `use` × macro definition, glob overlap | `E0104` | `use m1::w;` then `use m2::w` |
+| Two macro definitions with one macro name in one module | `E1010` | two `#[macro_derive(Serialize)]` functions |
 
 Codes are stable identifiers; the full scheme is in
 [`../type-system/errors.md`](../type-system/errors.md).
