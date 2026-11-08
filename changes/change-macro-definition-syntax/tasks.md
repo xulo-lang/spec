@@ -35,8 +35,10 @@
       “macro implementation function.”
 - [ ] `testing.md`, `expressions/calls.md`, `ast.md`, and `introduction.md` —
       the examples and generic wording use the new definition form.
-- [ ] Check `changes/add-test-options` for overlap: only the built-in
-      attribute list changes; its `#[test(...)]` grammar is unaffected.
+- [ ] `changes/add-test-options` — only the built-in attribute list changes
+      in grammar/behavior; its `ast.md` delta edits only the
+      `TestDeclaration` note, while this change edits only the attribute note.
+      Either fold order is safe.
 
 ## Tests
 
@@ -65,8 +67,9 @@
 
 - [ ] An optional name override for `#[macro]`/`#[macro_attr]` if independent
       implementation-function naming proves necessary.
-- [ ] Migration diagnostics for the removed `#[macro(kind = …)]` form:
-      map each old `kind` to its new attribute.
+- [ ] Optional richer migration tooling (an autofix or a dedicated subcode)
+      for the removed `#[macro(kind = …)]` form; the basic `E1010` note is in
+      scope and tested above.
 - [ ] Update the external grammar snapshots only if the attribute-name
       production changes; the current grammar already admits `macro_attr` and
       `macro_derive` as identifiers.

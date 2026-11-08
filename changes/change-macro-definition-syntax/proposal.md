@@ -110,7 +110,9 @@ other languages, and has fewer places where two metadata values can disagree.
 - **Built-in attribute names grow.** `macro_attr` and `macro_derive` join the
   built-in list, so a user macro may not take those spellings (`E1010`).
 - **`add-test-options` is unaffected.** Its `#[test(...)]` grammar and
-  `AttributeArg` dependency do not mention the macro definition attributes.
+  `AttributeArg` dependency do not mention the macro definition attributes,
+  and its `ast.md` delta edits only the `TestDeclaration` note, not the
+  attribute note this change edits.
 
 ## Non-Goals
 

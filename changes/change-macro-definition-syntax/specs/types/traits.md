@@ -72,6 +72,12 @@ fn derive_serialize(input: ast::DeriveInput): Result<ast::DeriveOutput, ast::Mac
   name in one module are `E1010`; for `#[macro]` and `#[macro_attr]`, a
   duplicate function identifier is the ordinary duplicate-declaration error
   at the function level.
+- The function identifier follows the ordinary function naming convention.
+  The macro-name convention of [`../names.md`](../names.md) is RECOMMENDED,
+  not enforced: `#[macro_attr] fn Route` defines the attribute macro `Route`,
+  invoked as `#[Route(…)]`. Casing is therefore free; snake_case for
+  attribute/function macros and UpperCamelCase for derive targets are
+  recommendations.
 - `#[macro]` and `#[macro_attr]` take no positional arguments.
   `#[macro_derive]` takes exactly one positional identifier, its target. All
   three accept the optional named keys `max_steps`, `max_memory`, and

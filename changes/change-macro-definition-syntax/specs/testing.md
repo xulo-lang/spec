@@ -6,6 +6,8 @@
 
 ## Macros
 
-Replace “A `#[macro]` function is an ordinary function” with:
+Replace “A `#[macro]` function is an ordinary function, so a `#[test]` may
+call its implementation identifier with constructed inputs:” with:
 
-A macro implementation function is an ordinary function
+A macro implementation function is an ordinary function, so a `#[test]` may
+call its implementation identifier with constructed inputs:

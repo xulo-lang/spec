@@ -8,8 +8,8 @@
 
 Replace the macro-override item with:
 
-3. **Macro override.** A macro definition attribute MAY set any field as a
-   named argument:
+3. **Macro override.** A macro definition attribute MAY set any of
+   `max_steps`, `max_memory`, and `max_depth` as named arguments:
 
    ```xulo
    #[macro_derive(Model, max_steps = 5000000)]
