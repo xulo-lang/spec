@@ -101,6 +101,7 @@ never a version number or an implementation detail.
 | Change | Status | Summary |
 |--------|--------|---------|
 | [add-test-options/](add-test-options/proposal.md) | draft | `#[test]` gains a comma-separated option group — `should_fail` for any failure, `should_panic` for a panic or runtime failure only, `should_panic = "…"` for a case-sensitive substring match, `skip`/`skip = "reason"`, and `timeout = N` in milliseconds; timeout is a distinct non-panic failure; `skip` suppresses execution; malformed options reuse `E0110`; `category`, `focus`, `retry`, and `threads` are deferred; `AttributeArg` gains named string and integer values, rebased onto the accepted `add-macro-system` widened `AttributeArg` and `ast::` nodes. |
+| [change-macro-definition-syntax/](change-macro-definition-syntax/proposal.md) | draft | Replace the single `#[macro(kind = …, name/target = …)]` definition form with three built-in attributes — `#[macro]` for function macros, `#[macro_attr]` for attribute macros, and `#[macro_derive(Target)]` for derive macros; the function identifier is the macro name for the first two and `Target` for derive; optional quota keys remain named arguments; the old form is `E1010`. |
 
 ## Archived
 
