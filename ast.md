@@ -221,10 +221,17 @@ interface ConstDeclaration extends BaseNode {
   value: ExpressionNode;
 }
 
+type TestMode = 'normal' | 'shouldFail' | 'shouldPanic';
+
 interface TestDeclaration extends BaseNode {
   type: 'TestDeclaration';
   name: IdentifierNode;
   isAsync: boolean;
+  mode: TestMode;
+  expectedMessage: StringLiteral | null;
+  isSkipped: boolean;
+  skipReason: StringLiteral | null;
+  timeoutMs: NumberLiteral | null;
   body: BlockNode;
 }
 ```
@@ -247,9 +254,21 @@ A macro definition attribute (`#[macro]`, `#[macro_attr]`, or
 `FnDeclaration` whose `attributes` contains the corresponding `AttributeNode`.
 The same is true of `#[derive]` and `#[test]` on their existing nodes.
 
-`TestDeclaration` carries no `title` field. The `#[test]` marker takes no
-arguments; `name` is the test's identity for tools, and the note that
-`TestDeclaration` carries no `attributes` field is unchanged.
+`TestDeclaration` carries no `title` or `attributes` field. `mode` is
+`normal` when the marker has no expectation, `shouldFail` for `should_fail`,
+and `shouldPanic` for both `should_panic` forms. `expectedMessage` is
+non-null only for `should_panic = "…"`; it is the string literal written as
+the expected substring, including its span and cooked text.
+
+`isSkipped` is true only when `skip` is written; because `skip` is the only
+option in its group, a skipped declaration has `mode: 'normal'`,
+`expectedMessage: null`, and `timeoutMs: null`. `skipReason` is non-null only
+for `skip = "…"` and carries the literal's span and cooked text. `timeoutMs`
+is non-null only for `timeout = N`; it is a `NumberLiteral` of kind `integer`
+whose value is greater than zero.
+
+The options are metadata of the declaration, not ordinary attributes: they do
+not enter name resolution or macro expansion.
 
 `TestDeclaration`, `PubUseDeclaration`, `ExternBlockDeclaration`, and
 `ExternFunctionDeclaration` carry no `attributes` field. The eight attribute

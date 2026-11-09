@@ -1,6 +1,6 @@
 # Add Test Options
 
-**Status:** draft · **Date:** 2026-11-06
+**Status:** accepted · **Date:** 2026-11-06
 **Change ID:** `add-test-options`
 **Affects:** `grammar.md`, `ast.md`, `testing.md`, `types/traits.md`,
 `changes/README.md`

@@ -100,7 +100,6 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
-| [add-test-options/](add-test-options/proposal.md) | draft | `#[test]` gains a comma-separated option group — `should_fail` for any failure, `should_panic` for a panic or runtime failure only, `should_panic = "…"` for a case-sensitive substring match, `skip`/`skip = "reason"`, and `timeout = N` in milliseconds; timeout is a distinct non-panic failure; `skip` suppresses execution; malformed options reuse `E0110`; `category`, `focus`, `retry`, and `threads` are deferred; `AttributeArg` gains named string and integer values, rebased onto the accepted `add-macro-system` widened `AttributeArg` and `ast::` nodes. |
 
 ## Archived
 
@@ -132,3 +131,4 @@ with their final status.
 | [archive/add-fixed-array/](archive/add-fixed-array/proposal.md) | accepted | inline `Array<T, N>` with a const N, context-typed literal, `Array::filled`, read/callback/sort members, value copy, no dynamic members; propagates `Array` through reserved names, type kinds, iteration, equality, recursion, and rendering; `E0814`/`E0815`/`E0818`. |
 | [archive/add-macro-system/](archive/add-macro-system/proposal.md) | accepted | Procedural macros: `#[macro]` on a module-level `fn` with `ast::DeriveInput`/`ast::AttributeInput`/`ast::FunctionInput` and generated AST; `#[derive]`, user attributes, and `name!(…)`; `ast::quote!` with `${…}` holes; definition pre-pass, sandbox, three-layer quota, context, cache, and `E1001`–`E1012`; `AttributeArg` widened to values; attributes on `type`/`let`/`const`. |
 | [archive/change-macro-definition-syntax/](archive/change-macro-definition-syntax/proposal.md) | accepted | Replace `#[macro(kind = …, name/target = …)]` with three built-in definition attributes — `#[macro]` for function macros, `#[macro_attr]` for attribute macros, and `#[macro_derive(Target)]` for derive macros; function identifiers name function/attribute macros, `Target` names derive macros, quota keys remain named arguments, and the old form is `E1010`. |
+| [archive/add-test-options/](archive/add-test-options/proposal.md) | accepted | `#[test]` gains a comma-separated option group — `should_fail` for any failure, `should_panic` for a panic or runtime failure only, `should_panic = "…"` for a case-sensitive substring match, `skip`/`skip = "reason"`, and `timeout = N` in milliseconds; timeout is a distinct non-panic failure; `skip` suppresses execution; malformed options reuse `E0110`; `category`, `focus`, `retry`, and `threads` are deferred. |

@@ -9,46 +9,46 @@
 
 ## Fold
 
-- [ ] Replace `TestDecl`, add `TestOptions`, `TestOption`, and
+- [x] Replace `TestDecl`, add `TestOptions`, `TestOption`, and
       `TestExpectation`, and replace the `TestDecl` prose in
       [`specs/grammar.md`](specs/grammar.md); add the new productions to the
       declarations production index. `AttributeArg`, `AttributeValue`, and the
       attribute-argument paragraph are already in the accepted chapters.
-- [ ] Add `TestMode`, `mode`, `expectedMessage`, `isSkipped`, `skipReason`,
+- [x] Add `TestMode`, `mode`, `expectedMessage`, `isSkipped`, `skipReason`,
       and `timeoutMs` to `TestDeclaration`, and replace the `TestDeclaration`
       note in [`specs/ast.md`](specs/ast.md). `AttributeNode`,
       `AttributeArgNode`, and `AttributeValueNode` are already in the accepted
       chapters.
-- [ ] Replace the declaration grammar and bullet, replace **Expected failure**
+- [x] Replace the declaration grammar and bullet, replace **Expected failure**
       with **Options**, and replace the **Running** criterion in
       [`specs/testing.md`](specs/testing.md).
-- [ ] Replace the `### Test` entry in
+- [x] Replace the `### Test` entry in
       [`specs/types/traits.md`](specs/types/traits.md).
 
 ## Cross-references
 
-- [ ] `grammar.md` — `TestOptions`, `TestOption`, and `TestExpectation` are
+- [x] `grammar.md` — `TestOptions`, `TestOption`, and `TestExpectation` are
       indexed; the fallback paragraph names the new accepted forms and treats
       a positional value as `E0110` rather than a syntax error.
-- [ ] `ast.md` — confirm the accepted `AttributeNode.args` carries
+- [x] `ast.md` — confirm the accepted `AttributeNode.args` carries
       `AttributeArgNode`s with optional names and value shapes;
       `TestDeclaration` has no `attributes` or `title`; the mode, expectation,
       skip, and timeout fields are documented; `TestMode` is exported like the
       other AST type aliases.
-- [ ] `testing.md` — normal, `should_fail`, and `should_panic` are defined by
+- [x] `testing.md` — normal, `should_fail`, and `should_panic` are defined by
       distinct outcomes; cancellation passes `should_fail` and fails
       `should_panic`; timeout is a non-panic failure; skip prevents the run and
       has no outcome; message matching is a substring of the failure message.
-- [ ] `types/traits.md` — the registry message for a malformed test group uses
+- [x] `types/traits.md` — the registry message for a malformed test group uses
       the new forms; `E0109` and `E0107` are unchanged; deferred `category`,
       `focus`, `retry`, and `threads` are `E0110`.
-- [ ] `type-system/errors.md` — no new code; check that `E0110`'s generic
+- [x] `type-system/errors.md` — no new code; check that `E0110`'s generic
       trigger still covers a malformed option group.
-- [ ] `changes/README.md` — keep the draft row with the expectation, skip, and
+- [x] `changes/README.md` — keep the draft row with the expectation, skip, and
       timeout forms and the deferred-option note.
 - [x] `changes/add-macro-system` — the merge requirement is recorded and that
       change is accepted; keep this change rebased onto its grammar and AST.
-- [ ] `testing.md` — the “everything else” paragraph no longer claims that
+- [x] `testing.md` — the “everything else” paragraph no longer claims that
       selection and execution are entirely a tool concern, because `skip` is
       specified here.
 

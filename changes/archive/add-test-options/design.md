@@ -1,6 +1,6 @@
 # Design: Test Options
 
-**Status:** draft · **Date:** 2026-11-06
+**Status:** accepted · **Date:** 2026-11-06
 **Change ID:** `add-test-options`
 
 ## Goals
