@@ -100,6 +100,7 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
+| [change-closed-range-operator/](change-closed-range-operator/proposal.md) | draft | Respell the closed range from `a...b` to `a..=b`, mirroring `<`/`<=`; `...` becomes only the spread prefix, removing the positional range/spread disambiguation rule; no new diagnostic. |
 
 ## Archived
 
