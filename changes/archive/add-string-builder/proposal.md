@@ -1,11 +1,12 @@
 # Add StringBuilder
 
-**Status:** draft · **Date:** 2026-11-12 · **Affects:**
+**Status:** accepted · **Date:** 2026-11-12 · **Affects:**
 `types/composite-types.md`, `types/README.md`, `types/primitive-types.md`,
-`builtins/prelude.md`, `builtins/intrinsic-functions.md`, `names.md`,
+`types/enums.md`, `builtins/prelude.md`, `builtins/README.md`,
+`builtins/intrinsic-functions.md`, `names.md`, `functions.md`,
 `memory-and-runtime.md`, `expressions/operators.md`,
-`type-system/checking-rules.md`, `type-system/coercion.md`, `README.md`,
-`changes/README.md`
+`expressions/path-and-access.md`, `type-system/checking-rules.md`,
+`type-system/coercion.md`, `ffi.md`, `README.md`, `changes/README.md`
 
 ## Summary
 

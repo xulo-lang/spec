@@ -136,7 +136,7 @@ WordOperator = "and" | "or" | "is" | "not" ;
 SymbolOperator =
       "." | "?" | "!" | "=" | "==" | "!=" | "<" | ">" | "<=" | ">="
     | "+" | "-" | "*" | "/" | "%" | "**" | "<<" | ">>" | "&" | "|" | "^" | "~"
-    | "=>" | "..<" | "..." | "?." | "??" | "@" | "$" | "::" | ":=" | "#" ;
+    | "=>" | "..<" | "..=" | "..." | "?." | "??" | "@" | "$" | "::" | ":=" | "#" ;
 Delimiter = "(" | ")" | "{" | "}" | "[" | "]" | "," | ":" | ";" ;
 ```
 
@@ -496,7 +496,7 @@ IsExpression         = RelationalExpression
                        [ "is" [ "not" ] Type ] ;
 RelationalExpression = RangeExpression
                         [ ( "<" | ">" | "<=" | ">=" ) RangeExpression ] ;
-RangeExpression      = BitOrExpression [ ( "..<" | "..." ) BitOrExpression ] ;
+RangeExpression      = BitOrExpression [ ( "..<" | "..=" ) BitOrExpression ] ;
 BitOrExpression      = BitXorExpression { "|" BitXorExpression } ;
 BitXorExpression     = BitAndExpression { "^" BitAndExpression } ;
 BitAndExpression     = ShiftExpression { "&" ShiftExpression } ;
@@ -659,10 +659,11 @@ state cell may be bound
 ([binding.md](components/binding.md)). Brace-map keys are identifiers only;
 a map keyed by other expressions uses the typed form `Map<K, V>{ … }`.
 
-The spread and the closed range share one token: an element of a list
-literal or a brace map that *starts* with `...` is a spread, while elsewhere `...` is
-the range operator, so `[...xs]` spreads `xs` but `[1...5]` is one range
-element ([lexical-structure.md](lexical-structure.md)).
+The closed range and the spread use distinct tokens: `..=` is the infix
+closed-range operator, while `...` is a prefix that an element of a list
+literal or a brace map MAY begin with. `[...xs]` spreads `xs`, while
+`[1..=5]` is one closed-range element
+([lexical-structure.md](lexical-structure.md)).
 
 ```xulo
 let a = 1 + 2 * 3 ** 2         // ** binds tighter than *, right-associative
@@ -685,7 +686,7 @@ PatternAlt     = "_" | LiteralPattern | RangePattern | VariantPattern
                | "(" Pattern ")" ;
 LiteralPattern = IntegerLiteral | FloatLiteral | StringLiteral
                | BooleanLiteral | "null" ;
-RangePattern   = ( IntegerLiteral | FloatLiteral ) ( "..<" | "..." )
+RangePattern   = ( IntegerLiteral | FloatLiteral ) ( "..<" | "..=" )
                                  ( IntegerLiteral | FloatLiteral ) ;
 VariantPattern = Identifier "::" Identifier [ "(" [ PatternList ] ")" ] ;
 StructPattern  = Identifier "(" [ PatternList ] ")" ;

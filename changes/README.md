@@ -100,8 +100,6 @@ never a version number or an implementation detail.
 
 | Change | Status | Summary |
 |--------|--------|---------|
-| [change-closed-range-operator/](change-closed-range-operator/proposal.md) | draft | Respell the closed range from `a...b` to `a..=b`, mirroring `<`/`<=`; `...` becomes only the spread prefix, removing the positional range/spread disambiguation rule; no new diagnostic. |
-| [add-string-builder/](add-string-builder/proposal.md) | draft | Add the prelude type `StringBuilder` — a mutable, growable UTF-8 text buffer with reference semantics, `new`/`append`/`clear`/`build`/`len`/`byte_len`, content equality, and no new syntax, diagnostic, or runtime-failure row. |
 
 ## Archived
 
@@ -134,3 +132,5 @@ with their final status.
 | [archive/add-macro-system/](archive/add-macro-system/proposal.md) | accepted | Procedural macros: `#[macro]` on a module-level `fn` with `ast::DeriveInput`/`ast::AttributeInput`/`ast::FunctionInput` and generated AST; `#[derive]`, user attributes, and `name!(…)`; `ast::quote!` with `${…}` holes; definition pre-pass, sandbox, three-layer quota, context, cache, and `E1001`–`E1012`; `AttributeArg` widened to values; attributes on `type`/`let`/`const`. |
 | [archive/change-macro-definition-syntax/](archive/change-macro-definition-syntax/proposal.md) | accepted | Replace `#[macro(kind = …, name/target = …)]` with three built-in definition attributes — `#[macro]` for function macros, `#[macro_attr]` for attribute macros, and `#[macro_derive(Target)]` for derive macros; function identifiers name function/attribute macros, `Target` names derive macros, quota keys remain named arguments, and the old form is `E1010`. |
 | [archive/add-test-options/](archive/add-test-options/proposal.md) | accepted | `#[test]` gains a comma-separated option group — `should_fail` for any failure, `should_panic` for a panic or runtime failure only, `should_panic = "…"` for a case-sensitive substring match, `skip`/`skip = "reason"`, and `timeout = N` in milliseconds; timeout is a distinct non-panic failure; `skip` suppresses execution; malformed options reuse `E0110`; `category`, `focus`, `retry`, and `threads` are deferred. |
+| [archive/change-closed-range-operator/](archive/change-closed-range-operator/proposal.md) | accepted | Respell the closed range from `a...b` to `a..=b`, mirroring `<`/`<=`; `...` becomes only the spread prefix, removing the positional range/spread disambiguation rule; no new diagnostic. |
+| [archive/add-string-builder/](archive/add-string-builder/proposal.md) | accepted | Add the prelude type `StringBuilder` — a mutable, growable UTF-8 text buffer with reference semantics, `new`/`append`/`clear`/`build`/`len`/`byte_len`, content equality, and no new syntax, diagnostic, or runtime-failure row. |

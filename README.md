@@ -200,6 +200,7 @@ normative for the whole specification.
 | **Result** | The built-in `Result<T, E>`: either `Result::Ok(T)` or `Result::Err(E)`; the value a fallible operation returns. See [`error-handling.md`](error-handling.md). |
 | **runtime failure** | A condition that stops a running program — an out-of-bounds index, division by zero — as a panic; there is no handler. See [`memory-and-runtime.md`](memory-and-runtime.md). |
 | **scrutinee** | The expression evaluated by `match` and tested against patterns. |
+| **string builder** | A mutable, growable UTF-8 text buffer `StringBuilder` with reference semantics; text is appended with `.append` and materialized as a `string` with `.build()`. See [`types/composite-types.md`](types/composite-types.md). |
 | **struct** | A nominal record type with named, individually typed fields; two `struct` declarations with identical fields are still different types. See [`types/composite-types.md`](types/composite-types.md). |
 | **task** | A unit of asynchronous computation with type `Task<T>`. See [`concurrency.md`](concurrency.md). |
 | **trait** | A nominal declaration of a named set of method signatures with no default bodies; a type opts into it with an `impl`. See [`types/traits.md`](types/traits.md). |

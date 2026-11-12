@@ -112,11 +112,12 @@ Two groups of names are built in rather than declared:
   keywords: no declaration MAY bear their spelling, and there is nothing to
   shadow.
 - **Built-in (non-primitive) type names** — `List`, `Array`, `Map`, `Set`,
-  `Task`, `Range`, `View`, `Result`, `Error` — and **intrinsic and namespace
-  names** — `print`, `println`, `str`, `Math`, `Time`, `Task` (the namespace),
-  and `ast` — SHOULD NOT be shadowed; this is a recommendation, not a
-  restriction, and an inner binding may still shadow any prelude name.
-  Intrinsics are described in the [builtins chapter](builtins/README.md).
+  `StringBuilder`, `Task`, `Range`, `View`, `Result`, `Error` — and
+  **intrinsic and namespace names** — `print`, `println`, `str`, `Math`,
+  `Time`, `Task` (the namespace), and `ast` — SHOULD NOT be shadowed; this is
+  a recommendation, not a restriction, and an inner binding may still shadow
+  any prelude name. Intrinsics are described in the
+  [builtins chapter](builtins/README.md).
 
 Shadowing a built-in type name means precisely this: a declaration
 introduces an ordinary binding whose spelling is one of the non-primitive

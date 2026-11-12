@@ -197,7 +197,7 @@ fn weight(level: Level): int {
 // `let mut` makes a binding assignable; `let` bindings are not.
 fn sum_to(n: int): int {
   let mut acc = 0
-  for i in 1...n {
+  for i in 1..=n {
     acc = acc + i
   }
   acc
@@ -221,7 +221,7 @@ fn Counter(): View {
 - `match level { ... }` deconstructs the scrutinee; the arms are expressions,
   and the arms together cover every variant, so no `_` arm is needed here.
 - `let mut acc = 0` creates a mutable binding — `acc = acc + i` would be an
-  error on a plain `let`. `1...n` is a closed range, and `for i in ...`
+  error on a plain `let`. `1..=n` is a closed range, and `for i in 1..=n`
   iterates it.
 - `@State let count: int = 0` is a state declaration: it is legal only at the
   top level of a component body, and assigning to `count` re-renders the

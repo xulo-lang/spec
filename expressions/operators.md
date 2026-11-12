@@ -19,7 +19,7 @@ Levels are listed from loosest to tightest binding.
 | equality | `==` `!=` | left |
 | type test | `is` `is not` | non-assoc |
 | relational | `<` `>` `<=` `>=` | non-assoc |
-| range | `..<` `...` | non-assoc |
+| range | `..<` `..=` | non-assoc |
 | bitwise or | `\|` | left |
 | bitwise xor | `^` | left |
 | bitwise and | `&` | left |
@@ -31,8 +31,8 @@ Levels are listed from loosest to tightest binding.
 | postfix | `f(x)` `x[i]` `x.y` `x.0` `x?.y` `x?.0` `x?` | left |
 
 Prefix spread `...expr` exists only inside list and map literals; it is not
-part of this chain. An element that begins with `...` is a spread, otherwise
-`...` is the closed-range operator.
+part of this chain. The closed-range operator is `..=`, a distinct infix
+token; an element that begins with `...` is a spread.
 
 Operators marked *non-assoc* MUST NOT be chained: `a < b < c` is not
 well-formed. Rewrite it, as is usually intended, as `a < b and b < c`, or use
@@ -138,13 +138,14 @@ let none = maybe == null
 ```
 
 Equality is structural for all value types: primitives (`bool`, `string`,
-`int`, `float`, fixed-bit numerics), `List`, `Array`, `Map`, `Set`, tuples,
-named `struct`s, and `enum`s — for an `enum`, the variant and every payload
-value are compared; for a tuple, the arities must be equal and every pair of
-elements is compared, so different arities are a compile-time error (`E0211`)
-rather than `false`; for an `Array`, elements are compared pairwise in index
-order, and the length is part of the type, so arrays of different N are
-unrelated types and their comparison is `E0211` rather than `false`. Both
+`int`, `float`, fixed-bit numerics), `List`, `Array`, `Map`, `Set`,
+`StringBuilder`, tuples, named `struct`s, and `enum`s — for an `enum`, the
+variant and every payload value are compared; for a `StringBuilder`, the
+current text is compared; for a tuple, the arities must be equal and every
+pair of elements is compared, so different arities are a compile-time error
+(`E0211`) rather than `false`; for an `Array`, elements are compared pairwise
+in index order, and the length is part of the type, so arrays of different N
+are unrelated types and their comparison is `E0211` rather than `false`. Both
 operands MUST have a common type; comparing unrelated types is a compile-time
 error (`E0211`), so Xulo has no cross-type equality. `null == null` is
 `true`, and comparing `null` with a value requires that value's type to be
@@ -198,14 +199,14 @@ are non-associative: `a < b < c` MUST NOT parse and MUST be rewritten, as
 
 ## Ranges
 
-`a..<b` builds a half-open range that excludes `b`; `a...b` builds a closed
+`a..<b` builds a half-open range that excludes `b`; `a..=b` builds a closed
 range that includes `b`.
 
 ```xulo
 for i in 0..<10 {
   print(i)
 }
-let slice = lo...hi
+let slice = lo..=hi
 ```
 
 Both operators are non-associative and yield the built-in generic type

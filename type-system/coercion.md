@@ -169,6 +169,8 @@ chapter, the conversion does not exist:
 | `List<int>` | `List<float>` | `E0201` | map the elements explicitly |
 | `(int, int)` | `(number, number)` | `E0201` | write a tuple literal, or convert element-wise |
 | `Map<K, V>` | `List<V>` | `E0201` | iterate and collect |
+| `StringBuilder` | `string` | `E0201` | `sb.build()` |
+| `string` | `StringBuilder` | `E0201` | `StringBuilder::new()`, then `append` |
 | `View?` | `View` | `E0201`; `E0702` in a component block | narrow first: `v ?? fallback` |
 
 ```xulo
@@ -208,9 +210,10 @@ let wrong = n == "1"            // error[E0211]: no common type
   narrows it ([`../expressions/control-flow.md`](../expressions/control-flow.md)).
 - Strings compare lexicographically by Unicode code point, locale
   independently. Structural equality for `List`, `Array`, `Map`, `Set`,
-  structs, enums, and tuples compares the contained values, each pair under
-  the same common-type rule; for an `Array`, the length is part of the type, so
-  arrays of different N are unrelated and comparing them is `E0211`.
+  `StringBuilder`, structs, enums, and tuples compares the contents, each pair
+  under the same common-type rule; for an `Array`, the length is part of the
+  type, so arrays of different N are unrelated and comparing them is `E0211`;
+  for a `StringBuilder`, the current text is compared.
 - Relational operators follow the same operand rule as arithmetic promotion
   and convert nothing else: two operands are numeric with the promotion table
   applied, or both `string`.

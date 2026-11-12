@@ -177,7 +177,7 @@ fn Panel(): View {
     @State let hidden = false // error: nested block
   }
 
-  for i in 0...3 {
+  for i in 0..=3 {
     @State let step = i       // error: nested block
   }
 

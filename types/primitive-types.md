@@ -243,24 +243,26 @@ Values of type `View` are opaque to the core type system beyond being renderable
 
 ## Range<T>
 
-`Range<T>` is the built-in generic type produced by the range operators `..<` (half-open) and `...` (closed):
+`Range<T>` is the built-in generic type produced by the range operators `..<`
+(half-open) and `..=` (closed):
 
 ```xulo
 let a = 0..<10     // Range<int>: excludes 10
-let b = 1...5      // Range<int>: includes 5
+let b = 1..=5      // Range<int>: includes 5
 for i in a {
   print(i)
 }
 ```
 
 - The operands of a range operator MUST have the same numeric type `T`; the result type is `Range<T>`.
-- A `Range<T>` is iterable: `for x in range` visits each value of type `T` from the lower bound up to — but not including, for `..<`; including, for `...` — the upper bound.
+- A `Range<T>` is iterable: `for x in range` visits each value of type `T` from the lower bound up to — but not including, for `..<`; including, for `..=` — the upper bound.
 - Ranges are values; a `Range<T>` may be bound, passed, and returned like any other value. Range patterns in `match` are specified in [`../expressions/README.md`](../expressions/README.md).
 
 ## Reserved Type Names
 
 The names of the built-in composite types are reserved for the language. A module-scope `struct`, `enum`, `trait`, or `type` declaration MUST NOT use any of the following names:
 
-`List`, `Array`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error`, `Ptr`
+`List`, `Array`, `Map`, `Set`, `StringBuilder`, `Task`, `Range`, `Result`,
+`View`, `Error`, `Ptr`
 
-Declaring a type with one of these names at module scope is a compile-time error (`E0106`). The primitive value types need no entry in this list: their spellings are keywords, stopped at the lexical layer before a declaration is ever checked. `List`, `Array`, `Map`, and `Set` are specified in [`composite-types.md`](composite-types.md), `Task<T>` in [`function-types.md`](function-types.md), `Result` and `Error` in [`../error-handling.md`](../error-handling.md), and `View` in [`../components/view-syntax.md`](../components/view-syntax.md); `Range<T>` is specified above in this file. `Ptr` is specified in [`../ffi.md`](../ffi.md); it names an opaque foreign handle, not a value type, and is reserved for that reason. Elsewhere — as a type parameter name or an ordinary value binding — a built-in type name is an ordinary identifier, though using one conflicts with the naming conventions in [`../names.md`](../names.md).
+Declaring a type with one of these names at module scope is a compile-time error (`E0106`). The primitive value types need no entry in this list: their spellings are keywords, stopped at the lexical layer before a declaration is ever checked. `List`, `Array`, `Map`, `Set`, and `StringBuilder` are specified in [`composite-types.md`](composite-types.md), `Task<T>` in [`function-types.md`](function-types.md), `Result` and `Error` in [`../error-handling.md`](../error-handling.md), and `View` in [`../components/view-syntax.md`](../components/view-syntax.md); `Range<T>` is specified above in this file. `Ptr` is specified in [`../ffi.md`](../ffi.md); it names an opaque foreign handle, not a value type, and is reserved for that reason. Elsewhere — as a type parameter name or an ordinary value binding — a built-in type name is an ordinary identifier, though using one conflicts with the naming conventions in [`../names.md`](../names.md).

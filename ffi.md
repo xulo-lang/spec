@@ -116,10 +116,11 @@ type or as the return type. The list is closed.
 | `Ptr` | parameter, return | a pointer slot of the platform ABI |
 | `Ptr?` | parameter, return | a nullable pointer slot |
 
-- A type not in the table — including `string`, `List`/`Map`/`Set`, `struct`,
-  `enum`, tuples, `View`, `Task`, `Result`, `unknown`, `number`, `int`,
-  `float`, `null`, a union, an intersection, a function type, or a type
-  parameter — in an extern signature is a compile-time error (`E0901`).
+- A type not in the table — including `string`, `StringBuilder`,
+  `List`/`Map`/`Set`, `struct`, `enum`, tuples, `View`, `Task`, `Result`,
+  `unknown`, `number`, `int`, `float`, `null`, a union, an intersection, a
+  function type, or a type parameter — in an extern signature is a compile-time
+  error (`E0901`).
 - `unit` as a **parameter** type is `E0901`: no C parameter maps to it.
 - The only optional type in an extern signature is exactly `Ptr?`; `i32?`,
   `string?`, and `Ptr??` are `E0901`.
@@ -299,7 +300,8 @@ that introduced this chapter ([`changes/`](changes/README.md)).
   concerns ([`README.md`](README.md), §1.1); this chapter defines the
   declaration, not the resolution.
 - **Strings, buffers, and collections across the boundary.** No `string`,
-  `List`, or `Map` parameter or return, and no borrowed buffer type.
+  `StringBuilder`, `List`, or `Map` parameter or return, and no borrowed
+  buffer type.
 - **Function pointers with a foreign ABI.** Foreign code cannot call back
   into Xulo through a value; it can only call an exported symbol.
 - **Symbol names that differ from the declared name on export**, including

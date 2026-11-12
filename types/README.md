@@ -16,6 +16,7 @@ The kinds of type in Xulo form a closed set; a program cannot introduce a new ki
 | Range | `Range<T>` | [`primitive-types.md`](primitive-types.md) |
 | View | `View` | [`primitive-types.md`](primitive-types.md) |
 | Collection | `List<T>`, `Array<T, N>`, `Map<K, V>`, `Set<T>` | [`composite-types.md`](composite-types.md) |
+| Builder | `StringBuilder` | [`composite-types.md`](composite-types.md) |
 | Tuple (positional) | `(int, string)`, `p.0` | [`composite-types.md`](composite-types.md) |
 | Struct (nominal) | `struct User { … }` | [`composite-types.md`](composite-types.md) |
 | Optional | `T?` (shorthand for `T \| null`) | [`composite-types.md`](composite-types.md) |
@@ -79,8 +80,8 @@ TypeList        = Type { "," Type } ;
 
 - [`primitive-types.md`](primitive-types.md) — `bool`, `string`, the two-layer numeric system, `null`, `unit`, `unknown`, `View`, and `Range<T>`.
 - [`composite-types.md`](composite-types.md) — `List`, `Array`, `Map`, `Set`,
-  positional tuples, nominal `struct` records, optional/union/intersection
-  types, and type aliases.
+  `StringBuilder`, positional tuples, nominal `struct` records,
+  optional/union/intersection types, and type aliases.
 - [`function-types.md`](function-types.md) — the syntax and meaning of `fn(...)` types, function and closure values, default and named parameters, `async`/`Task<T>` types, subtyping, and method types.
 - [`generics.md`](generics.md) — type and const parameters, bounds
   (`<T: Trait>`, `where` clauses), and call-site inference for type

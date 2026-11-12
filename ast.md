@@ -660,7 +660,7 @@ interface BinaryExpr extends BaseNode {
 
 interface RangeExpr extends BaseNode {
   type: 'RangeExpr';
-  op: '...' | '..<';
+  op: '..=' | '..<';
   start: ExpressionNode;
   end: ExpressionNode;
 }
@@ -867,7 +867,7 @@ interface TemplateElementNode extends BaseNode {
 }
 ```
 
-- `BinaryExpr.op` is the operator as written, and the node covers every level of the precedence table that takes two expressions: arithmetic, the word operators `and` / `or`, bitwise and shift, `==` / `!=`, the relational operators, and the nullish `??`. `is` is not one of them — it takes a type on the right, which is why it is `IsExpr` — and neither is a range, which is `RangeExpr` with `op` naming which end is open: `...` is closed and `..<` is half-open.
+- `BinaryExpr.op` is the operator as written, and the node covers every level of the precedence table that takes two expressions: arithmetic, the word operators `and` / `or`, bitwise and shift, `==` / `!=`, the relational operators, and the nullish `??`. `is` is not one of them — it takes a type on the right, which is why it is `IsExpr` — and neither is a range, which is `RangeExpr` with `op` naming whether the upper bound is included: `..=` includes it, `..<` excludes it.
 - `UnaryExpr.op` covers the prefix operators that are not `await`: `await` has its own node because it is the only one whose operand must be a `Task`.
 - `CallExpr.typeArgs` and `ComponentExpr.typeArgs` carry an explicit `CallTypeArgs` list; `null` means no list is written and an empty array is the written `<>`.
 - `MemberExpr.optional` distinguishes `.` from `?.`. The property is a name or an integer literal, since the production admits both.
@@ -942,7 +942,8 @@ interface PatternDesignatorNode extends BaseNode {
 }
 ```
 
-`Pattern = PatternAlt { "|" PatternAlt }` has eight `PatternAlt` alternatives — the wildcard is one of them even though it lexes as an identifier: `_` is `WildcardPattern`, any other bare identifier is `IdentifierPattern`, which binds — and a disjunction of two or more alternatives parses as one `OrPattern` whose `alternatives` is a flat list, so `a | b | c` is three alternatives and never nested pairs. A parenthesized alternative parses as the pattern inside it and adds no node of its own. `MatchArmNode.guard` is the arm's guard expression, `null` when the arm has none. `RangePattern.endInclusive` records `...` versus `..<`, and both operands are numeric literals, matching the production. `VariantPattern.bindings` is `null` when the variant writes no parentheses and an array otherwise; `StructPattern.bindings` is always an array, empty when its mandatory parentheses hold no patterns.
+`Pattern = PatternAlt { "|" PatternAlt }` has eight `PatternAlt` alternatives — the wildcard is one of them even though it lexes as an identifier: `_` is `WildcardPattern`, any other bare identifier is `IdentifierPattern`, which binds — and a disjunction of two or more alternatives parses as one `OrPattern` whose `alternatives` is a flat list, so `a | b | c` is three alternatives and never nested pairs. A parenthesized alternative parses as the pattern inside it and adds no node of its own. `MatchArmNode.guard` is the arm's guard expression, `null` when the arm has none. `RangePattern.endInclusive` records `..=` versus `..<`, and both operands are
+numeric literals, matching the production. `VariantPattern.bindings` is `null` when the variant writes no parentheses and an array otherwise; `StructPattern.bindings` is always an array, empty when its mandatory parentheses hold no patterns.
 
 `TypePattern.binder` is the name or `_` that follows the designators, and `designators` is the possibly unioned list of type names, each with the `optional` flag its `?` carries. A designator's `name` is an `IdentifierNode` for the identifier alternative or a `PrimitiveType` for the keyword alternative.
 

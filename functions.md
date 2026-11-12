@@ -135,8 +135,8 @@ fn main() {
 ```
 
 - Methods are functions declared inside an `impl` block. The built-in
-  collection and string types also declare **inherent members** specified
-  with their types
+  collection, string, and builder types also declare **inherent members**
+  specified with their types
   ([`types/composite-types.md`](types/composite-types.md),
   [`types/primitive-types.md`](types/primitive-types.md)); the methods among
   them are methods in the call and method-value sense, while `.len`, `.size`,

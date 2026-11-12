@@ -29,10 +29,11 @@ written; `null` additionally has a literal form usable in expression position.
 | `Array<T, N>` | inline fixed-length sequence of N elements; N is a const parameter, N ≥ 0 | [`../types/composite-types.md`](../types/composite-types.md) |
 | `Map<K, V>` | insertion-ordered dictionary with unique keys | [`../types/composite-types.md`](../types/composite-types.md) |
 | `Set<T>` | unordered collection of unique values | [`../types/composite-types.md`](../types/composite-types.md) |
+| `StringBuilder` | mutable, growable UTF-8 text buffer; materialized with `.build()` | [`../types/composite-types.md`](../types/composite-types.md) |
 | `unit` | the type of expressions that produce no meaningful value | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `null` | the sole value of the type `null`; a member of every `T?` | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `Task<T>` | the value an `async` call produces; unwrapped by `await` | [`../types/function-types.md`](../types/function-types.md) |
-| `Range<T>` | the value produced by `..<` and `...`; iterable by `for` | [`../types/primitive-types.md`](../types/primitive-types.md) |
+| `Range<T>` | the value produced by `..<` and `..=`; iterable by `for` | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `Result<T, E>` | the built-in result of a fallible operation: `Ok(T)` or `Err(E)` | [`../error-handling.md`](../error-handling.md) |
 | `View` | the marker type a component returns | [`../types/primitive-types.md`](../types/primitive-types.md) |
 | `Error` | the conventional error payload of `Result<T, Error>` | [`../error-handling.md`](../error-handling.md) |
@@ -98,7 +99,7 @@ in [`../type-system/errors.md`](../type-system/errors.md).
 
 | Category | Names |
 |----------|-------|
-| Value and marker types | `List`, `Array`, `Map`, `Set`, `Task`, `Range`, `Result`, `View`, `Error`, `Format` |
+| Value and marker types | `List`, `Array`, `Map`, `Set`, `StringBuilder`, `Task`, `Range`, `Result`, `View`, `Error`, `Format` |
 | Protocols | `Display`, `Debug`, `ToString` |
 | Namespaces | `Math`, `Time`, `Task`, `ast` |
 | Intrinsic functions | `print`, `println`, `str`, `assert` |
@@ -120,14 +121,15 @@ it, after which the `ast::` types, the `ast::call_*` functions, and
 
 ## Built-in members
 
-The built-in collections (`List`, `Array`, `Map`, `Set`) and `string` expose
-inherent members, specified with their types: `List`, `Array`, `Map`, and
-`Set` in [`../types/composite-types.md`](../types/composite-types.md), and
-`string` in [`../types/primitive-types.md`](../types/primitive-types.md). They
-are not prelude operations: they have no unqualified spelling, no import
-introduces them, and they are not module-scope names. A local binding named
-`len` or `get` does not shadow `xs.len` or `m.get`; a static member is reached
-through a type name, as in `Map::from_entries`.
+The built-in collections (`List`, `Array`, `Map`, `Set`), the text builder
+`StringBuilder`, and `string` expose inherent members, specified with their
+types: `List`, `Array`, `Map`, `Set`, and `StringBuilder` in
+[`../types/composite-types.md`](../types/composite-types.md), and `string` in
+[`../types/primitive-types.md`](../types/primitive-types.md). They are not
+prelude operations: they have no unqualified spelling, no import introduces
+them, and they are not module-scope names. A local binding named `len` or
+`get` does not shadow `xs.len` or `m.get`; a static member is reached through
+a type name, as in `Map::from_entries`.
 
 ## Prelude visibility
 

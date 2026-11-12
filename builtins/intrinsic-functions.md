@@ -78,6 +78,7 @@ have — `unknown` alone is rejected rather than rendered (above):
 | Value | Rendering |
 |-------|-----------|
 | `string` | the characters of the string itself, with no surrounding quotes and no escaping |
+| `StringBuilder` | the current text of the buffer, exactly the `string` row — no surrounding quotes and no escaping |
 | `bool` | `true` or `false` |
 | `int` | the decimal numeral of the value |
 | `float` | the shortest positional decimal numeral that reads back as the same `float` — a whole value has no fractional part (`3.0` renders as `3`) and no trailing fractional zeros appear (`0.50` renders as `0.5`); scientific notation is never used, so a small magnitude is written in full (`0.0000001`); the special values render as `NaN`, `Infinity`, and `-Infinity` |
@@ -93,7 +94,7 @@ have — `unknown` alone is rejected rather than rendered (above):
 | `f32`, `f64` | `f64` as the `float` row; `f32` as the shortest positional decimal numeral that reads back as the same `f32`, the special values rendering as `NaN`, `Infinity`, and `-Infinity` |
 | `unit` | `unit` |
 | an optional `T?` | `null` as the `null` row for a null value, otherwise by the rules that apply to its `T` |
-| `Range<T>` | `start..<end` or `start...end`, per the value's own form, bounds by this table (`0..<10`, `1...5`) |
+| `Range<T>` | `start..<end` or `start..=end`, per the value's own form, bounds by this table (`0..<10`, `1..=5`) |
 | `Result<T, E>` | `Ok(…)` or `Err(…)`, the payload by this table |
 | a tuple `(T₁, …)` | `(`, the element renderings separated by `, `, `)` — `(1, x)` |
 | `Error` | `Error(…)`, the message by this table — `Error(timed out)` |
@@ -134,7 +135,8 @@ print(Point(x: 1, y: 2))         // Point(x: 1, y: 2)
   a `Display` implementor the result is the value of `to_string` on the
   operand — its `display` at the default `Format`.
 - Any other operand is a compile-time error (`E0212`) — a `List`, an `Array`, a
-  `Map`, a `Set`, a `struct` or `enum` with no `impl Display`, or `null`
+  `Map`, a `Set`, a `StringBuilder` (materialize it with `.build()`), a `struct`
+  or `enum` with no `impl Display`, or `null`
   ([`../type-system/errors.md`](../type-system/errors.md)).
 
 There is no implicit conversion anywhere else in the language: `+` concatenates
@@ -254,7 +256,7 @@ available without import. Its members are reached with `.` (`Math::PI`,
 - `Math::log`, `Math::log2`, and `Math::log10` yield `-Infinity` at `0` and `NaN`
   for a negative argument; `Math::exp` yields `Infinity` once its result
   overflows.
-- `Math::asin` and `Math::acos` yield `NaN` outside `-1.0...1.0`.
+- `Math::asin` and `Math::acos` yield `NaN` outside `-1.0..=1.0`.
 - `Math::floor`, `Math::ceil`, and `Math::trunc` discard the fractional part
   toward negative infinity, toward positive infinity, and toward zero; they
   return `int`. `Math::round` returns the nearest `int`, and a value exactly
@@ -264,7 +266,7 @@ available without import. Its members are reached with `.` (`Math::PI`,
   point of the function — and renders the sign exactly as `str` does, so a
   negative zero yields a leading `-`. The special values ignore `digits` and
   render as `NaN`, `Infinity`, and `-Infinity`. A `digits` value outside
-  `0...=15` is a runtime failure
+  `0..=15` is a runtime failure
   ([`../memory-and-runtime.md`](../memory-and-runtime.md)).
 - `Math::abs`, `Math::min`, and `Math::max` are declared over `number`, so an
   `int` or `float` operand is accepted and a fixed-bit operand is not

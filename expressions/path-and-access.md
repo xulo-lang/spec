@@ -48,8 +48,8 @@ compile-time error (`E0102`)
 private by default, so a member that is not `pub` is accessible only inside
 the module that declares it (see [`../modules/README.md`](../modules/README.md)).
 
-The built-in collections and `string` have closed inherent member sets,
-specified with their types
+The built-in collections, `string`, and `StringBuilder` have closed inherent
+member sets, specified with their types
 ([`../types/composite-types.md`](../types/composite-types.md),
 [`../types/primitive-types.md`](../types/primitive-types.md)). A program
 cannot add an inherent member to a built-in type; a trait implementation for

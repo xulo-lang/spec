@@ -144,12 +144,12 @@ Rules:
 
 - When the scrutinee is a number, an arm MAY use a literal or a range pattern;
   range patterns use the range operators of the expression language with their
-  usual inclusivity, `0...29` (closed) and `30..<60` (half-open):
+  usual inclusivity, `0..=29` (closed) and `30..<60` (half-open):
 
   ```xulo
   let band = match score {
-    0...29 => "low",
-    30...69 => "medium",
+    0..=29 => "low",
+    30..<60 => "medium",
     _ => "high",
   }
   ```
@@ -222,8 +222,9 @@ fn message(e: LoadError): string {
   payloads in slot order.
 - Payloads are compared with `==` themselves, so an enum is comparable exactly
   when its slot types are: `List<T>`, `Map<K, V>`, and `Set<T>` payloads
-  compare element-wise when the element, key, and value types do, and optional
-  slots compare `null` against `null`.
+  compare element-wise when the element, key, and value types do, a
+  `StringBuilder` payload compares by its current text, and optional slots
+  compare `null` against `null`.
 - Operands of two different enum types MUST NOT be compared, even if their
   variant lists coincide, and relational operators (`<`, `>`, `<=`, `>=`) are not
   defined for enum values; both are type errors.

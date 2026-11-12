@@ -71,7 +71,7 @@ each level; [`../grammar.md`](../grammar.md) encodes the same structure.
 | equality | `==` `!=` | left |
 | type test | `is` `is not` | non-assoc |
 | relational | `<` `>` `<=` `>=` | non-assoc |
-| range | `..<` `...` | non-assoc |
+| range | `..<` `..=` | non-assoc |
 | bitwise or | `\|` | left |
 | bitwise xor | `^` | left |
 | bitwise and | `&` | left |
@@ -83,8 +83,8 @@ each level; [`../grammar.md`](../grammar.md) encodes the same structure.
 | postfix | `f(x)` `x[i]` `x.y` `x.0` `x?.y` `x?.0` `x?` | left |
 
 Prefix spread `...expr` exists only inside list and map literals; it is not
-part of the precedence chain. An element that begins with `...` is a spread,
-otherwise `...` is the closed-range operator (see [`operators.md`](operators.md)).
+part of the precedence chain. The closed-range operator is `..=`; an element
+that begins with `...` is a spread (see [`operators.md`](operators.md)).
 `move` and `copy` occupy the `unary` level with the other prefix operators but
 are accepted only in three positions, which [`operators.md`](operators.md)
 states.

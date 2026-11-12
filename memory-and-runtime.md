@@ -44,7 +44,7 @@ holds and what an assignment does.
 | Category | Types | A binding denotes | `let x = e` and assignment |
 |----------|-------|-------------------|----------------------------|
 | **Value** | `bool`, `string`, `int`, `float`, `number`, fixed-bit numerics, `null`, `unit`, `struct`, `enum`, `Array<T, N>`, `Range<T>`, tuples | the value itself | a fresh, independent copy of `e`'s value; a `struct`, `enum`, `Array`, or tuple copy is shallow — each field or element is copied by its own category |
-| **Reference** | `List<T>`, `Map<K, V>`, `Set<T>` | a reference to one shared value | the same value, shared: `x` and `e` then denote the one underlying value |
+| **Reference** | `List<T>`, `Map<K, V>`, `Set<T>`, `StringBuilder` | a reference to one shared value | the same value, shared: `x` and `e` then denote the one underlying value |
 
 Four further values carry **identity** rather than content — function values
 (closures), `Task<T>`, `View`, and `Error` — and behave as references to a
@@ -282,9 +282,9 @@ may be richer; the public `ast::Value` is the subset a macro sees.
 
 ## Equality and identity
 
-`==` compares by content for every value-carrying type — primitives, `string`,
-`struct`, `enum`, `Range`, `List`, `Array`, `Map`, `Set`, and tuples
-(element-wise, equal arity) — as specified in
+`==` compares by content for every value-carrying type — primitives,
+`string`, `struct`, `enum`, `Range`, `List`, `Array`, `Map`, `Set`,
+`StringBuilder`, and tuples (element-wise, equal arity) — as specified in
 [`expressions/operators.md`](expressions/operators.md). Identity-carrying
 values — function values, `Task<T>`, `View`, and `Error` — are compared by
 identity: `==` is `true` exactly when both operands denote the same value.
@@ -357,11 +357,12 @@ later writes through either copy are invisible to the other. `copy` accepts
 any expression as its operand and, like `move`, appears only as a `let`
 initializer, an argument, or a `return` operand.
 
-- Deep copying follows references through `List`, `Map`, and `Set` values,
-  through `struct` and `enum` fields, through tuple elements, and through
-  `Array` elements, and duplicates their contents. Copying a cyclic
-  structure terminates: a value already being copied is represented by the
-  copy made for it, so the copy graph mirrors the original.
+- Deep copying follows references through `List`, `Map`, `Set`, and
+  `StringBuilder` values, through `struct` and `enum` fields, through tuple
+  elements, and through `Array` elements, and duplicates their contents.
+  Copying a cyclic structure terminates: a value already being copied is
+  represented by the copy made for it, so the copy graph mirrors the
+  original.
 - Identity-carrying values — function values, `Task<T>`, `View`, `Error` — are
   not duplicated: the copy is the same value. There is no way to clone a task
   in flight or to split a closure's captured storage by copying it.
@@ -620,7 +621,7 @@ condition occurs, and there is no handler for it.
 | Division or remainder by zero | `/` or `%` on non-constant operands whose value is zero | [`expressions/operators.md`](expressions/operators.md) |
 | Shift amount out of range | `<<` or `>>` whose amount is negative or at or past the operands' bit width, on non-constant operands | [`expressions/operators.md`](expressions/operators.md) |
 | Arithmetic overflow | an `int` or fixed-bit operation whose result exceeds its type, on non-constant operands | [`types/primitive-types.md`](types/primitive-types.md) |
-| `Math::to_fixed` digits out of range | `Math::to_fixed` is called with `digits` outside `0...=15` | [`builtins/intrinsic-functions.md`](builtins/intrinsic-functions.md) |
+| `Math::to_fixed` digits out of range | `Math::to_fixed` is called with `digits` outside `0..=15` | [`builtins/intrinsic-functions.md`](builtins/intrinsic-functions.md) |
 | Unprovided environment key | reading an `@Environment` key no provision supplies | [`components/environment.md`](components/environment.md) |
 | Stack or task exhaustion | recursion depth or the runtime's task limit is exceeded | [`functions.md`](functions.md) |
 

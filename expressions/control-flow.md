@@ -160,7 +160,7 @@ match score {          // statement position: the arm values are discarded
 | Struct deconstruction | `Type(p1, ..., pn)` | a value of that struct type; one sub-pattern per field, in declaration order |
 | Type | `string s`, `unknown _`, `string \| int v` | a value whose type is the written type; binds the name for the body of the arm |
 | Or | `p1 \| p2` | a value matched by any alternative; the alternatives bind the same names |
-| Range | `a..<b`, `a...b` | numeric values inside the half-open or closed range |
+| Range | `a..<b`, `a..=b` | numeric values inside the half-open or closed range |
 
 - Enum variants are written with `::` in patterns and in expressions
   (`Shape::Circle(r)`), never with `.`.
@@ -179,7 +179,7 @@ match score {          // statement position: the arm values are discarded
 - A payload or field position that is not bound MUST be written `_`:
   `Shape::Circle(_)` matches any radius without binding it.
 - The operands of a range pattern MUST be numeric literals of the same numeric
-  type as the scrutinee. `0...9` includes both endpoints, `0..<10` excludes the
+  type as the scrutinee. `0..=9` includes both endpoints, `0..<10` excludes the
   upper endpoint.
 - **Type patterns** test the type of the scrutinee. The form is `Type binder`,
   where `binder` is an identifier or `_`: `string s` matches a value of type
@@ -295,7 +295,7 @@ fn describe(flag: bool): string {
 }
 
 let grade = match score {
-  90...100 => "A"
+  90..=100 => "A"
   80..<90 => "B"
   _ => "F"
 }
@@ -357,7 +357,7 @@ fn sum(xs: List<int>): int {
 ## Ranges
 
 - `a..<b` is **half-open**: it includes `a` and excludes `b`.
-- `a...b` is **closed**: it includes both `a` and `b` (Swift semantics).
+- `a..=b` is **closed**: it includes both `a` and `b`.
 - Both operands MUST have the same numeric type; the result is a value of the
   built-in generic type `Range<T>`, which MAY be bound and iterated later.
 - Iterating a range yields `start`, `start + 1`, and so on while the value has
@@ -366,19 +366,19 @@ fn sum(xs: List<int>): int {
 | Expression | Iteration values |
 |------------|------------------|
 | `0..<3` | `0`, `1`, `2` |
-| `0...3` | `0`, `1`, `2`, `3` |
-| `1...1` | `1` |
+| `0..=3` | `0`, `1`, `2`, `3` |
+| `1..=1` | `1` |
 | `2..<2` | none |
 | `5..<1` | none |
-| `5...1` | none |
+| `5..=1` | none |
 
 - A range whose `start` is greater than its `end` iterates zero times. There is
-  no reverse iteration: neither `..<` nor `...` descends.
-- `..<` and `...` are non-associative operators at the range level of the
+  no reverse iteration: neither `..<` nor `..=` descends.
+- `..<` and `..=` are non-associative operators at the range level of the
   precedence table in [`operators.md`](operators.md).
 - Inside a list or map literal an element that starts with `...` is a spread
-  of that literal ([`literals.md`](literals.md)); in every other position `...`
-  is the closed-range operator.
+  of that literal ([`literals.md`](literals.md)); `...` is never a range
+  operator.
 
 ## `while` loops
 

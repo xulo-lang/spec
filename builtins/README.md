@@ -25,12 +25,13 @@ gives the signature and the meaning of each function among them. A name may
 belong to both the prelude and the intrinsic layer: `print` is a name that is
 in scope because of the prelude and whose signature is that of an intrinsic.
 
-The members of `List`, `Array`, `Map`, `Set`, and `string` are part of their
-types ([`../types/composite-types.md`](../types/composite-types.md),
+The members of `List`, `Array`, `Map`, `Set`, `StringBuilder`, and `string`
+are part of their types
+([`../types/composite-types.md`](../types/composite-types.md),
 [`../types/primitive-types.md`](../types/primitive-types.md)); they are not
 prelude names and enter resolution only after a receiver or a type name
-(`Map::from_entries`, `Array::filled`), so they neither reserve module-scope
-names nor collide with local bindings.
+(`Map::from_entries`, `Array::filled`, `StringBuilder::new`), so they neither
+reserve module-scope names nor collide with local bindings.
 
 ## Availability
 

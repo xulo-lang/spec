@@ -77,10 +77,10 @@ annotation.
 - `Γ ⊢ e.m : U` when `e : T` and `T` (after alias expansion) declares member
   `m` of type `U`; unknown member → `E0102`, a non-`pub` member examined
   outside its module → `E0602`. On `e : unknown` there is no member at all,
-  so `e.m` is `E0102`. The built-in collection and string types declare their
-  inherent members with their types; a read-only property is not a place, and
-  there is no map entry member form — `e.m` on a `Map` is a member lookup,
-  never the entry `"m"`. On a `List<T>` or `Array<T, N>`,
+  so `e.m` is `E0102`. The built-in collection, string, and builder types
+  declare their inherent members with their types; a read-only property is not
+  a place, and there is no map entry member form — `e.m` on a `Map` is a
+  member lookup, never the entry `"m"`. On a `List<T>` or `Array<T, N>`,
   `index_of`/`last_index_of`/`includes` require `T` to admit `==`, and `join`
   requires `T` to have a string form (`E0212`). The callback members check
   their function argument against `fn(T): unit`, `fn(T): U`,
@@ -93,8 +93,8 @@ annotation.
   explicit `Trait.method(recv)` always available; a method used without a call
   has its function type with the receiver bound. On a type parameter, access
   succeeds only through a bound. A built-in static member (`Map::from_entries`,
-  `Set::from_list`, `Array::filled`) is reached through `::`; it has
-  no receiver.
+  `Set::from_list`, `Array::filled`, `StringBuilder::new`) is reached through
+  `::`; it has no receiver.
 - `Γ ⊢ p.i : Tᵢ` when `p : (T₁, …, Tₙ)` and `i` is a decimal literal naming
   an existing position — `0 ≤ i < n`; a positional access on a non-tuple
   type or at or past the arity → `E0220`
@@ -155,7 +155,7 @@ Operand and result types, in summary; precedence and associativity are in
 | `== !=` | a common type (below) | `bool` |
 | `is`, `is not` | an expression of type `S`; a testable type `T` with `T ≼ S` (`E0222`) | `bool` |
 | `and`, `or`, unary `!` | `bool` | `bool` |
-| `..< ...` | one identical numeric type on both sides | `Range<T>` |
+| `..<` `..=` | one identical numeric type on both sides | `Range<T>` |
 | `=` | a mutable place and a value assignable to it | `unit` |
 | `?:` | `bool` condition; branches with a common type | that common type |
 | `??` | left `T?`; right `T` or `U` | `T`, or `T \| U` |
@@ -272,7 +272,7 @@ derives the bindings the arm's guard and body may use.
 | binding `x` | valid for every `T` | `x : T` |
 | `E::V(sp₁ … spₙ)` | `T` expands to enum `E`; `V` a variant of `E`; `n` equals its payload arity; each sub-pattern checks against its payload type | the sub-patterns' bindings |
 | `Type(sp₁ … spₙ)` | `T` expands to struct `Type`; one sub-pattern per field, in declaration order | the sub-patterns' bindings |
-| `a..<b`, `a...b` | `T` is numeric and both operands are literals of `T`'s type | none |
+| `a..<b`, `a..=b` | `T` is numeric and both operands are literals of `T`'s type | none |
 | `Type b` (type) | after alias expansion, `Type` is a testable type and `Type ≼ T` (`E0303` otherwise); `b` an identifier or `_` | `b : Type` when `b` is an identifier |
 | `p₁ \| … \| pₙ` (or) | every alternative checks against `T` (`E0303`), and every alternative binds the same names, each at the same type (`E0304` otherwise) | the alternatives' shared bindings |
 

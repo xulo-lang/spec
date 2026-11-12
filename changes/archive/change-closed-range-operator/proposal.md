@@ -1,6 +1,6 @@
 # Change Closed Range Operator
 
-**Status:** draft · **Date:** 2026-11-10 · **Affects:**
+**Status:** accepted · **Date:** 2026-11-10 · **Affects:**
 `lexical-structure.md`, `grammar.md`, `ast.md`, `introduction.md`,
 `types/primitive-types.md`, `types/enums.md`, `expressions/operators.md`,
 `expressions/README.md`, `expressions/control-flow.md`,
